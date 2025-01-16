@@ -1,0 +1,34 @@
+﻿@page "/teams"
+@using EkstraSim.Frontend.Components.Services
+@using Shared.DTOs
+
+@inject TeamService _teamService
+
+<h3>Teams</h3>
+
+@if (teams == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <ul>
+        @foreach (var team in teams)
+        {
+            <li>@team.Name</li>
+        }
+    </ul>
+}
+
+@code {
+
+    private List<TeamDTO>? teams;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _teamService.GetTeamsAsync();
+        teams = result.ToList();
+    }
+
+
+}

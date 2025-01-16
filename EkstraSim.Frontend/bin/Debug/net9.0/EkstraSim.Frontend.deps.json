@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "EkstraSim.Frontend/1.0.0": {
+        "dependencies": {
+          "EkstraSim.Shared": "1.0.0"
+        },
+        "runtime": {
+          "EkstraSim.Frontend.dll": {}
+        }
+      },
+      "EkstraSim.Shared/1.0.0": {
+        "runtime": {
+          "EkstraSim.Shared.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "EkstraSim.Frontend/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "EkstraSim.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
