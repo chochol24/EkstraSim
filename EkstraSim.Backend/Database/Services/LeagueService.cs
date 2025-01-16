@@ -31,10 +31,10 @@ public class LeagueService : ILeagueService
 				awayGoals += match.AwayTeamScore.GetValueOrDefault();
 			}
 
-			league.AverageHomeGoalsScored = Math.Round(homeGoals / matchesCount, 3);
-			league.AverageAwayGoalsScored = Math.Round(awayGoals / matchesCount, 3);
-			league.AverageHomeGoalsConceded = Math.Round(awayGoals / matchesCount, 3);
-			league.AverageAwayGoalsConceded = Math.Round(homeGoals / matchesCount, 3);
+			league.AverageHomeGoalsScored = homeGoals / matchesCount;
+			league.AverageAwayGoalsScored = awayGoals / matchesCount;
+			league.AverageHomeGoalsConceded = awayGoals / matchesCount;
+			league.AverageAwayGoalsConceded = homeGoals / matchesCount;
 
 			_context.Leagues.Update(league);
 
