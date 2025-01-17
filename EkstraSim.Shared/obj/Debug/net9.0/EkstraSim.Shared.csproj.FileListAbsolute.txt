@@ -9,3 +9,4 @@ D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\refint\EkstraSim.Shared.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.pdb
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\ref\EkstraSim.Shared.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.sourcelink.json

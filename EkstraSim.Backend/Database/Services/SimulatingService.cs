@@ -1,6 +1,7 @@
 ﻿using EkstraSim.Backend.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using Shared;
 
 namespace EkstraSim.Backend.Database.Services;
 
@@ -61,206 +62,197 @@ public partial class SimulatingService : ISimulatingService
 
     public async Task<IEnumerable<SimulatedMatchResult>> SimulateRound(List<Match> matchesToSimulate, int leagueId, int numberOfSimulations)
     {
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
+        Stopwatch sw = Stopwatch.StartNew();
 
-        if (matchesToSimulate.Any())
+        if (!matchesToSimulate.Any())
+            return null;
+
+        var league = _context.Leagues.FirstOrDefault(x => x.Id == leagueId);
+        if (league == null)
+            throw new InvalidOperationException($"League with ID {leagueId} not found.");
+
+        Dictionary<int, Dictionary<Match, MatchResult>> simulationResults = [];
+
+        Dictionary<Match, Dictionary<int, int>> homeGoalCountsPerMatch = new();
+        Dictionary<Match, Dictionary<int, int>> awayGoalCountsPerMatch = new();
+
+        Dictionary<Match, MatchPredictionGoals> predictionMatches = [];
+
+       
+
+        foreach (var match in matchesToSimulate)
         {
-            Dictionary<int, Dictionary<Match, MatchResult>> simulationResults = [];
+            var homeAttackStrength = match.HomeTeam.AverageHomeGoalsScored / league.AverageHomeGoalsScored;
+            var homeDefenseStrength = match.HomeTeam.AverageHomeGoalsConceded / league.AverageHomeGoalsConceded;
+            var awayAttackStrength = match.AwayTeam.AverageAwayGoalsScored / league.AverageAwayGoalsScored;
+            var awayDefenseStrength = match.AwayTeam.AverageAwayGoalsConceded / league.AverageAwayGoalsConceded;
 
-            Dictionary<Match, Dictionary<int, int>> homeGoalCountsPerMatch = new();
-            Dictionary<Match, Dictionary<int, int>> awayGoalCountsPerMatch = new();
+            var homePred = homeAttackStrength * awayDefenseStrength * league.AverageHomeGoalsScored;
+            var awayPred = awayAttackStrength * homeDefenseStrength * league.AverageAwayGoalsScored;
 
-            Dictionary<Match, MatchPredictionGoals> predictionMatches = [];
+            predictionMatches.Add(match, new MatchPredictionGoals { HomeGoals = homePred.GetValueOrDefault(), AwayGoals = awayPred.GetValueOrDefault() });
 
-            var league = _context.Leagues.Where(x => x.Id == leagueId).FirstOrDefault();
+            homeGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
+            awayGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
 
-            foreach (var match in matchesToSimulate)
-            {
-                var homeAttackStrength = match.HomeTeam.AverageHomeGoalsScored / league.AverageHomeGoalsScored;
-                var homeDefenseStrength = match.HomeTeam.AverageHomeGoalsConceded / league.AverageHomeGoalsConceded;
-                var awayAttackStrength = match.AwayTeam.AverageAwayGoalsScored / league.AverageAwayGoalsScored;
-                var awayDefenseStrength = match.AwayTeam.AverageAwayGoalsConceded / league.AverageAwayGoalsConceded;
+        }
 
-                var homePred = homeAttackStrength * awayDefenseStrength * league.AverageHomeGoalsScored;
-                var awayPred = awayAttackStrength * homeDefenseStrength * league.AverageAwayGoalsScored;
-
-                predictionMatches.Add(match, new MatchPredictionGoals { HomeGoals = homePred.GetValueOrDefault(), AwayGoals = awayPred.GetValueOrDefault() });
-
-                homeGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
-                awayGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
-
-            }
-
-            for (int i = 0; i < numberOfSimulations; i++)
-            {
-                Dictionary<Match, MatchResult> roundResult = [];
-                foreach (Match match in matchesToSimulate)
-                {
-                    var prediction = predictionMatches[match];
-                    var matchResult = await SimulateMatch(match, prediction);
-                    roundResult.Add(match, matchResult);
-
-                    if (matchResult.HomeScore <= 10)
-                    {
-                        homeGoalCountsPerMatch[match][matchResult.HomeScore]++;
-                    }
-                    if (matchResult.AwayScore <= 10)
-                    {
-                        awayGoalCountsPerMatch[match][matchResult.AwayScore]++;
-                    }
-                }
-                simulationResults.Add(i, roundResult);
-            }
-
-            List<SimulatedMatchResult> simulatedResults = new();
-
+        for (int i = 0; i < numberOfSimulations; i++)
+        {
+            Dictionary<Match, MatchResult> roundResult = [];
             foreach (Match match in matchesToSimulate)
             {
-                int totalHomeWins = 0;
-                int totalAwayWins = 0;
-                int totalDraws = 0;
+                var prediction = predictionMatches[match];
+                var matchResult = await SimulateMatch(match, prediction);
+                roundResult.Add(match, matchResult);
 
-                double totalHomeGoals = 0;
-                double totalAwayGoals = 0;
-
-                double[,] resultProbabilityMatrix = new double[11, 11];
-
-                foreach (var simulation in simulationResults.Values)
+                if (matchResult.HomeScore <= 10)
                 {
-                    if (simulation.TryGetValue(match, out var result))
-                    {
-                        totalHomeGoals += result.HomeScore;
-                        totalAwayGoals += result.AwayScore;
-
-                        if (result.HomeScore > result.AwayScore)
-                            totalHomeWins++;
-                        else if (result.HomeScore < result.AwayScore)
-                            totalAwayWins++;
-                        else totalDraws++;
-
-                        if (result.HomeScore <= 10 && result.AwayScore <= 10)
-                        {
-                            resultProbabilityMatrix[result.HomeScore, result.AwayScore]++;
-                        }
-                    }
+                    homeGoalCountsPerMatch[match][matchResult.HomeScore]++;
                 }
-
-                for (int i = 0; i <= 10; i++)
+                if (matchResult.AwayScore <= 10)
                 {
-                    for (int j = 0; j <= 10; j++)
-                    {
-                        resultProbabilityMatrix[i, j] /= numberOfSimulations;
-                    }
+                    awayGoalCountsPerMatch[match][matchResult.AwayScore]++;
                 }
-
-                double maxProbability = 0;
-                int bestHomeScore = 0;
-                int bestAwayScore = 0;
-
-                for (int i = 0; i <= 10; i++)
-                {
-                    for (int j = 0; j <= 10; j++)
-                    {
-                        if (resultProbabilityMatrix[i, j] > maxProbability)
-                        {
-                            maxProbability = resultProbabilityMatrix[i, j];
-                            bestHomeScore = i;
-                            bestAwayScore = j;
-                        }
-                    }
-                }
-
-                var simulatedMatchResult = new SimulatedMatchResult
-                {
-                    MatchId = match.Id,
-                    Round = match.Round,
-                    SeasonId = match.SeasonId,
-                    LeagueId = match.LeagueId,
-                    PredictedHomeScore = bestHomeScore,
-                    PredictedAwayScore = bestAwayScore,
-                    HomeWinProbability = (double)totalHomeWins / numberOfSimulations,
-                    DrawProbability = (double)totalDraws / numberOfSimulations,
-                    AwayWinProbability = (double)totalAwayWins / numberOfSimulations,
-                    NumberOfSimulations = numberOfSimulations
-                };
-                simulatedResults.Add(simulatedMatchResult);
-
-                //Console.WriteLine($"Wyniki dla meczu {match.HomeTeam.Name} vs {match.AwayTeam.Name}:");
-                //Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
-                //for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
-                //{
-                //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
-                //    {
-                //        double percentage = resultProbabilityMatrix[homeGoals, awayGoals] * 100;
-                //        if (percentage > 0)
-                //        {
-                //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
-                //        }
-                //    }
-                //}
-
-                //Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
-                //Console.WriteLine();
             }
-            sw.Stop();
-            Console.WriteLine($"Czas na wykonanie {numberOfSimulations} symulacji: {sw.Elapsed}");
-            return simulatedResults;
+            simulationResults.Add(i, roundResult);
         }
-        else
+
+        List<SimulatedMatchResult> simulatedResults = new();
+
+        foreach (Match match in matchesToSimulate)
         {
-            return null;
+            int totalHomeWins = 0;
+            int totalAwayWins = 0;
+            int totalDraws = 0;
+
+            double totalHomeGoals = 0;
+            double totalAwayGoals = 0;
+
+            double[,] resultProbabilityMatrix = new double[11, 11];
+
+            foreach (var simulation in simulationResults.Values)
+            {
+                if (simulation.TryGetValue(match, out var result))
+                {
+                    totalHomeGoals += result.HomeScore;
+                    totalAwayGoals += result.AwayScore;
+
+                    if (result.HomeScore > result.AwayScore)
+                        totalHomeWins++;
+                    else if (result.HomeScore < result.AwayScore)
+                        totalAwayWins++;
+                    else totalDraws++;
+
+                    if (result.HomeScore <= 10 && result.AwayScore <= 10)
+                    {
+                        resultProbabilityMatrix[result.HomeScore, result.AwayScore]++;
+                    }
+                }
+            }
+
+            for (int i = 0; i <= 10; i++)
+            {
+                for (int j = 0; j <= 10; j++)
+                {
+                    resultProbabilityMatrix[i, j] /= numberOfSimulations;
+                }
+            }
+
+            double maxProbability = 0;
+            int bestHomeScore = 0;
+            int bestAwayScore = 0;
+
+            for (int i = 0; i <= 10; i++)
+            {
+                for (int j = 0; j <= 10; j++)
+                {
+                    if (resultProbabilityMatrix[i, j] > maxProbability)
+                    {
+                        maxProbability = resultProbabilityMatrix[i, j];
+                        bestHomeScore = i;
+                        bestAwayScore = j;
+                    }
+                }
+            }
+
+            var simulatedMatchResult = new SimulatedMatchResult
+            {
+                MatchId = match.Id,
+                Round = match.Round,
+                SeasonId = match.SeasonId,
+                LeagueId = match.LeagueId,
+                PredictedHomeScore = bestHomeScore,
+                PredictedAwayScore = bestAwayScore,
+                HomeWinProbability = (double)totalHomeWins / numberOfSimulations,
+                DrawProbability = (double)totalDraws / numberOfSimulations,
+                AwayWinProbability = (double)totalAwayWins / numberOfSimulations,
+                NumberOfSimulations = numberOfSimulations
+            };
+            simulatedResults.Add(simulatedMatchResult);
+
+            //Console.WriteLine($"Wyniki dla meczu {match.HomeTeam.Name} vs {match.AwayTeam.Name}:");
+            //Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
+            //for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
+            //{
+            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
+            //    {
+            //        double percentage = resultProbabilityMatrix[homeGoals, awayGoals] * 100;
+            //        if (percentage > 0)
+            //        {
+            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
+            //        }
+            //    }
+            //}
+
+            //Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
+            //Console.WriteLine();
         }
+        sw.Stop();
+        Console.WriteLine($"Czas na wykonanie {numberOfSimulations} symulacji: {sw.Elapsed}");
+        return simulatedResults;
+
     }
 
     public async Task<IEnumerable<SimulatedMatchResult>> SimulateRoundForLeagueSim(List<Match> matchesToSimulate, int leagueId)
     {
-        var response = await SimulateRound(matchesToSimulate, leagueId, 1);
-        return response;
+        return await SimulateRound(matchesToSimulate, leagueId, 1);
     }
 
     public async Task<IEnumerable<SimulatedMatchResult>> SimulateRoundEndpoint(int leagueId, int seasonId, int round = 0, int numberOfSimulations = 1000)
     {
-        if (round < 0 || round > 34)
-        {
+        if (round < 0 || round > Constants.NumberOfRoundsEkstaklasa)
             return null;
-        }
 
         List<Match> matchesToSimulate = [];
         if (round == 0)
         {
-            //todo add infor about number of teams in leagu etc.
-            //todo dodac obsluge jesli jakis mecz rundy przelozony 
-
             var lastMatch = await _context.Matches
-                .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId && x.HomeTeamScore != null && x.AwayTeamScore != null)
-                .OrderByDescending(x => x.Date)
-                .FirstOrDefaultAsync();
+            .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId && x.HomeTeamScore != null && x.AwayTeamScore != null)
+            .OrderByDescending(x => x.Date)
+            .FirstOrDefaultAsync();
 
-            var roundLastMatch = lastMatch.Round.GetValueOrDefault();
-            if (roundLastMatch <= 33)
-            {
+            if (lastMatch?.Round is int roundLastMatch && roundLastMatch <= 33)
                 round = roundLastMatch + 1;
-            }
             else
-            {
                 return null;
-            }
         }
+
         matchesToSimulate = await _context.Matches
                 .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId && x.HomeTeamScore == null && x.AwayTeamScore == null && x.Round == round)
                 .Include(x => x.AwayTeam)
                 .Include(x => x.HomeTeam)
                 .ToListAsync();
 
-        var response = await SimulateRound(matchesToSimulate, leagueId, numberOfSimulations);
-        return response;
+        if (!matchesToSimulate.Any())
+            return null;
+
+        return await SimulateRound(matchesToSimulate, leagueId, numberOfSimulations);
     }
 
     public async Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        int totalRounds = 34;
         if (currentRound == 0)
         {
             var lastMatch = await _context.Matches
@@ -268,22 +260,25 @@ public partial class SimulatingService : ISimulatingService
                 .OrderByDescending(x => x.Date)
                 .FirstOrDefaultAsync();
 
-            var roundLastMatch = lastMatch.Round.GetValueOrDefault();
-            if (roundLastMatch < totalRounds)
-            {
-                currentRound = roundLastMatch + 1;
-
-            }
-            else
-            {
+            if (lastMatch?.Round.GetValueOrDefault() > -Constants.NumberOfRoundsEkstaklasa)
                 return;
-            }
+
+            currentRound = lastMatch?.Round.GetValueOrDefault() + 1 ?? 1;
         }
-        var teams1Id = await _context.Matches.Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == currentRound).Select(x => x.HomeTeamId).ToListAsync();
-        var teams2Id = await _context.Matches.Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == currentRound).Select(x => x.AwayTeamId).ToListAsync();
-        var teamIds = teams1Id.Union(teams2Id).ToList();
-        List<Team> teams = new List<Team>();
-        teams = await _context.Teams
+
+
+        var teamIds = await _context.Matches
+            .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == currentRound)
+            .Select(m => m.HomeTeamId)
+            .Union(
+                _context.Matches
+                .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == currentRound)
+                .Select(m => m.AwayTeamId)
+            )
+            .Distinct()
+            .ToListAsync();
+
+        var teams = await _context.Teams
            .Where(t => teamIds.Contains(t.Id))
            .Include(t => t.AwayMatches)
            .Include(t => t.HomeMatches)
@@ -297,49 +292,57 @@ public partial class SimulatingService : ISimulatingService
             NumberOfSimulations = numberOfSimulations.GetValueOrDefault()
         };
 
-        //tu zapis do bazy zeby miec id
-
+        _context.SimulatedFinalLeagues.Add(simulatedLeague);
+        await _context.SaveChangesAsync();
 
         var simulatedTeams = teams.Select(t => new SimulatedTeamInFinalTable
         {
             TeamId = t.Id,
-            Team = t,
-            //SimulatedFinalLeagueId = simulatedLeague.Id,
-            SimulatedFinalLeagueId = 1,
-
+            SimulatedFinalLeagueId = simulatedLeague.Id
         }).ToList();
 
-        Dictionary<int, List<SimulatedTeamSeasonStats>> simulatedSeasons = new Dictionary<int, List<SimulatedTeamSeasonStats>>();
-        for (int i = 0; i < numberOfSimulations; i++)
+        var simulatedSeasons = new List<List<SimulatedTeamSeasonStats>>(numberOfSimulations.Value);
+
+        for (int i = 0; i < numberOfSimulations.Value; i++)
         {
-            List<Team> teamsSimulated = teams;
-            for (int round = currentRound.GetValueOrDefault(); round <= totalRounds; round++)
+            Stopwatch swForEach = Stopwatch.StartNew();
+            var teamsSimulated = teams.Select(t => new Team
             {
-                var matchesToSimulate = await _context.Matches.Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == round).ToListAsync();
+                Id = t.Id,
+                HomeMatches = t.HomeMatches.ToList(),
+                AwayMatches = t.AwayMatches.ToList()
+            }).ToList();
+
+            for (int round = currentRound.GetValueOrDefault(); round <= Constants.NumberOfRoundsEkstaklasa; round++)
+            {
+                var matchesToSimulate = await _context.Matches
+                    .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == round)
+                    .ToListAsync();
                 var response = await SimulateRoundForLeagueSim(matchesToSimulate, leagueId);
                 teamsSimulated = await UpdateTeamAverages(response, teamsSimulated);
             }
             var seasonStats = await CalculateSeasonStatsTeams(teams, leagueId, seasonId);
-            simulatedSeasons.Add(i, seasonStats);
+            simulatedSeasons.Add(seasonStats);
+            swForEach.Stop();
+            Console.WriteLine($"Czas przeliczania jednego symulacji ({i} symulacja):{swForEach.Elapsed.ToString()}");
+            swForEach.Reset();
         }
 
         foreach (var simulatedTeam in simulatedTeams)
         {
             var teamId = simulatedTeam.TeamId;
 
-            // Wyciągnij statystyki tej drużyny z każdej symulacji
-            var teamStatsAcrossSimulations = simulatedSeasons.Values
+            var teamStatsAcrossSimulations = simulatedSeasons
                 .SelectMany(season => season)
                 .Where(stats => stats.TeamId == teamId)
                 .ToList();
 
-            // Oblicz średnie
             simulatedTeam.AveragePoints = teamStatsAcrossSimulations.Average(stats => stats.Points);
             simulatedTeam.AverageGoalDifference = teamStatsAcrossSimulations.Average(stats => stats.GoalDifference);
             simulatedTeam.AverageGoalsScored = teamStatsAcrossSimulations.Average(stats => stats.GoalsScored);
             simulatedTeam.AverageGoalsConceded = teamStatsAcrossSimulations.Average(stats => stats.GoalsConceded);
 
-            // Oblicz prawdopodobieństwo dla każdego miejsca
+
             int totalSimulations = simulatedSeasons.Count;
 
             simulatedTeam.FirstPlaceProbability = (double)teamStatsAcrossSimulations.Count(stats => stats.Place == 1) / totalSimulations;
@@ -371,79 +374,61 @@ public partial class SimulatingService : ISimulatingService
             simulatedTeam.RelegationProbability = (double)teamStatsAcrossSimulations.Count(stats => stats.Place >= 16) / totalSimulations;
         }
 
+        _context.SimulatedTeamInFinalTables.AddRange(simulatedTeams);
+        await _context.SaveChangesAsync();
+
         simulatedLeague.Teams = simulatedTeams;
-        foreach(var team in simulatedLeague.Teams)
-        {
-            Console.WriteLine($"{team.Team.Name}:");
-            Console.WriteLine($"1. miejsce - {team.FirstPlaceProbability * 100:F2}%");
-            Console.WriteLine($"2. miejsce - {team.SecondPlaceProbability * 100:F2}%");
-            Console.WriteLine($"3. miejsce - {team.ThirdPlaceProbability * 100:F2}%");
-            Console.WriteLine($"4. miejsce - {team.FourthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"5. miejsce - {team.FifthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"6. miejsce - {team.SixthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"7. miejsce - {team.SeventhPlaceProbability * 100:F2}%");
-            Console.WriteLine($"8. miejsce - {team.EighthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"9. miejsce - {team.NinthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"10. miejsce - {team.TenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"11. miejsce - {team.EleventhPlaceProbability * 100:F2}%");
-            Console.WriteLine($"12. miejsce - {team.TwelfthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"13. miejsce - {team.ThirteenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"14. miejsce - {team.FourteenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"15. miejsce - {team.FifteenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"16. miejsce - {team.SixteenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"17. miejsce - {team.SeventeenthPlaceProbability * 100:F2}%");
-            Console.WriteLine($"18. miejsce - {team.EighteenthPlaceProbability * 100:F2}%");
-            Console.WriteLine("");
-            Console.WriteLine($"1-4. miejsce - {team.TopFourProbability * 100:F2}%");
-            Console.WriteLine($"Spadek - {team.RelegationProbability * 100:F2}%");
-            Console.WriteLine("");
-            Console.WriteLine($"Średnia ilość punktów - {team.AveragePoints}");
-            Console.WriteLine($"Średnia ilość bramek strzelonych - {team.AverageGoalsScored}");
-            Console.WriteLine($"Średnia ilość bramek straconych - {team.AverageGoalsConceded}");
-            Console.WriteLine($"Średnia różnica bramek  - {team.AverageGoalDifference}");
-        }
         sw.Stop();
         Console.WriteLine($"Czas przeliczania jednego sezonu ({numberOfSimulations} symulacji):{sw.Elapsed.ToString()}");
-        var x = 3;
     }
 
     private async Task<List<SimulatedTeamSeasonStats>> CalculateSeasonStatsTeams(List<Team> teams, int leagueId, int seasonId)
     {
         Stopwatch sw = Stopwatch.StartNew();
-        List<SimulatedTeamSeasonStats> listOfTeamsStats = new List<SimulatedTeamSeasonStats>();
+
+        var allMatches = teams.SelectMany(t => t.HomeMatches).Concat(teams.SelectMany(t => t.AwayMatches))
+            .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
+            .ToList();
+
+        var matchesByTeam = allMatches.GroupBy(m => m.HomeTeamId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        List<SimulatedTeamSeasonStats> listOfTeamsStats = [];
         foreach (var team in teams)
         {
-            var matchesHomeTeamSeason = team.HomeMatches
-                .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId)
-                .ToList();
+            var matchesHomeTeamSeason = matchesByTeam.ContainsKey(team.Id)
+                ? matchesByTeam[team.Id].Where(m => m.HomeTeamId == team.Id).ToList()
+                : [];
 
-            var matchesAwayTeamSeason = team.AwayMatches
-                .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId)
-                .ToList();
+            var matchesAwayTeamSeason = matchesByTeam.ContainsKey(team.Id)
+                ? matchesByTeam[team.Id].Where(m => m.AwayTeamId == team.Id).ToList()
+                : [];
 
-            SimulatedTeamSeasonStats simulatedTeamSeasonStats = new SimulatedTeamSeasonStats
+            var goalsScored = matchesHomeTeamSeason.Sum(m => m.HomeTeamScore.GetValueOrDefault()) +
+                         matchesAwayTeamSeason.Sum(m => m.AwayTeamScore.GetValueOrDefault());
+
+            var goalsConceded = matchesHomeTeamSeason.Sum(m => m.AwayTeamScore.GetValueOrDefault()) +
+                                matchesAwayTeamSeason.Sum(m => m.HomeTeamScore.GetValueOrDefault());
+
+            var wins = matchesHomeTeamSeason.Count(m => m.HomeTeamScore > m.AwayTeamScore) +
+                       matchesAwayTeamSeason.Count(m => m.AwayTeamScore > m.HomeTeamScore);
+
+            var awayWins = matchesAwayTeamSeason.Count(m => m.AwayTeamScore > m.HomeTeamScore);
+
+            var draws = matchesHomeTeamSeason.Count(m => m.HomeTeamScore == m.AwayTeamScore) +
+                        matchesAwayTeamSeason.Count(m => m.HomeTeamScore == m.AwayTeamScore);
+
+
+            listOfTeamsStats.Add(new SimulatedTeamSeasonStats
             {
                 TeamId = team.Id,
-                GoalsScored = matchesHomeTeamSeason.Sum(m => m.HomeTeamScore.GetValueOrDefault()) +
-                              matchesAwayTeamSeason.Sum(m => m.AwayTeamScore.GetValueOrDefault()),
-                GoalsConceded = matchesHomeTeamSeason.Sum(m => m.AwayTeamScore.GetValueOrDefault()) +
-                                matchesAwayTeamSeason.Sum(m => m.HomeTeamScore.GetValueOrDefault()),
-                Wins = matchesHomeTeamSeason.Count(m => m.HomeTeamScore > m.AwayTeamScore) +
-                       matchesAwayTeamSeason.Count(m => m.AwayTeamScore > m.HomeTeamScore),
-                AwayWins = matchesAwayTeamSeason.Count(m => m.AwayTeamScore > m.HomeTeamScore)
-            };
-
-            simulatedTeamSeasonStats.Points = simulatedTeamSeasonStats.Wins * 3 +
-                                              matchesHomeTeamSeason.Count(m => m.HomeTeamScore == m.AwayTeamScore) +
-                                              matchesAwayTeamSeason.Count(m => m.HomeTeamScore == m.AwayTeamScore);
-
-            listOfTeamsStats.Add(simulatedTeamSeasonStats);
+                GoalsScored = goalsScored,
+                GoalsConceded = goalsConceded,
+                Wins = wins,
+                AwayWins = awayWins,
+                Points = wins * 3 + draws
+            });
         }
-
-        var allMatches = teams.SelectMany(t => t.HomeMatches)
-                          .Concat(teams.SelectMany(t => t.AwayMatches))
-                          .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
-                          .ToList();
 
         listOfTeamsStats.Sort(new TeamStatsComparer(allMatches));
 
@@ -451,6 +436,7 @@ public partial class SimulatingService : ISimulatingService
         {
             listOfTeamsStats[i].Place = i + 1;
         }
+
         sw.Stop();
         Console.WriteLine($"Czas przeliczania jednego sezonu (tabela):{sw.Elapsed.ToString()}");
         return listOfTeamsStats;
@@ -470,46 +456,61 @@ public partial class SimulatingService : ISimulatingService
 
     private async Task<List<Team>> UpdateTeamAverages(IEnumerable<SimulatedMatchResult> simulatedRoundResults, List<Team> teams)
     {
+        var matchIds = simulatedRoundResults.Select(r => r.MatchId).ToList();
+
+        var matches = await _context.Matches
+            .Where(m => matchIds.Contains(m.Id))
+            .Include(m => m.HomeTeam)
+            .Include(m => m.AwayTeam)
+            .ToListAsync();
+
+        var matchesDict = matches.ToDictionary(m => m.Id);
+        var teamsDict = teams.ToDictionary(t => t.Id);
+
         foreach (var matchResult in simulatedRoundResults)
         {
-            var match = await _context.Matches.Where(x => x.Id == matchResult.MatchId).Include(m => m.HomeTeam).Include(m => m.AwayTeam).FirstOrDefaultAsync();
+            if (!matchesDict.TryGetValue(matchResult.MatchId, out var match))
+                continue;
 
-            var homeTeam = teams.Where(x => x.Id == match.HomeTeamId).FirstOrDefault();
-            var awayTeam = teams.Where(x => x.Id == match.AwayTeamId).FirstOrDefault();
-            int homeMatchesCount = homeTeam.HomeMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null).Count();
-            int awayMatchesCount = awayTeam.AwayMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null).Count();
+            if (!teamsDict.TryGetValue(match.HomeTeamId, out var homeTeam) || !teamsDict.TryGetValue(match.AwayTeamId, out var awayTeam))
+                continue;
 
             if (homeTeam != null)
             {
-                homeTeam.AverageHomeGoalsScored =
-                    ((homeTeam.AverageHomeGoalsScored ?? 0) * homeMatchesCount + matchResult.PredictedHomeScore)
-                    / (homeMatchesCount + 1);
+                var homeMatchesCount = homeTeam.HomeMatches.Count(m => m.AwayTeamScore != null && m.HomeTeamScore != null);
 
-                homeTeam.AverageHomeGoalsConceded =
-                    ((homeTeam.AverageHomeGoalsConceded ?? 0) * homeMatchesCount + matchResult.PredictedAwayScore)
-                    / (homeMatchesCount + 1);
+                homeTeam.AverageHomeGoalsScored = UpdateAverage(homeTeam.AverageHomeGoalsScored, homeMatchesCount, matchResult.PredictedHomeScore);
+                homeTeam.AverageHomeGoalsConceded = UpdateAverage(homeTeam.AverageHomeGoalsConceded, homeMatchesCount, matchResult.PredictedAwayScore);
 
-                var matchHome = homeTeam.HomeMatches.Where(m => m.Id == match.Id).FirstOrDefault();
-                matchHome.HomeTeamScore = matchResult.PredictedHomeScore;
-                matchHome.AwayTeamScore = matchResult.PredictedAwayScore;
+                var matchHome = homeTeam.HomeMatches.FirstOrDefault(m => m.Id == match.Id);
+                if (matchHome != null)
+                {
+                    matchHome.HomeTeamScore = matchResult.PredictedHomeScore;
+                    matchHome.AwayTeamScore = matchResult.PredictedAwayScore;
+                }
             }
 
             if (awayTeam != null)
             {
-                awayTeam.AverageAwayGoalsScored =
-                    ((awayTeam.AverageAwayGoalsScored ?? 0) * awayMatchesCount + matchResult.PredictedAwayScore)
-                    / (awayMatchesCount + 1);
+                var awayMatchesCount = awayTeam.AwayMatches.Count(m => m.AwayTeamScore != null && m.HomeTeamScore != null);
 
-                awayTeam.AverageAwayGoalsConceded =
-                    ((awayTeam.AverageAwayGoalsConceded ?? 0) * awayMatchesCount + matchResult.PredictedHomeScore)
-                    / (awayMatchesCount + 1);
+                awayTeam.AverageAwayGoalsScored = UpdateAverage(awayTeam.AverageAwayGoalsScored, awayMatchesCount, matchResult.PredictedAwayScore);
+                awayTeam.AverageAwayGoalsConceded = UpdateAverage(awayTeam.AverageAwayGoalsConceded, awayMatchesCount, matchResult.PredictedHomeScore);
 
-                var matchAway = awayTeam.AwayMatches.Where(m => m.Id == match.Id).FirstOrDefault();
-                matchAway.HomeTeamScore = matchResult.PredictedHomeScore;
-                matchAway.AwayTeamScore = matchResult.PredictedAwayScore;
+                var matchAway = awayTeam.AwayMatches.FirstOrDefault(m => m.Id == match.Id);
+                if (matchAway != null)
+                {
+                    matchAway.HomeTeamScore = matchResult.PredictedHomeScore;
+                    matchAway.AwayTeamScore = matchResult.PredictedAwayScore;
+                }
             }
         }
         return teams;
+    }
+
+    private double UpdateAverage(double? currentAverage, int currentCount, int newValue)
+    {
+        return ((currentAverage ?? 0) * currentCount + newValue) / (currentCount + 1);
     }
 }
 
