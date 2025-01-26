@@ -26,14 +26,19 @@ public interface ISimulatingService
 public partial class SimulatingService : ISimulatingService
 {
     private readonly EkstraSimDbContext _context;
-    public SimulatingService(EkstraSimDbContext context)
+    private readonly DbContextOptions<EkstraSimDbContext> _options;
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(10);
+    public SimulatingService(EkstraSimDbContext context, DbContextOptions<EkstraSimDbContext> options)
     {
         _context = context;
+        _options = options;
     }
-    public Task<MatchResult> SimulateMatch(Match match, MatchPredictionGoals predicition)
+
+    private static Random _random = new Random();
+
+    public async Task<MatchResult> SimulateMatch(Match match, MatchPredictionGoals predicition)
     {
         var random = new Random();
-
         double homeLambda = predicition.HomeGoals;
         double awayLambda = predicition.AwayGoals;
 
@@ -53,32 +58,31 @@ public partial class SimulatingService : ISimulatingService
         int homeScore = SimulateGoals(homeLambda);
         int awayScore = SimulateGoals(awayLambda);
 
-        return Task.FromResult(new MatchResult
+        return await Task.FromResult(new MatchResult
         {
             HomeScore = homeScore,
             AwayScore = awayScore,
         });
     }
 
-    public async Task<IEnumerable<SimulatedMatchResult>> SimulateRound(List<Match> matchesToSimulate, int leagueId, int numberOfSimulations)
+    public async Task<IEnumerable<SimulatedMatchResult>> SimulateRound(List<Match> matchesToSimulate, int leagueId, int numberOfSimulations, EkstraSimDbContext ekstraSimDbContext = null)
     {
+        if (ekstraSimDbContext == null)
+        {
+            ekstraSimDbContext = _context;
+        }
+
         Stopwatch sw = Stopwatch.StartNew();
 
         if (!matchesToSimulate.Any())
             return null;
 
-        var league = _context.Leagues.FirstOrDefault(x => x.Id == leagueId);
+        var league = await ekstraSimDbContext.Leagues.FirstOrDefaultAsync(x => x.Id == leagueId);
         if (league == null)
             throw new InvalidOperationException($"League with ID {leagueId} not found.");
 
-        Dictionary<int, Dictionary<Match, MatchResult>> simulationResults = [];
-
-        Dictionary<Match, Dictionary<int, int>> homeGoalCountsPerMatch = new();
-        Dictionary<Match, Dictionary<int, int>> awayGoalCountsPerMatch = new();
-
-        Dictionary<Match, MatchPredictionGoals> predictionMatches = [];
-
-       
+        Dictionary<int, Dictionary<Match, MatchResult>> simulationResults = new();
+        Dictionary<Match, MatchPredictionGoals> predictionMatches = new();
 
         foreach (var match in matchesToSimulate)
         {
@@ -92,8 +96,6 @@ public partial class SimulatingService : ISimulatingService
 
             predictionMatches.Add(match, new MatchPredictionGoals { HomeGoals = homePred.GetValueOrDefault(), AwayGoals = awayPred.GetValueOrDefault() });
 
-            homeGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
-            awayGoalCountsPerMatch[match] = Enumerable.Range(0, 11).ToDictionary(x => x, x => 0);
 
         }
 
@@ -106,14 +108,6 @@ public partial class SimulatingService : ISimulatingService
                 var matchResult = await SimulateMatch(match, prediction);
                 roundResult.Add(match, matchResult);
 
-                if (matchResult.HomeScore <= 10)
-                {
-                    homeGoalCountsPerMatch[match][matchResult.HomeScore]++;
-                }
-                if (matchResult.AwayScore <= 10)
-                {
-                    awayGoalCountsPerMatch[match][matchResult.AwayScore]++;
-                }
             }
             simulationResults.Add(i, roundResult);
         }
@@ -122,12 +116,8 @@ public partial class SimulatingService : ISimulatingService
 
         foreach (Match match in matchesToSimulate)
         {
-            int totalHomeWins = 0;
-            int totalAwayWins = 0;
-            int totalDraws = 0;
-
-            double totalHomeGoals = 0;
-            double totalAwayGoals = 0;
+            int totalHomeWins = 0, totalAwayWins = 0, totalDraws = 0;
+            double totalHomeGoals = 0, totalAwayGoals = 0;
 
             double[,] resultProbabilityMatrix = new double[11, 11];
 
@@ -142,7 +132,8 @@ public partial class SimulatingService : ISimulatingService
                         totalHomeWins++;
                     else if (result.HomeScore < result.AwayScore)
                         totalAwayWins++;
-                    else totalDraws++;
+                    else 
+                        totalDraws++;
 
                     if (result.HomeScore <= 10 && result.AwayScore <= 10)
                     {
@@ -191,22 +182,6 @@ public partial class SimulatingService : ISimulatingService
             };
             simulatedResults.Add(simulatedMatchResult);
 
-            //Console.WriteLine($"Wyniki dla meczu {match.HomeTeam.Name} vs {match.AwayTeam.Name}:");
-            //Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
-            //for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
-            //{
-            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
-            //    {
-            //        double percentage = resultProbabilityMatrix[homeGoals, awayGoals] * 100;
-            //        if (percentage > 0)
-            //        {
-            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
-            //        }
-            //    }
-            //}
-
-            //Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
-            //Console.WriteLine();
         }
         sw.Stop();
         Console.WriteLine($"Czas na wykonanie {numberOfSimulations} symulacji rundy: {sw.Elapsed}");
@@ -214,9 +189,9 @@ public partial class SimulatingService : ISimulatingService
 
     }
 
-    public async Task<IEnumerable<SimulatedMatchResult>> SimulateRoundForLeagueSim(List<Match> matchesToSimulate, int leagueId)
+    public async Task<IEnumerable<SimulatedMatchResult>> SimulateRoundForLeagueSim(List<Match> matchesToSimulate, int leagueId, EkstraSimDbContext context)
     {
-        return await SimulateRound(matchesToSimulate, leagueId, 1);
+        return await SimulateRound(matchesToSimulate, leagueId, 1, context);
     }
 
     public async Task<IEnumerable<SimulatedMatchResult>> SimulateRoundEndpoint(int leagueId, int seasonId, int round = 0, int numberOfSimulations = 1000)
@@ -303,69 +278,107 @@ public partial class SimulatingService : ISimulatingService
 
         var simulatedSeasons = new List<List<SimulatedTeamSeasonStats>>(numberOfSimulations.Value);
 
-        for (int i = 0; i < numberOfSimulations.Value; i++)
+        var tasks = new List<Task>();
+
+        for (int i = 0; i < numberOfSimulations; i++)
         {
-            Stopwatch swForEach = Stopwatch.StartNew();
-            var teamsSimulated = teams.Select(t => new Team
+            var currentIndex = i;
+            tasks.Add(Task.Run(async () =>
             {
-                Id = t.Id,
-                HomeMatches = t.HomeMatches.Select(hm => new Match
+                await _semaphore.WaitAsync();
+                try
                 {
-                    Id = hm.Id,
-                    HomeTeamId = hm.HomeTeamId,
-                    AwayTeamId = hm.AwayTeamId,
-                    HomeTeamScore = hm.HomeTeamScore,
-                    AwayTeamScore = hm.AwayTeamScore,
-                    Round = hm.Round,
-                    Date = hm.Date,
-                    LeagueId = hm.LeagueId,
-                    SeasonId = hm.SeasonId
-                }).ToList(),
-                AwayMatches = t.AwayMatches.Select(am => new Match
+                    Console.WriteLine($"Rozpoczynam symulację dla zadaniu {currentIndex}");
+                    var optionsBuilder = new DbContextOptionsBuilder<EkstraSimDbContext>();
+                    optionsBuilder.UseSqlServer("Server=DESKTOP-FIU7O2T\\SQLEXPRESS;Database=EkstraSimDB;Trusted_Connection=True;TrustServerCertificate=True;");
+
+                    Stopwatch swForEach = Stopwatch.StartNew();
+
+                    using (var dbContext = new EkstraSimDbContext(optionsBuilder.Options))
+                    {
+                       
+                        var teamsSimulated = teams.Select(t => new Team
+                        {
+                            Id = t.Id,
+                            HomeMatches = t.HomeMatches.Select(hm => new Match
+                            {
+                                Id = hm.Id,
+                                HomeTeamId = hm.HomeTeamId,
+                                AwayTeamId = hm.AwayTeamId,
+                                HomeTeamScore = hm.HomeTeamScore,
+                                AwayTeamScore = hm.AwayTeamScore,
+                                Round = hm.Round,
+                                Date = hm.Date,
+                                LeagueId = hm.LeagueId,
+                                SeasonId = hm.SeasonId
+                            }).ToList(),
+                            AwayMatches = t.AwayMatches.Select(am => new Match
+                            {
+                                Id = am.Id,
+                                HomeTeamId = am.HomeTeamId,
+                                AwayTeamId = am.AwayTeamId,
+                                HomeTeamScore = am.HomeTeamScore,
+                                AwayTeamScore = am.AwayTeamScore,
+                                Round = am.Round,
+                                Date = am.Date,
+                                LeagueId = am.LeagueId,
+                                SeasonId = am.SeasonId
+                            }).ToList()
+                        }).ToList();
+
+                        for (int round = currentRound.GetValueOrDefault(); round <= Constants.NumberOfRoundsEkstaklasa; round++)
+                        {
+                            var matchesToSimulate = await dbContext.Matches
+                                .Include(m => m.HomeTeam)
+                                .Include(m => m.AwayTeam)
+                                .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == round)
+                                .Select(m => new Match
+                                {
+                                    Id = m.Id,
+                                    HomeTeamId = m.HomeTeamId,
+                                    AwayTeamId = m.AwayTeamId,
+                                    HomeTeam = m.HomeTeam,
+                                    AwayTeam = m.AwayTeam,
+                                    HomeTeamScore = null,
+                                    AwayTeamScore = null,
+                                    Round = m.Round,
+                                    Date = m.Date,
+                                    LeagueId = m.LeagueId,
+                                    SeasonId = m.SeasonId
+                                })
+                                .ToListAsync()
+                                .ConfigureAwait(false);
+
+                            var response = await SimulateRoundForLeagueSim(matchesToSimulate, leagueId, dbContext);
+                            teamsSimulated = await UpdateTeamAverages(response, teamsSimulated, dbContext);
+                        }
+
+                        var seasonStats = await CalculateSeasonStatsTeams(teamsSimulated, leagueId, seasonId);
+                        simulatedSeasons.Add(seasonStats);
+                    }
+
+                    swForEach.Stop();
+                    Console.WriteLine($"Czas przeliczania jednego symulacji ({currentIndex} symulacja): {swForEach.Elapsed}");
+                }
+                catch (Exception ex)
                 {
-                    Id = am.Id,
-                    HomeTeamId = am.HomeTeamId,
-                    AwayTeamId = am.AwayTeamId,
-                    HomeTeamScore = am.HomeTeamScore,
-                    AwayTeamScore = am.AwayTeamScore,
-                    Round = am.Round,
-                    Date = am.Date,
-                    LeagueId = am.LeagueId,
-                    SeasonId = am.SeasonId
-                }).ToList()
-            }).ToList();
-
-            for (int round = currentRound.GetValueOrDefault(); round <= Constants.NumberOfRoundsEkstaklasa; round++)
-            {
-                var matchesToSimulate = await _context.Matches
-                    .Include(m => m.HomeTeam)
-                    .Include(m => m.AwayTeam)
-               .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == round)
-               .Select(m => new Match
-               {
-                   Id = m.Id,
-                   HomeTeamId = m.HomeTeamId,
-                   AwayTeamId = m.AwayTeamId,
-                   HomeTeam = m.HomeTeam,
-                   AwayTeam = m.AwayTeam,
-                   HomeTeamScore = null,
-                   AwayTeamScore = null,
-                   Round = m.Round,
-                   Date = m.Date,
-                   LeagueId = m.LeagueId,
-                   SeasonId = m.SeasonId
-               })
-               .ToListAsync();
-
-                var response = await SimulateRoundForLeagueSim(matchesToSimulate, leagueId);
-                teamsSimulated = await UpdateTeamAverages(response, teamsSimulated);
-            }
-            var seasonStats = await CalculateSeasonStatsTeams(teamsSimulated, leagueId, seasonId);
-            simulatedSeasons.Add(seasonStats);
-            swForEach.Stop();
-            Console.WriteLine($"Czas przeliczania jednego symulacji ({i} symulacja):{swForEach.Elapsed.ToString()}");
-            swForEach.Reset();
+                    Console.WriteLine($"Błąd w symulacji {currentIndex}: {ex.Message}");
+                }
+                finally
+                {
+                    _semaphore.Release(); // Zwolnij semafor
+                }
+            }));
         }
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Błąd przy oczekiwaniach na wszystkie zadania: {ex.Message}");
+        }
+       
 
         foreach (var simulatedTeam in simulatedTeams)
         {
@@ -493,11 +506,11 @@ public partial class SimulatingService : ISimulatingService
         public int Place { get; set; }
     }
 
-    private async Task<List<Team>> UpdateTeamAverages(IEnumerable<SimulatedMatchResult> simulatedRoundResults, List<Team> teams)
+    private async Task<List<Team>> UpdateTeamAverages(IEnumerable<SimulatedMatchResult> simulatedRoundResults, List<Team> teams, EkstraSimDbContext ekstraSimDbContext)
     {
         var matchIds = simulatedRoundResults.Select(r => r.MatchId).ToList();
 
-        var matches = await _context.Matches
+        var matches = await ekstraSimDbContext.Matches
             .AsNoTracking()
             .Where(m => matchIds.Contains(m.Id))
             .Include(m => m.HomeTeam)
