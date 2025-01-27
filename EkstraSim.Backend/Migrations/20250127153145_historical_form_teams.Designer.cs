@@ -4,6 +4,7 @@ using EkstraSim.Backend.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EkstraSim.Backend.Migrations
 {
     [DbContext(typeof(EkstraSimDbContext))]
-    partial class EkstraSimDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250127153145_historical_form_teams")]
+    partial class historical_form_teams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

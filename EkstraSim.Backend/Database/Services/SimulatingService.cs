@@ -86,17 +86,32 @@ public partial class SimulatingService : ISimulatingService
 
         foreach (var match in matchesToSimulate)
         {
-            var homeAttackStrength = match.HomeTeam.AverageHomeGoalsScored / league.AverageHomeGoalsScored;
-            var homeDefenseStrength = match.HomeTeam.AverageHomeGoalsConceded / league.AverageHomeGoalsConceded;
-            var awayAttackStrength = match.AwayTeam.AverageAwayGoalsScored / league.AverageAwayGoalsScored;
-            var awayDefenseStrength = match.AwayTeam.AverageAwayGoalsConceded / league.AverageAwayGoalsConceded;
+            var homeAttackStrengthCurrent = match.HomeTeam.AverageHomeGoalsScoredCurrentSeason / league.AverageHomeGoalsScored;
+            var homeDefenseStrengthCurrent = match.HomeTeam.AverageHomeGoalsConcededCurrentSeason / league.AverageHomeGoalsConceded;
+            var awayAttackStrengthCurrent = match.AwayTeam.AverageAwayGoalsScoredCurrentSeason / league.AverageAwayGoalsScored;
+            var awayDefenseStrengthCurrent = match.AwayTeam.AverageAwayGoalsConcededCurrentSeason / league.AverageAwayGoalsConceded;
 
-            var homePred = homeAttackStrength * awayDefenseStrength * league.AverageHomeGoalsScored;
-            var awayPred = awayAttackStrength * homeDefenseStrength * league.AverageAwayGoalsScored;
+            var homeAttackStrengthPrevious = match.HomeTeam.AverageHomeGoalsScoredPreviousSeason / league.AverageHomeGoalsScored;
+            var homeDefenseStrengthPrevious = match.HomeTeam.AverageHomeGoalsConcededPreviousSeason / league.AverageHomeGoalsConceded;
+            var awayAttackStrengthPrevious = match.AwayTeam.AverageAwayGoalsScoredPreviousSeason / league.AverageAwayGoalsScored;
+            var awayDefenseStrengthPrevious = match.AwayTeam.AverageAwayGoalsConcededPreviousSeason / league.AverageAwayGoalsConceded;
+
+
+            var homeAttackStrengthHistorical = match.HomeTeam.AverageHomeGoalsScoredHistorical / league.AverageHomeGoalsScored;
+            var homeDefenseStrengthHistorical = match.HomeTeam.AverageHomeGoalsConcededHistorical / league.AverageHomeGoalsConceded;
+            var awayAttackStrengthHistorical = match.AwayTeam.AverageAwayGoalsScoredHistorical / league.AverageAwayGoalsScored;
+            var awayDefenseStrengthHistorical = match.AwayTeam.AverageAwayGoalsConcededHistorical / league.AverageAwayGoalsConceded;
+
+            var homePred = (homeAttackStrengthCurrent * awayDefenseStrengthCurrent * league.AverageHomeGoalsScored * 0.60)
+                         + (homeAttackStrengthPrevious * awayDefenseStrengthPrevious * league.AverageHomeGoalsScored * 0.30)
+                         + (homeAttackStrengthHistorical * awayDefenseStrengthHistorical * league.AverageHomeGoalsScored * 0.10);
+
+            var awayPred = (awayAttackStrengthCurrent * homeDefenseStrengthCurrent * league.AverageAwayGoalsScored * 0.60)
+                         + (awayAttackStrengthPrevious * homeDefenseStrengthPrevious * league.AverageAwayGoalsScored * 0.30)
+                         + (awayAttackStrengthHistorical * homeDefenseStrengthHistorical * league.AverageAwayGoalsScored * 0.10);
+
 
             predictionMatches.Add(match, new MatchPredictionGoals { HomeGoals = homePred.GetValueOrDefault(), AwayGoals = awayPred.GetValueOrDefault() });
-
-
         }
 
         for (int i = 0; i < numberOfSimulations; i++)
@@ -438,23 +453,18 @@ public partial class SimulatingService : ISimulatingService
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        var allMatches = teams.SelectMany(t => t.HomeMatches).Concat(teams.SelectMany(t => t.AwayMatches))
+        var allMatches = teams.SelectMany(t => t.HomeMatches)
             .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
             .ToList();
 
-        var matchesByTeam = allMatches.GroupBy(m => m.HomeTeamId)
-            .ToDictionary(g => g.Key, g => g.ToList());
+
 
         List<SimulatedTeamSeasonStats> listOfTeamsStats = [];
         foreach (var team in teams)
         {
-            var matchesHomeTeamSeason = matchesByTeam.ContainsKey(team.Id)
-                ? matchesByTeam[team.Id].Where(m => m.HomeTeamId == team.Id).ToList()
-                : [];
+            var matchesHomeTeamSeason = allMatches.Where(m => m.HomeTeamId == team.Id).ToList();
 
-            var matchesAwayTeamSeason = matchesByTeam.ContainsKey(team.Id)
-                ? matchesByTeam[team.Id].Where(m => m.AwayTeamId == team.Id).ToList()
-                : [];
+            var matchesAwayTeamSeason = allMatches.Where(m => m.AwayTeamId == team.Id).ToList();
 
             var goalsScored = matchesHomeTeamSeason.Sum(m => m.HomeTeamScore.GetValueOrDefault()) +
                          matchesAwayTeamSeason.Sum(m => m.AwayTeamScore.GetValueOrDefault());
@@ -532,8 +542,8 @@ public partial class SimulatingService : ISimulatingService
             {
                 var homeMatchesCount = homeTeam.HomeMatches.Count(m => m.AwayTeamScore != null && m.HomeTeamScore != null);
 
-                homeTeam.AverageHomeGoalsScored = UpdateAverage(homeTeam.AverageHomeGoalsScored, homeMatchesCount, matchResult.PredictedHomeScore);
-                homeTeam.AverageHomeGoalsConceded = UpdateAverage(homeTeam.AverageHomeGoalsConceded, homeMatchesCount, matchResult.PredictedAwayScore);
+                homeTeam.AverageHomeGoalsScoredCurrentSeason = UpdateAverage(homeTeam.AverageHomeGoalsScoredCurrentSeason, homeMatchesCount, matchResult.PredictedHomeScore);
+                homeTeam.AverageHomeGoalsConcededCurrentSeason = UpdateAverage(homeTeam.AverageHomeGoalsConcededCurrentSeason, homeMatchesCount, matchResult.PredictedAwayScore);
 
                 var matchHome = homeTeam.HomeMatches.FirstOrDefault(m => m.Id == match.Id);
                 if (matchHome != null)
@@ -547,8 +557,8 @@ public partial class SimulatingService : ISimulatingService
             {
                 var awayMatchesCount = awayTeam.AwayMatches.Count(m => m.AwayTeamScore != null && m.HomeTeamScore != null);
 
-                awayTeam.AverageAwayGoalsScored = UpdateAverage(awayTeam.AverageAwayGoalsScored, awayMatchesCount, matchResult.PredictedAwayScore);
-                awayTeam.AverageAwayGoalsConceded = UpdateAverage(awayTeam.AverageAwayGoalsConceded, awayMatchesCount, matchResult.PredictedHomeScore);
+                awayTeam.AverageAwayGoalsScoredCurrentSeason = UpdateAverage(awayTeam.AverageAwayGoalsScoredCurrentSeason, awayMatchesCount, matchResult.PredictedAwayScore);
+                awayTeam.AverageAwayGoalsConcededCurrentSeason = UpdateAverage(awayTeam.AverageAwayGoalsConcededCurrentSeason, awayMatchesCount, matchResult.PredictedHomeScore);
 
                 var matchAway = awayTeam.AwayMatches.FirstOrDefault(m => m.Id == match.Id);
                 if (matchAway != null)

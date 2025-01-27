@@ -130,13 +130,123 @@ public class TeamService : ITeamService
 					awayGoalsScored += match.AwayTeamScore.GetValueOrDefault();
 					awayGoalsConceded += match.HomeTeamScore.GetValueOrDefault();
 				}
+				//current season
+				//zmienic nie na sztywno
+				var homeMatchesCurrentSeason = team.HomeMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId == 6);
+				var awayMatchesCurrentSeason = team.AwayMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId == 6);
+				double homeGoalsScoredCurrentSeason = 0;
+				double homeGoalsConcededCurrentSeason = 0;
+				double awayGoalsScoredCurrentSeason = 0;
+				double awayGoalsConcededCurrentSeason = 0;
 
-				team.AverageHomeGoalsScored = Math.Round(homeGoalsScored / homematchesCount, 3);
-				team.AverageAwayGoalsScored = Math.Round(awayGoalsScored / awaymatchesCount, 3);
-				team.AverageHomeGoalsConceded = Math.Round(homeGoalsConceded / homematchesCount, 3);
-				team.AverageAwayGoalsConceded = Math.Round(awayGoalsConceded / awaymatchesCount, 3);
+				foreach(var match in homeMatchesCurrentSeason)
+				{
+					homeGoalsScoredCurrentSeason += match.HomeTeamScore.GetValueOrDefault();
+					homeGoalsConcededCurrentSeason += match.AwayTeamScore.GetValueOrDefault();
+				}
+                foreach (var match in awayMatchesCurrentSeason)
+                {
+                    awayGoalsScoredCurrentSeason += match.AwayTeamScore.GetValueOrDefault();
+                    awayGoalsConcededCurrentSeason += match.HomeTeamScore.GetValueOrDefault();
+                }
 
-				_context.Teams.Update(team);
+				//previous zmienic nie na sztywno
+                var homeMatchesPreviousSeason = team.HomeMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId == 1);
+                var awayMatchesPreviousSeason = team.AwayMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId == 1);
+                double homeGoalsScoredPreviousSeason = 0;
+                double homeGoalsConcededPreviousSeason = 0;
+                double awayGoalsScoredPreviousSeason = 0;
+                double awayGoalsConcededPreviousSeason = 0;
+
+                foreach (var match in homeMatchesPreviousSeason)
+                {
+                    homeGoalsScoredPreviousSeason += match.HomeTeamScore.GetValueOrDefault();
+                    homeGoalsConcededPreviousSeason += match.AwayTeamScore.GetValueOrDefault();
+                }
+                foreach (var match in awayMatchesPreviousSeason)
+                {
+                    awayGoalsScoredPreviousSeason += match.AwayTeamScore.GetValueOrDefault();
+                    awayGoalsConcededPreviousSeason += match.HomeTeamScore.GetValueOrDefault();
+                }
+
+				//historical
+
+                var homeMatchesHistorical = team.HomeMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId != 6 && x.SeasonId != 1);
+                var awayMatchesHistorical = team.AwayMatches.Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null && x.LeagueId == 1 && x.SeasonId != 6 && x.SeasonId != 1);
+                double homeGoalsScoredHistorical = 0;
+                double homeGoalsConcededHistorical = 0;
+                double awayGoalsScoredHistorical = 0;
+                double awayGoalsConcededHistorical = 0;
+
+                foreach (var match in homeMatchesHistorical)
+                {
+                    homeGoalsScoredHistorical += match.HomeTeamScore.GetValueOrDefault();
+                    homeGoalsConcededHistorical += match.AwayTeamScore.GetValueOrDefault();
+                }
+                foreach (var match in awayMatchesHistorical)
+                {
+                    awayGoalsScoredHistorical += match.AwayTeamScore.GetValueOrDefault();
+                    awayGoalsConcededHistorical += match.HomeTeamScore.GetValueOrDefault();
+                }
+
+				//wszystkie
+                team.AverageHomeGoalsScored = Math.Round(homeGoalsScored / homematchesCount, 3);
+                team.AverageAwayGoalsScored = Math.Round(awayGoalsScored / awaymatchesCount, 3);
+                team.AverageHomeGoalsConceded = Math.Round(homeGoalsConceded / homematchesCount, 3);
+                team.AverageAwayGoalsConceded = Math.Round(awayGoalsConceded / awaymatchesCount, 3);
+				//current
+
+				var league = await _context.Leagues.Where(x => x.Id == 1).FirstOrDefaultAsync();
+
+				if (homeMatchesCurrentSeason.Count() <= 0 || awayMatchesCurrentSeason.Count() <= 0)
+				{
+                    team.AverageHomeGoalsScoredCurrentSeason = league.AverageHomeGoalsScored;
+					team.AverageAwayGoalsScoredCurrentSeason = league.AverageAwayGoalsScored;
+                    team.AverageHomeGoalsConcededCurrentSeason = league.AverageHomeGoalsConceded;
+					team.AverageAwayGoalsConcededCurrentSeason = league.AverageAwayGoalsConceded;
+                }
+				else
+				{
+                    team.AverageHomeGoalsScoredCurrentSeason = Math.Round(homeGoalsScoredCurrentSeason / homeMatchesCurrentSeason.Count(), 3);
+                    team.AverageAwayGoalsScoredCurrentSeason = Math.Round(awayGoalsScoredCurrentSeason / awayMatchesCurrentSeason.Count(), 3);
+                    team.AverageHomeGoalsConcededCurrentSeason = Math.Round(homeGoalsConcededCurrentSeason / homeMatchesCurrentSeason.Count(), 3);
+                    team.AverageAwayGoalsConcededCurrentSeason = Math.Round(awayGoalsConcededCurrentSeason / awayMatchesCurrentSeason.Count(), 3);
+                }
+
+                //previous
+                if (homeMatchesPreviousSeason.Count() <= 0 || awayMatchesPreviousSeason.Count() <= 0)
+                {
+                    team.AverageHomeGoalsScoredPreviousSeason = league.AverageHomeGoalsScored;
+                    team.AverageAwayGoalsScoredPreviousSeason = league.AverageAwayGoalsScored;
+                    team.AverageHomeGoalsConcededPreviousSeason = league.AverageHomeGoalsConceded;
+                    team.AverageAwayGoalsConcededPreviousSeason = league.AverageAwayGoalsConceded;
+                }
+				else
+				{
+                    team.AverageHomeGoalsScoredPreviousSeason = Math.Round(homeGoalsScoredPreviousSeason / homeMatchesPreviousSeason.Count(), 3);
+                    team.AverageAwayGoalsScoredPreviousSeason = Math.Round(awayGoalsScoredPreviousSeason / awayMatchesPreviousSeason.Count(), 3);
+                    team.AverageHomeGoalsConcededPreviousSeason = Math.Round(homeGoalsConcededPreviousSeason / homeMatchesPreviousSeason.Count(), 3);
+                    team.AverageAwayGoalsConcededPreviousSeason = Math.Round(awayGoalsConcededPreviousSeason / awayMatchesPreviousSeason.Count(), 3);
+                }
+
+                //historical
+                if (homeMatchesHistorical.Count() <= 0 || awayMatchesHistorical.Count() <= 0)
+                {
+                    team.AverageHomeGoalsScoredHistorical = league.AverageHomeGoalsScored;
+                    team.AverageAwayGoalsScoredHistorical = league.AverageAwayGoalsScored;
+                    team.AverageHomeGoalsConcededHistorical = league.AverageHomeGoalsConceded;
+                    team.AverageAwayGoalsConcededHistorical = league.AverageAwayGoalsConceded;
+                }
+				else
+				{
+                    team.AverageHomeGoalsScoredHistorical = Math.Round(homeGoalsScoredHistorical / homeMatchesHistorical.Count(), 3);
+                    team.AverageAwayGoalsScoredHistorical = Math.Round(awayGoalsScoredHistorical / awayMatchesHistorical.Count(), 3);
+                    team.AverageHomeGoalsConcededHistorical = Math.Round(homeGoalsConcededHistorical / homeMatchesHistorical.Count(), 3);
+                    team.AverageAwayGoalsConcededHistorical = Math.Round(awayGoalsConcededHistorical / awayMatchesHistorical.Count(), 3);
+
+                }
+
+                _context.Teams.Update(team);
 			}
 			await _context.SaveChangesAsync();
 		}
