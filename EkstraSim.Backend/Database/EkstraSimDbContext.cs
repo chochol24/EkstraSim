@@ -17,6 +17,7 @@ public class EkstraSimDbContext : DbContext
 	public DbSet<SimulatedMatchResult> SimulatedMatchResults { get; set; }
 	public DbSet<SimulatedTeamInFinalTable> SimulatedTeamInFinalTables { get; set; }
 	public DbSet<SimulatedFinalLeague> SimulatedFinalLeagues{ get; set; }
+	public DbSet<SimulatedRound> SimulatedRounds{ get; set; }
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);

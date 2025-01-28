@@ -218,6 +218,7 @@ public partial class SimulatingService : ISimulatingService
         if (round == 0)
         {
             var lastMatch = await _context.Matches
+            .AsNoTracking()
             .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId && x.HomeTeamScore != null && x.AwayTeamScore != null)
             .OrderByDescending(x => x.Date)
             .FirstOrDefaultAsync();
@@ -229,6 +230,7 @@ public partial class SimulatingService : ISimulatingService
         }
 
         matchesToSimulate = await _context.Matches
+                .AsNoTracking()
                 .Where(x => x.LeagueId == leagueId && x.SeasonId == seasonId && x.HomeTeamScore == null && x.AwayTeamScore == null && x.Round == round)
                 .Include(x => x.AwayTeam)
                 .Include(x => x.HomeTeam)
@@ -237,7 +239,26 @@ public partial class SimulatingService : ISimulatingService
         if (!matchesToSimulate.Any())
             return null;
 
-        return await SimulateRound(matchesToSimulate, leagueId, numberOfSimulations);
+        var results = await SimulateRound(matchesToSimulate, leagueId, numberOfSimulations);
+
+
+        var simulatedRound = new SimulatedRound
+        {
+            LeagueId = leagueId,
+            SeasonId = seasonId,
+            Round = round,
+            NumberOfSimulations = numberOfSimulations
+        };
+
+        foreach(var resultMatch  in results)
+        {
+           simulatedRound.SimulatedMatchResults.Add(resultMatch);
+        }
+
+        _context.SimulatedRounds.Add(simulatedRound);
+        await _context.SaveChangesAsync();
+
+        return results;
     }
 
     public async Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000)

@@ -20,4 +20,7 @@ public class SimulatedMatchResult
 	public double AwayWinProbability { get; set; }
 
 	public int NumberOfSimulations { get; set; }
+
+    public int? SimulatedRoundId { get; set; } // Klucz obcy
+    public SimulatedRound SimulatedRound { get; set; } = null!;
 }
