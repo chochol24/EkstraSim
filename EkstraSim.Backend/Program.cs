@@ -16,6 +16,14 @@ builder.Services.AddScoped<ISimulatingService, SimulatingService>();
 
 builder.Services.AddFastEndpoints();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+});
+
 builder.Services.AddDbContext<EkstraSimDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -26,7 +34,7 @@ var app = builder.Build();
 app.UseOpenApi();
 app.UseSwagger();
 app.UseSwaggerUi();
-
+app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 
 app.UseFastEndpoints(c =>

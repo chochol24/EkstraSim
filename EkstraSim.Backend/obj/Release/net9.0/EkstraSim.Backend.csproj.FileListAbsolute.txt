@@ -239,3 +239,14 @@ D:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Release\net9.0\refint\EkstraSim.B
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Release\net9.0\EkstraSim.Backend.pdb
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Release\net9.0\EkstraSim.Backend.genruntimeconfig.cache
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Release\net9.0\ref\EkstraSim.Backend.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Caching.Memory.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.DependencyInjection.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Logging.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Options.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Primitives.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\System.Formats.Asn1.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\System.Text.Json.dll

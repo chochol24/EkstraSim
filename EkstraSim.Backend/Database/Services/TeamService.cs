@@ -2,7 +2,6 @@
 using Shared;
 using System.Diagnostics;
 using EkstraSim.Shared.DTOs;
-using EkstraSim.Backend.Database.Entities;
 
 namespace EkstraSim.Backend.Database.Services;
 
@@ -87,7 +86,7 @@ public class TeamService : ITeamService
 		{
 			result.Add(new TeamDTO 
 			{ 
-				Elo = team.ELO,
+				ELO = team.ELO,
 				Name = team.Name,
 				Id = team.Id
 			});

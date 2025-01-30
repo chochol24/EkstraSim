@@ -18,6 +18,12 @@ else
             <li>@team.Name</li>
         }
     </ul>
+    <MudDataGrid Items="@teams">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Nazwa" />
+            <PropertyColumn Property="x => x.ELO" Title="Elo" />
+        </Columns>
+    </MudDataGrid>
 }
 
 @code {
