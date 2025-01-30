@@ -31,6 +31,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xJbmRleC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/RoundsSimulationGrid.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0aW9uc1xSb3VuZHNTaW11bGF0aW9uR3JpZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Teams.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xUZWFtcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

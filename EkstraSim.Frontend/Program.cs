@@ -16,6 +16,7 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 
 builder.Services.AddScoped<TeamService>();
+builder.Services.AddScoped<SimulationService>();
 
 var app = builder.Build();
 

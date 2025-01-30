@@ -12,12 +12,6 @@
 }
 else
 {
-    <ul>
-        @foreach (var team in teams)
-        {
-            <li>@team.Name</li>
-        }
-    </ul>
     <MudDataGrid Items="@teams">
         <Columns>
             <PropertyColumn Property="x => x.Name" Title="Nazwa" />

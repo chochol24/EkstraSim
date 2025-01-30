@@ -1,12 +1,26 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
+    <MudAppBar>
+        My Application
+    </MudAppBar>
+    <MudDrawer Open="true">
+        <MudNavMenu>
+            <MudNavLink Href="/teams">Drużyny</MudNavLink>
+            <MudNavLink Href="/simulated-rounds">Symulowane rundy</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
     <MudMainContent>
         @Body
     </MudMainContent>
 </MudLayout>
+
+@code {
+	private MudTheme _theme = new();
+	private bool _isDarkMode = true;
+}

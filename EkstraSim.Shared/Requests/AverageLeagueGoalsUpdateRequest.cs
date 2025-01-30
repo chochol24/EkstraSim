@@ -1,3 +1,3 @@
-﻿namespace EkstraSim.Shared.DTOs.Requests;
+﻿namespace EkstraSim.Shared.Requests;
 
 public record AverageLeagueGoalsUpdateRequest(int LeagueId);

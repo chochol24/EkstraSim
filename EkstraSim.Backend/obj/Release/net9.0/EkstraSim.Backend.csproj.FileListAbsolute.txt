@@ -250,3 +250,4 @@ D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensio
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\Microsoft.Extensions.Primitives.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\System.Formats.Asn1.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\System.Text.Json.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Backend\bin\Release\net9.0\AutoMapper.dll

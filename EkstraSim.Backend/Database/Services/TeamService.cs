@@ -2,6 +2,7 @@
 using Shared;
 using System.Diagnostics;
 using EkstraSim.Shared.DTOs;
+using AutoMapper;
 
 namespace EkstraSim.Backend.Database.Services;
 
@@ -15,9 +16,11 @@ public interface ITeamService
 public class TeamService : ITeamService
 {
 	private readonly EkstraSimDbContext _context;
-	public TeamService(EkstraSimDbContext context)
+	private readonly IMapper _mapper;
+	public TeamService(EkstraSimDbContext context, IMapper mapper)
 	{
 		_context = context;
+		_mapper = mapper;
 	}
 
 	public async Task BaseRecalculateEloRankingAllTeamsAsync()
@@ -84,12 +87,7 @@ public class TeamService : ITeamService
 		List<TeamDTO> result = [];
 		foreach (var team in teams)
 		{
-			result.Add(new TeamDTO 
-			{ 
-				ELO = team.ELO,
-				Name = team.Name,
-				Id = team.Id
-			});
+			result.Add(_mapper.Map<TeamDTO>(team));
 		}
 
 		if (result != null)

@@ -1,0 +1,33 @@
+﻿@page "/simulated-rounds"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+
+@inject SimulationService _simulationService; 
+
+
+@if (simulatedRounds == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <MudDataGrid Items="@simulatedRounds">
+        <Columns>
+            <PropertyColumn Property="x => x.League" Title="Liga" />
+            <PropertyColumn Property="x => x.League" Title="Sezon" />
+            <PropertyColumn Property="x => x.Round" Title="Runda" />
+            <PropertyColumn Property="x => x.NumberOfSimulations" Title="Liczba symulacji" />
+        </Columns>
+    </MudDataGrid>
+}
+
+
+@code {
+	private List<SimulatedRoundDTO> simulatedRounds = []; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _simulationService.GetSimulatedRoundResults();
+        simulatedRounds = result.ToList();
+    }
+}

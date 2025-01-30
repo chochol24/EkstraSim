@@ -1,4 +1,5 @@
 using EkstraSim.Backend.Database;
+using EkstraSim.Backend.Database.Entities;
 using EkstraSim.Backend.Database.Services;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISimulatingService, SimulatingService>();
+builder.Services.AddScoped<SimulatedRoundService>();
+
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddFastEndpoints();
 

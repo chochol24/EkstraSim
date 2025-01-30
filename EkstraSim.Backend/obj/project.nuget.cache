@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "6B9poCN8Tm4=",
+  "dgSpecHash": "jCm3pzx5Ai8=",
   "success": true,
   "projectFilePath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Backend\\EkstraSim.Backend.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Kuba\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\fastendpoints\\5.33.0\\fastendpoints.5.33.0.nupkg.sha512",

@@ -46,6 +46,26 @@
         }
       }
     },
+    "/v1/api/simulated-rounds": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRounds",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SimulatedRoundDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/simulate/table": {
       "put": {
         "operationId": "EkstraSimBackendEndpointsSimulatedMatchSimulateLeagueTable",
@@ -142,6 +162,209 @@
           "elo": {
             "type": "number",
             "format": "decimal"
+          }
+        }
+      },
+      "SimulatedRoundDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "league": {
+            "$ref": "#/components/schemas/LeagueDTO"
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "season": {
+            "$ref": "#/components/schemas/SeasonDTO"
+          },
+          "round": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfSimulations": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "simulatedMatchResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+            }
+          }
+        }
+      },
+      "LeagueDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "averageHomeGoalsScored": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "averageAwayGoalsScored": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "averageHomeGoalsConceded": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "averageAwayGoalsConceded": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonDTO"
+            }
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDTO"
+            }
+          }
+        }
+      },
+      "SeasonDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "league": {
+            "$ref": "#/components/schemas/LeagueDTO"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDTO"
+            }
+          }
+        }
+      },
+      "MatchDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SimulatedMatchResultDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "matchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "match": {
+            "$ref": "#/components/schemas/MatchDTO"
+          },
+          "round": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "season": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SeasonDTO"
+              }
+            ]
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "league": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LeagueDTO"
+              }
+            ]
+          },
+          "predictedHomeScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "predictedAwayScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "homeWinProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "drawProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "awayWinProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "numberOfSimulations": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "simulatedRoundId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "simulatedRound": {
+            "$ref": "#/components/schemas/SimulatedRoundDTO"
           }
         }
       },

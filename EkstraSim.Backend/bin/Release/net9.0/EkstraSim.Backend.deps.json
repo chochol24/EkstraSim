@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "EkstraSim.Backend/1.0.0": {
         "dependencies": {
+          "AutoMapper": "13.0.1",
           "EkstraSim.Shared": "1.0.0",
           "FastEndpoints": "5.33.0",
           "FastEndpoints.Swagger": "5.33.0",
@@ -19,6 +20,17 @@
         },
         "runtime": {
           "EkstraSim.Backend.dll": {}
+        }
+      },
+      "AutoMapper/13.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.Options": "9.0.1"
+        },
+        "runtime": {
+          "lib/net6.0/AutoMapper.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.1.0"
+          }
         }
       },
       "Azure.Core/1.38.0": {
@@ -1276,6 +1288,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "AutoMapper/13.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/Fx1SbJ16qS7dU4i604Sle+U9VLX+WSNVJggk6MupKVkYvvBm4XqYaeFuf67diHefHKHs50uQIS2YEDFhPCakQ==",
+      "path": "automapper/13.0.1",
+      "hashPath": "automapper.13.0.1.nupkg.sha512"
     },
     "Azure.Core/1.38.0": {
       "type": "package",

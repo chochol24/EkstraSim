@@ -1,5 +1,5 @@
 ﻿using EkstraSim.Backend.Database.Services;
-using EkstraSim.Shared.DTOs.Requests;
+using EkstraSim.Shared.Requests;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.League.PUT;
