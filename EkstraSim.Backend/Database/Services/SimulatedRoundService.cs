@@ -39,4 +39,20 @@ public class SimulatedRoundService
             throw new Exception();
         }
     }
+
+    public async Task<SimulatedRoundDTO> GetSimulatedRoundByIdAsync(int roundId)
+    {
+        var round = await _context.SimulatedRounds
+            .Include(x => x.Season)
+            .Include(x => x.League)
+            .Include(x => x.SimulatedMatchResults)
+                .ThenInclude(x => x.Match)
+                    .ThenInclude(x => x.HomeTeam)
+            .Include(x => x.SimulatedMatchResults)
+                .ThenInclude(x => x.Match)
+                    .ThenInclude(x => x.AwayTeam)
+            .FirstOrDefaultAsync(x => x.Id == roundId);
+
+        return _mapper.Map<SimulatedRoundDTO>(round);
+    }
 }

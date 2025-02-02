@@ -10,3 +10,15 @@ D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\refint\EkstraSim.Shar
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.pdb
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\ref\EkstraSim.Shared.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.sourcelink.json
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\bin\Debug\net9.0\EkstraSim.Shared.deps.json
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\bin\Debug\net9.0\EkstraSim.Shared.dll
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\bin\Debug\net9.0\EkstraSim.Shared.pdb
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.AssemblyInfoInputs.cache
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.AssemblyInfo.cs
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.csproj.CoreCompileInputs.cache
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.sourcelink.json
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.dll
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\refint\EkstraSim.Shared.dll
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\EkstraSim.Shared.pdb
+C:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Debug\net9.0\ref\EkstraSim.Shared.dll

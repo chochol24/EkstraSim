@@ -3,7 +3,7 @@
 @using EkstraSim.Shared.DTOs
 
 @inject SimulationService _simulationService; 
-
+@inject NavigationManager _navigationManager;
 
 @if (simulatedRounds == null)
 {
@@ -11,10 +11,10 @@
 }
 else
 {
-    <MudDataGrid Items="@simulatedRounds">
+    <MudDataGrid T="SimulatedRoundDTO" Items="@simulatedRounds" RowClick="@OpenSimulationDetails" Hover="true" Dense="true">
         <Columns>
-            <PropertyColumn Property="x => x.League" Title="Liga" />
-            <PropertyColumn Property="x => x.League" Title="Sezon" />
+            <PropertyColumn Property="x => x.League.Name" Title="Liga" />
+            <PropertyColumn Property="x => x.Season.Name" Title="Sezon" />
             <PropertyColumn Property="x => x.Round" Title="Runda" />
             <PropertyColumn Property="x => x.NumberOfSimulations" Title="Liczba symulacji" />
         </Columns>
@@ -23,11 +23,18 @@ else
 
 
 @code {
-	private List<SimulatedRoundDTO> simulatedRounds = []; 
+    private List<SimulatedRoundDTO> simulatedRounds = []; 
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await _simulationService.GetSimulatedRoundResults();
+        var result = await _simulationService.GetSimulatedRounds();
         simulatedRounds = result.ToList();
+    }
+
+    private void OpenSimulationDetails(DataGridRowClickEventArgs<SimulatedRoundDTO> args)
+    {
+        var x = args.Item;
+        _navigationManager.NavigateTo($"/simulated-round/{args.Item.Id}");
+        StateHasChanged();
     }
 }

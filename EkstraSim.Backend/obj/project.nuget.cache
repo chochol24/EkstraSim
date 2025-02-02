@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jCm3pzx5Ai8=",
+  "dgSpecHash": "7ZdlybDrCTQ=",
   "success": true,
-  "projectFilePath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Backend\\EkstraSim.Backend.csproj",
+  "projectFilePath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Backend\\EkstraSim.Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kuba\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",

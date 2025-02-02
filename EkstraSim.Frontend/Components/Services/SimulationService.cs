@@ -12,10 +12,16 @@ public class SimulationService
         _httpClient.BaseAddress ??= new Uri("https://localhost:7050/");
     }
 
-    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRoundResults()
+    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRounds()
     {
-        var teams = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>("/v1/api/simulated-rounds");
-        return teams ?? new List<SimulatedRoundDTO>();
+        var rounds = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>("/v1/api/simulated-rounds");
+        return rounds ?? null;
+    }
+
+    public async Task<SimulatedRoundDTO> GetSimulatedRoundResults(int simulatedRoundId)
+    {
+        var round = await _httpClient.GetFromJsonAsync<SimulatedRoundDTO>($"v1/api/simulated-round/{simulatedRoundId}");
+        return round ?? null;
     }
 
 }

@@ -7,16 +7,21 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
-        CreateMap<League, LeagueDTO>();
+        CreateMap<League, LeagueDTO>()
+            .ForMember(dest => dest.Seasons, opt => opt.Ignore())
+            .ForMember(dest => dest.Matches, opt => opt.Ignore());
 
-        CreateMap<Season, SeasonDTO>();
+        CreateMap<Season, SeasonDTO>()
+            .ForMember(dest => dest.Matches, opt => opt.Ignore());
 
         CreateMap<Match, MatchDTO>();
 
         CreateMap<SimulatedRound, SimulatedRoundDTO>();
 
-        CreateMap<SimulatedMatchResultDTO, SimulatedMatchResultDTO>();
+        CreateMap<SimulatedMatchResult, SimulatedMatchResultDTO>()
+            .ForMember(dest => dest.SimulatedRound, opt => opt.Ignore());
 
         CreateMap<Team, TeamDTO>();
+
     }
 }

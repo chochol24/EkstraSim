@@ -667,11 +667,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
+      "projectUniqueName": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
       "projectName": "EkstraSim.Frontend",
-      "projectPath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
+      "projectPath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
       "packagesPath": "C:\\Users\\Kuba\\.nuget\\packages\\",
-      "outputPath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\",
+      "outputPath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -692,8 +692,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "D:\\Inżynierka\\EkstraSim\\EkstraSim.Shared\\EkstraSim.Shared.csproj": {
-              "projectPath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Shared\\EkstraSim.Shared.csproj"
+            "C:\\Inżynierka\\EkstraSim\\EkstraSim.Shared\\EkstraSim.Shared.csproj": {
+              "projectPath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Shared\\EkstraSim.Shared.csproj"
             }
           }
         }
@@ -738,7 +738,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

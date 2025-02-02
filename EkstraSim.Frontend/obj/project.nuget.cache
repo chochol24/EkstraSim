@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ImLPkyc0S90=",
+  "dgSpecHash": "FUyV0HYqpNs=",
   "success": true,
-  "projectFilePath": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
+  "projectFilePath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kuba\\.nuget\\packages\\microsoft.aspnetcore.authorization\\9.0.1\\microsoft.aspnetcore.authorization.9.0.1.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\microsoft.aspnetcore.components\\9.0.1\\microsoft.aspnetcore.components.9.0.1.nupkg.sha512",
