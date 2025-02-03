@@ -88,6 +88,31 @@
   {
     "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
     "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
+    "RelativePath": "v1/api/simulated-match/{SimulatedMatchId}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "GetSimulatedMatchResultsRequest",
+        "Type": "EkstraSim.Shared.Requests.GetSimulatedMatchResultsRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EkstraSim.Shared.DTOs.SimulatedMatchResultDTO",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "EndpointName": "EkstraSimBackendEndpointsSimulatedMatchGetSimulatedMatchById"
+  },
+  {
+    "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
+    "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
     "RelativePath": "v1/api/simulated-round/{simulatedRoundId}",
     "HttpMethod": "GET",
     "IsController": false,

@@ -13,5 +13,5 @@ public class SimulatedRound
     public int NumberOfSimulations { get; set; }
 
     public List<SimulatedMatchResult> SimulatedMatchResults { get; set; } = new();
-
+    public DateTime? SimulationDate { get; set; }
 }

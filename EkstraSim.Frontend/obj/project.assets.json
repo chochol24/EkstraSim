@@ -227,7 +227,7 @@
           }
         }
       },
-      "MudBlazor/8.1.0": {
+      "MudBlazor/8.2.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.AspNetCore.Components": "9.0.1",
@@ -250,6 +250,19 @@
         },
         "buildMultiTargeting": {
           "buildMultiTargeting/MudBlazor.props": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
         }
       },
       "EkstraSim.Shared/1.0.0": {
@@ -621,10 +634,10 @@
         "microsoft.jsinterop.nuspec"
       ]
     },
-    "MudBlazor/8.1.0": {
-      "sha512": "dihLpDD7R2295u21puv+zLy72NiwGU6ASPOTg6GGye5D4g4cAczi4vPioKQfsgvdq+VsMHE3Cpm4KT3A+6LcVQ==",
+    "MudBlazor/8.2.0": {
+      "sha512": "VmXphzNw3Y295G5WmL/6G9suXAwoggGZsrHL4CMcO9EQ//mEc2HX3GMEpkWZNJ1Be0u1aZlnw40E51X+F6Qflg==",
       "type": "package",
-      "path": "mudblazor/8.1.0",
+      "path": "mudblazor/8.2.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -642,10 +655,40 @@
         "lib/net8.0/MudBlazor.xml",
         "lib/net9.0/MudBlazor.dll",
         "lib/net9.0/MudBlazor.xml",
-        "mudblazor.8.1.0.nupkg.sha512",
+        "mudblazor.8.2.0.nupkg.sha512",
         "mudblazor.nuspec",
         "staticwebassets/MudBlazor.min.css",
         "staticwebassets/MudBlazor.min.js"
+      ]
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/net6.0/Newtonsoft.Json.dll",
+        "lib/net6.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "newtonsoft.json.13.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
       ]
     },
     "EkstraSim.Shared/1.0.0": {
@@ -657,7 +700,8 @@
   "projectFileDependencyGroups": {
     "net9.0": [
       "EkstraSim.Shared >= 1.0.0",
-      "MudBlazor >= 8.1.0"
+      "MudBlazor >= 8.2.0",
+      "Newtonsoft.Json >= 13.0.3"
     ]
   },
   "packageFolders": {
@@ -716,7 +760,11 @@
         "dependencies": {
           "MudBlazor": {
             "target": "Package",
-            "version": "[8.1.0, )"
+            "version": "[8.2.0, )"
+          },
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.3, )"
           }
         },
         "imports": [

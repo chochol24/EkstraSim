@@ -12,4 +12,5 @@ public class SimulatedFinalLeague
 	public List<SimulatedTeamInFinalTable> Teams { get; set; } = new();
 
 	public int NumberOfSimulations { get; set; }
+    public DateTime? SimulationDate { get; set; }
 }

@@ -15,6 +15,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
 builder.Services.AddScoped<ISimulatingService, SimulatingService>();
 builder.Services.AddScoped<SimulatedRoundService>();
+builder.Services.AddScoped<SimulatedMatchService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

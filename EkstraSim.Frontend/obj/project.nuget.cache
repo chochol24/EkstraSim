@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "FUyV0HYqpNs=",
+  "dgSpecHash": "jWpCleXLRF4=",
   "success": true,
   "projectFilePath": "C:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\EkstraSim.Frontend.csproj",
   "expectedPackageFiles": [
@@ -18,7 +18,8 @@
     "C:\\Users\\Kuba\\.nuget\\packages\\microsoft.extensions.options\\9.0.1\\microsoft.extensions.options.9.0.1.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.1\\microsoft.extensions.primitives.9.0.1.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\microsoft.jsinterop\\9.0.1\\microsoft.jsinterop.9.0.1.nupkg.sha512",
-    "C:\\Users\\Kuba\\.nuget\\packages\\mudblazor\\8.1.0\\mudblazor.8.1.0.nupkg.sha512"
+    "C:\\Users\\Kuba\\.nuget\\packages\\mudblazor\\8.2.0\\mudblazor.8.2.0.nupkg.sha512",
+    "C:\\Users\\Kuba\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
   ],
   "logs": []
 }

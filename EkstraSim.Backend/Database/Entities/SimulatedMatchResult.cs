@@ -21,6 +21,10 @@ public class SimulatedMatchResult
 
 	public int NumberOfSimulations { get; set; }
 
-    public int? SimulatedRoundId { get; set; } // Klucz obcy
+    public int? SimulatedRoundId { get; set; } 
     public SimulatedRound SimulatedRound { get; set; } = null!;
+
+    public string? ResultProbabilityMatrixJson { get; set; }
+
+	public DateTime? SimulationDate { get; set; }
 }

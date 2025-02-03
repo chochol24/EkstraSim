@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using Shared;
+using Newtonsoft.Json;
 
 namespace EkstraSim.Backend.Database.Services;
 
@@ -182,6 +183,7 @@ public partial class SimulatingService : ISimulatingService
                 }
             }
 
+            string matrixJson = JsonConvert.SerializeObject(resultProbabilityMatrix, Formatting.Indented);
             var simulatedMatchResult = new SimulatedMatchResult
             {
                 MatchId = match.Id,
@@ -193,9 +195,27 @@ public partial class SimulatingService : ISimulatingService
                 HomeWinProbability = (double)totalHomeWins / numberOfSimulations,
                 DrawProbability = (double)totalDraws / numberOfSimulations,
                 AwayWinProbability = (double)totalAwayWins / numberOfSimulations,
-                NumberOfSimulations = numberOfSimulations
+                NumberOfSimulations = numberOfSimulations,
+                ResultProbabilityMatrixJson = matrixJson
             };
             simulatedResults.Add(simulatedMatchResult);
+
+
+            //Console.WriteLine($"Wyniki dla meczu {match.HomeTeam.Name} vs {match.AwayTeam.Name}:");
+            //Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
+            //for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
+            //{
+            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
+            //    {
+            //        double percentage = resultProbabilityMatrix[homeGoals, awayGoals] * 100;
+            //        if (percentage > 0)
+            //        {
+            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
+            //        }
+            //    }
+            //}
+            //Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
+            //Console.WriteLine();
 
         }
         sw.Stop();

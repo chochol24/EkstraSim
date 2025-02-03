@@ -23,4 +23,6 @@ public class SimulatedMatchResultDTO
 
     public int? SimulatedRoundId { get; set; } 
     public SimulatedRoundDTO SimulatedRound { get; set; } = null!;
+
+    public string? ResultProbabilityMatrixJson { get; set; }
 }

@@ -1,0 +1,151 @@
+﻿@page "/simulated-match/{SimulatedMatchId:int}"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+@using Newtonsoft.Json
+
+
+@inject SimulationService _simulationService;
+@inject NavigationManager _navigationManager;
+
+@if (match == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <MudCard Class="mx-auto my-4" Style="max-width:800px;">
+        <MudCardContent>
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
+                Macierz wyników z prawdopodobieństwem
+            </MudText>
+            <MudPaper Class="pa-4">
+                <table class="mud-table" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <!-- Pusty nagłówek w lewym górnym rogu -->
+                            <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">x</th>
+                            @for (int j = 0; j < 7; j++)
+                            {
+                                <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">@j</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            <tr>
+                                <!-- Pierwsza kolumna – etykieta wyniku gospodarzy -->
+                                <td class="mud-table-cell" style="text-align:center; font-weight:bold; border: 1px solid #ccc;">@i</td>
+                                @for (int j = 0; j < 7; j++)
+                                {
+                                    double probability = percentageScores[i, j] * 100;
+                                    <td class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">
+                                        @i:@j
+                                        @if (probability > 0)
+                                        {
+                                            <span> (@(double.Round(probability,2))%)</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+        </MudCardContent>
+    </MudCard>
+}
+
+
+@code {
+    [Parameter]
+    public int SimulatedMatchId { get; set; }
+    private List<ScoreProbability> scoreProbabilities = new();
+    private SimulatedMatchResultDTO match;
+    private int bestHomeScore = 0;
+    private int bestAwayScore = 0;
+    private double maxProbability = 0;
+    private double[,] percentageScores = new double[11, 11];
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _simulationService.GetSimulatedMatch(SimulatedMatchId);
+        match = result;
+        DeserializeMatrixWithScoresPercentage();
+    }
+
+    private void DeserializeMatrixWithScoresPercentage()
+    {
+        if(match is not null)
+        {
+             percentageScores = JsonConvert.DeserializeObject<double[,]>(match.ResultProbabilityMatrixJson);
+
+
+            Console.WriteLine($"Wyniki dla meczu {match.Match.HomeTeam.Name} vs {match.Match.AwayTeam.Name}:");
+            // Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
+            // for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
+            // {
+            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
+            //    {
+            //         double percentage = percentageScores[homeGoals, awayGoals] * 100;
+            //        if (percentage > 0)
+            //        {
+            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
+            //        }
+            //    }
+            // }
+
+            // double maxProbability = 0;
+            // int bestHomeScore = 0;
+            // int bestAwayScore = 0;
+
+            // for (int i = 0; i <= 10; i++)
+            // {
+            //     for (int j = 0; j <= 10; j++)
+            //     {
+            //         if (percentageScores[i, j] > maxProbability)
+            //         {
+            //             maxProbability = percentageScores[i, j];
+            //             bestHomeScore = i;
+            //             bestAwayScore = j;
+            //         }
+            //     }
+            // }
+
+            for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
+            {
+                for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
+                {
+                    double probability = percentageScores[homeGoals, awayGoals];
+                    if (probability > 0)
+                    {
+                        scoreProbabilities.Add(new ScoreProbability
+                            {
+                                HomeGoals = homeGoals,
+                                AwayGoals = awayGoals,
+                                Percentage = probability * 100 // zamiana na procenty
+                            });
+                    }
+
+                    // Wyznaczanie najlepszego wyniku
+                    if (probability > maxProbability)
+                    {
+                        maxProbability = probability;
+                        bestHomeScore = homeGoals;
+                        bestAwayScore = awayGoals;
+                    }
+                }
+            }
+
+
+            Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
+            Console.WriteLine();
+        }
+
+    }
+    public class ScoreProbability
+    {
+        public int HomeGoals { get; set; }
+        public int AwayGoals { get; set; }
+        public double Percentage { get; set; }
+    }
+}

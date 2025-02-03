@@ -24,4 +24,9 @@ public class SimulationService
         return round ?? null;
     }
 
+    public async Task<SimulatedMatchResultDTO> GetSimulatedMatch(int simulatedMatchId)
+    {
+        var match = await _httpClient.GetFromJsonAsync<SimulatedMatchResultDTO>($"v1/api/simulated-match/{simulatedMatchId}");
+        return match ?? null;
+    }
 }

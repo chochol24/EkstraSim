@@ -96,6 +96,36 @@
         }
       }
     },
+    "/v1/api/simulated-match": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSimulatedMatchGetSimulatedMatchById",
+        "requestBody": {
+          "x-name": "GetSimulatedMatchResultsRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSimulatedMatchResultsRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/simulate/table": {
       "put": {
         "operationId": "EkstraSimBackendEndpointsSimulatedMatchSimulateLeagueTable",
@@ -454,6 +484,10 @@
           },
           "simulatedRound": {
             "$ref": "#/components/schemas/SimulatedRoundDTO"
+          },
+          "resultProbabilityMatrixJson": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -462,6 +496,16 @@
         "additionalProperties": false,
         "properties": {
           "simulatedRoundId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GetSimulatedMatchResultsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "simulatedMatchId": {
             "type": "integer",
             "format": "int32"
           }

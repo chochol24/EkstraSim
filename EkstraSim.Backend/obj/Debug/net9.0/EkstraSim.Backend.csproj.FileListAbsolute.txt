@@ -526,10 +526,10 @@ C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets\msbu
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets\msbuild.buildMultiTargeting.EkstraSim.Backend.props
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets\msbuild.buildTransitive.EkstraSim.Backend.props
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets.pack.json
-C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\EkstraSi.7EC6091F.Up2Date
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\EkstraSim.Backend.dll
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\refint\EkstraSim.Backend.dll
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\EkstraSim.Backend.pdb
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\EkstraSim.Backend.genruntimeconfig.cache
 C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\ref\EkstraSim.Backend.dll
+C:\Inżynierka\EkstraSim\EkstraSim.Backend\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
