@@ -22,8 +22,11 @@ else
                 <table class="mud-table" style="width:100%; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <!-- Pusty nagłówek w lewym górnym rogu -->
-                            <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">x</th>
+                            <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;"></th>
+                            <th colspan="7" class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">@match.Match.AwayTeam.Name</th>
+                        </tr>
+                        <tr>
+                            <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">@match.Match.HomeTeam.Name</th>
                             @for (int j = 0; j < 7; j++)
                             {
                                 <th class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">@j</th>
@@ -34,17 +37,44 @@ else
                         @for (int i = 0; i < 7; i++)
                         {
                             <tr>
-                                <!-- Pierwsza kolumna – etykieta wyniku gospodarzy -->
+
                                 <td class="mud-table-cell" style="text-align:center; font-weight:bold; border: 1px solid #ccc;">@i</td>
                                 @for (int j = 0; j < 7; j++)
                                 {
                                     double probability = percentageScores[i, j] * 100;
-                                    <td class="mud-table-cell" style="text-align:center; border: 1px solid #ccc;">
-                                        @i:@j
-                                        @if (probability > 0)
-                                        {
-                                            <span> (@(double.Round(probability,2))%)</span>
-                                        }
+
+                                    int red, green;
+
+                                    if (probability > 10) 
+                                    {
+                                        green = 255;
+                                        red = 0;
+                                    }
+                                    else if (probability > 6) 
+                                    {
+                                        green = 255;
+                                        red = (int)(255 * (10 - probability) / 3);
+                                    }
+                                    else if (probability > 3) 
+                                    {
+                                        red = 255;
+                                        green = (int)(255 * (probability - 3) / 3);
+                                    }
+                                    else 
+                                    {
+                                        red = (int)(255 * probability); 
+                                        green = 0;
+                                    }
+
+
+                                    <td class="mud-table-cell" style="text-align:center; border: 1px solid #ccc; background-color:rgba(@red, @green, 0, 0.8); color:@((green == 0 && red < 100) ? "grey" : "black");">
+                                        <b>
+                                            @i:@j
+                                            @if (probability > 0)
+                                            {
+                                                <span> (@(double.Round(probability, 2))%)</span>
+                                            }
+                                        </b>
                                     </td>
                                 }
                             </tr>

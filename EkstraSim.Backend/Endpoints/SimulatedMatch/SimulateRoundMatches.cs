@@ -20,7 +20,7 @@ public class SimulateRoundMatches : Endpoint<SimulateRoundRequest>
 
 	public override async Task HandleAsync(SimulateRoundRequest request,CancellationToken ct)
 	{
-		await _simulatingService.SimulateRoundEndpoint(request.LeagueId, request.SeasonId, 19, 100000);
+		await _simulatingService.SimulateRoundEndpoint(request.LeagueId, request.SeasonId, 20, 100000);
 	}
 }
 

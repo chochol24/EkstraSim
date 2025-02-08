@@ -7,84 +7,86 @@
 
 @if (simulatedRound == null)
 {
-    <p>Loading...</p>
+	<p>Loading...</p>
 }
 else
 {
-    foreach(var result in simulatedRound.SimulatedMatchResults)
-    {
-        <MudCard Style="max-width: 800px; margin: auto;">
-            <MudCardContent>
-                <!-- Wiersz z nazwami drużyn i wynikiem -->
-                <MudGrid AlignItems="Center">
-                    <MudItem xs="5">
-                        <MudText Typo="Typo.h6" Align="Align.Center">@result.Match.HomeTeam.Name</MudText>
-                    </MudItem>
-                    <MudItem xs="2">
-                        <MudText Typo="Typo.h5" Align="Align.Center">@result.PredictedHomeScore : @result.PredictedAwayScore</MudText>
-                    </MudItem>
-                    <MudItem xs="5">
-                        <MudText Typo="Typo.h6" Align="Align.Center">@result.Match.AwayTeam.Name</MudText>
-                    </MudItem>
-                </MudGrid>
+	foreach (var result in simulatedRound.SimulatedMatchResults)
+	{
+		<MudLink Href="@($"/simulated-match/{result.Id}")" Style="text-decoration: none;">
+			<MudCard Style="max-width: 800px; margin: auto;">
+				<MudCardContent>
+					<!-- Wiersz z nazwami drużyn i wynikiem -->
+					<MudGrid AlignItems="Center">
+						<MudItem xs="5">
+							<MudText Typo="Typo.h6" Align="Align.Center">@result.Match.HomeTeam.Name</MudText>
+						</MudItem>
+						<MudItem xs="2">
+							<MudText Typo="Typo.h5" Align="Align.Center">@result.PredictedHomeScore : @result.PredictedAwayScore</MudText>
+						</MudItem>
+						<MudItem xs="5">
+							<MudText Typo="Typo.h6" Align="Align.Center">@result.Match.AwayTeam.Name</MudText>
+						</MudItem>
+					</MudGrid>
 
-                <MudDivider Class="my-2" />
+					<MudDivider Class="my-2" />
 
-                <!-- Wiersz z procentowymi szansami -->
-                <MudGrid>
-                    <MudItem xs="4">
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gospodarzy</MudText>
-                        <MudProgressLinear Value="@(result.HomeWinProbability * 100)" Color="Color.Success" Size="Size.Large" >
-                            <MudText Typo="Typo.subtitle2" Color="Color.Surface">
-                                <b>@(Math.Round(result.HomeWinProbability * 100, 2))%</b>
-                            </MudText>
-                        </MudProgressLinear>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na remis</MudText>
-                        <MudProgressLinear Value="@(result.DrawProbability * 100)" Color="Color.Info" Size="Size.Large">
-                            <MudText Typo="Typo.subtitle2" Color="Color.Default">
-                                <b>@(Math.Round(result.DrawProbability * 100, 2))%</b>
-                            </MudText>
-                        </MudProgressLinear>
-                    </MudItem>
-                    <MudItem xs="4">
-                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gości</MudText>
-                        <MudProgressLinear Value="@(result.AwayWinProbability * 100)" Color="Color.Error" Size="Size.Large" >
-                            <MudText Typo="Typo.subtitle2" Color="Color.Default">
-                                <b>@(Math.Round(result.AwayWinProbability * 100, 2))%</b>
-                            </MudText>
-                        </MudProgressLinear>
-                    </MudItem>
-                </MudGrid>
-                <MudDivider Class="my-2" />
-                <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Secondary">
-                    Ilość symulacji: @result.NumberOfSimulations
-                </MudText>
-            </MudCardContent>
-        </MudCard>
-    }
-  
+					<!-- Wiersz z procentowymi szansami -->
+					<MudGrid>
+						<MudItem xs="4">
+							<MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gospodarzy</MudText>
+							<MudProgressLinear Value="@(result.HomeWinProbability * 100)" Color="Color.Success" Size="Size.Large">
+								<MudText Typo="Typo.subtitle2" Color="Color.Surface">
+									<b>@(Math.Round(result.HomeWinProbability * 100, 2))%</b>
+								</MudText>
+							</MudProgressLinear>
+						</MudItem>
+						<MudItem xs="4">
+							<MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na remis</MudText>
+							<MudProgressLinear Value="@(result.DrawProbability * 100)" Color="Color.Info" Size="Size.Large">
+								<MudText Typo="Typo.subtitle2" Color="Color.Default">
+									<b>@(Math.Round(result.DrawProbability * 100, 2))%</b>
+								</MudText>
+							</MudProgressLinear>
+						</MudItem>
+						<MudItem xs="4">
+							<MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gości</MudText>
+							<MudProgressLinear Value="@(result.AwayWinProbability * 100)" Color="Color.Error" Size="Size.Large">
+								<MudText Typo="Typo.subtitle2" Color="Color.Default">
+									<b>@(Math.Round(result.AwayWinProbability * 100, 2))%</b>
+								</MudText>
+							</MudProgressLinear>
+						</MudItem>
+					</MudGrid>
+					<MudDivider Class="my-2" />
+					<MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Secondary">
+						Ilość symulacji: @result.NumberOfSimulations
+					</MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudLink>
+	}
+
 }
 
 
 @code {
-    [Parameter]
-    public int SimulatedRoundId { get; set; }
+	[Parameter]
+	public int SimulatedRoundId { get; set; }
 
-    private SimulatedRoundDTO simulatedRound = new();
+	private SimulatedRoundDTO simulatedRound = new();
 
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await _simulationService.GetSimulatedRoundResults(SimulatedRoundId);
-        simulatedRound = result;
+	protected override async Task OnInitializedAsync()
+	{
+		var result = await _simulationService.GetSimulatedRoundResults(SimulatedRoundId);
+		simulatedRound = result;
 
-    }
+	}
 
-    private void OpenSimulationDetails(DataGridRowClickEventArgs<SimulatedMatchResultDTO> args)
-    {
-        var x = args.Item;
-        _navigationManager.NavigateTo($"/simulated-match/{args.Item.Id}");
-        StateHasChanged();
-    }
+	private void OpenSimulationDetails(DataGridRowClickEventArgs<SimulatedMatchResultDTO> args)
+	{
+		var x = args.Item;
+		_navigationManager.NavigateTo($"/simulated-match/{args.Item.Id}");
+		StateHasChanged();
+	}
 }

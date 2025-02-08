@@ -66,6 +66,66 @@
         }
       }
     },
+    "/v1/api/simulated-round": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSimulatedRoundGETGetSimulatedRoundById",
+        "requestBody": {
+          "x-name": "GetSimulatedRoundRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSimulatedRoundRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatedRoundDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api/simulated-match": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSimulatedMatchGetSimulatedMatchById",
+        "requestBody": {
+          "x-name": "GetSimulatedMatchResultsRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSimulatedMatchResultsRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/simulate/table": {
       "put": {
         "operationId": "EkstraSimBackendEndpointsSimulatedMatchSimulateLeagueTable",
@@ -285,6 +345,65 @@
           "date": {
             "type": "string",
             "format": "date-time"
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "season": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SeasonDTO"
+              }
+            ]
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "league": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LeagueDTO"
+              }
+            ]
+          },
+          "round": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "homeTeamId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "homeTeam": {
+            "$ref": "#/components/schemas/TeamDTO"
+          },
+          "awayTeamId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "awayTeam": {
+            "$ref": "#/components/schemas/TeamDTO"
+          },
+          "homeTeamScore": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "awayTeamScore": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "displayResult": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -365,6 +484,30 @@
           },
           "simulatedRound": {
             "$ref": "#/components/schemas/SimulatedRoundDTO"
+          },
+          "resultProbabilityMatrixJson": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "GetSimulatedRoundRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "simulatedRoundId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GetSimulatedMatchResultsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "simulatedMatchId": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

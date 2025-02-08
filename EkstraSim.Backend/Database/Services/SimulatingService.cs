@@ -66,6 +66,54 @@ public partial class SimulatingService : ISimulatingService
         });
     }
 
+    private double CalculateTeamFormFactor(List<Match> lastMatches, int teamId)
+    {
+        if (lastMatches == null || lastMatches.Count == 0)
+            return 1.0; 
+
+        int? totalGoalsScored = lastMatches.Sum(m => teamId == m.HomeTeamId ? m.HomeTeamScore : m.AwayTeamScore);
+        int? totalGoalsConceded = lastMatches.Sum(m => teamId == m.HomeTeamId ? m.AwayTeamScore : m.HomeTeamScore);
+
+        double averageGoalsScored = (double)totalGoalsScored.GetValueOrDefault() / lastMatches.Count;
+        double averageGoalsConceded = (double)totalGoalsConceded.GetValueOrDefault() / lastMatches.Count;
+
+        double formFactor = (averageGoalsScored - averageGoalsConceded) / 2.0 + 1.0;
+
+        return Math.Max(0.8, Math.Min(1.2, formFactor));
+    }
+
+    private double CalculateHomeAwayFormFactor(List<Match> lastFiveHomeOrAwayMatches, int teamId, bool isHome)
+    {
+        if (lastFiveHomeOrAwayMatches == null || lastFiveHomeOrAwayMatches.Count == 0)
+            return 1.0;
+
+        int? totalGoalsScored = lastFiveHomeOrAwayMatches.Sum(m => teamId == m.HomeTeamId ? m.HomeTeamScore : m.AwayTeamScore);
+        int? totalGoalsConceded = lastFiveHomeOrAwayMatches.Sum(m => teamId == m.HomeTeamId ? m.AwayTeamScore : m.HomeTeamScore);
+
+        double averageGoalsScored = (double)totalGoalsScored.GetValueOrDefault() / lastFiveHomeOrAwayMatches.Count;
+        double averageGoalsConceded = (double)totalGoalsConceded.GetValueOrDefault() / lastFiveHomeOrAwayMatches.Count;
+
+        double formFactor = (averageGoalsScored - averageGoalsConceded) / 2.0 + 1.0;
+
+        return Math.Max(0.8, Math.Min(1.2, formFactor));
+    }
+
+    private double CalculateH2HFactor(List<Match> lastH2HMatches, int teamId)
+    {
+        if (lastH2HMatches == null || lastH2HMatches.Count == 0)
+            return 1.0;
+
+        int? totalGoalsScored = lastH2HMatches.Sum(m => teamId == m.HomeTeamId ? m.HomeTeamScore : m.AwayTeamScore);
+        int? totalGoalsConceded = lastH2HMatches.Sum(m => teamId == m.HomeTeamId ? m.AwayTeamScore : m.HomeTeamScore);
+
+        double averageGoalsScored = (double)totalGoalsScored.GetValueOrDefault() / lastH2HMatches.Count;
+        double averageGoalsConceded = (double)totalGoalsConceded.GetValueOrDefault() / lastH2HMatches.Count;
+
+        double h2hFactor = (averageGoalsScored - averageGoalsConceded) / 2.0 + 1.0;
+
+        return Math.Max(0.95, Math.Min(1.05, h2hFactor));
+    }
+
     public async Task<IEnumerable<SimulatedMatchResult>> SimulateRound(List<Match> matchesToSimulate, int leagueId, int numberOfSimulations, EkstraSimDbContext ekstraSimDbContext = null)
     {
         if (ekstraSimDbContext == null)
@@ -87,30 +135,83 @@ public partial class SimulatingService : ISimulatingService
 
         foreach (var match in matchesToSimulate)
         {
+            //current season strengths
             var homeAttackStrengthCurrent = match.HomeTeam.AverageHomeGoalsScoredCurrentSeason / league.AverageHomeGoalsScored;
             var homeDefenseStrengthCurrent = match.HomeTeam.AverageHomeGoalsConcededCurrentSeason / league.AverageHomeGoalsConceded;
             var awayAttackStrengthCurrent = match.AwayTeam.AverageAwayGoalsScoredCurrentSeason / league.AverageAwayGoalsScored;
             var awayDefenseStrengthCurrent = match.AwayTeam.AverageAwayGoalsConcededCurrentSeason / league.AverageAwayGoalsConceded;
 
+            //previous season strengths
             var homeAttackStrengthPrevious = match.HomeTeam.AverageHomeGoalsScoredPreviousSeason / league.AverageHomeGoalsScored;
             var homeDefenseStrengthPrevious = match.HomeTeam.AverageHomeGoalsConcededPreviousSeason / league.AverageHomeGoalsConceded;
             var awayAttackStrengthPrevious = match.AwayTeam.AverageAwayGoalsScoredPreviousSeason / league.AverageAwayGoalsScored;
             var awayDefenseStrengthPrevious = match.AwayTeam.AverageAwayGoalsConcededPreviousSeason / league.AverageAwayGoalsConceded;
 
-
+            //historical season strengths
             var homeAttackStrengthHistorical = match.HomeTeam.AverageHomeGoalsScoredHistorical / league.AverageHomeGoalsScored;
             var homeDefenseStrengthHistorical = match.HomeTeam.AverageHomeGoalsConcededHistorical / league.AverageHomeGoalsConceded;
             var awayAttackStrengthHistorical = match.AwayTeam.AverageAwayGoalsScoredHistorical / league.AverageAwayGoalsScored;
             var awayDefenseStrengthHistorical = match.AwayTeam.AverageAwayGoalsConcededHistorical / league.AverageAwayGoalsConceded;
 
-            var homePred = (homeAttackStrengthCurrent * awayDefenseStrengthCurrent * league.AverageHomeGoalsScored * 0.60)
-                         + (homeAttackStrengthPrevious * awayDefenseStrengthPrevious * league.AverageHomeGoalsScored * 0.30)
-                         + (homeAttackStrengthHistorical * awayDefenseStrengthHistorical * league.AverageHomeGoalsScored * 0.10);
+            //prediction
+            var homePred = (homeAttackStrengthCurrent * awayDefenseStrengthCurrent * league.AverageHomeGoalsScored * 0.67)
+                      + (homeAttackStrengthPrevious * awayDefenseStrengthPrevious * league.AverageHomeGoalsScored * 0.3)
+                      + (homeAttackStrengthHistorical * awayDefenseStrengthHistorical * league.AverageHomeGoalsScored * 0.03);
 
-            var awayPred = (awayAttackStrengthCurrent * homeDefenseStrengthCurrent * league.AverageAwayGoalsScored * 0.60)
-                         + (awayAttackStrengthPrevious * homeDefenseStrengthPrevious * league.AverageAwayGoalsScored * 0.30)
-                         + (awayAttackStrengthHistorical * homeDefenseStrengthHistorical * league.AverageAwayGoalsScored * 0.10);
+            var awayPred = (awayAttackStrengthCurrent * homeDefenseStrengthCurrent * league.AverageAwayGoalsScored * 0.67)
+                         + (awayAttackStrengthPrevious * homeDefenseStrengthPrevious * league.AverageAwayGoalsScored * 0.3)
+                         + (awayAttackStrengthHistorical * homeDefenseStrengthHistorical * league.AverageAwayGoalsScored * 0.03);
 
+            if (numberOfSimulations > 1)
+            {
+                var homeLastFiveMatches = ekstraSimDbContext.Matches
+                    .Where(x => (x.HomeTeamId == match.HomeTeamId || x.AwayTeamId == match.HomeTeamId)
+                           && x.AwayTeamScore != null && x.HomeTeamScore != null)
+                    .OrderByDescending(x => x.Date)
+                    .Take(10)
+                    .ToList();
+
+                var awayLastFiveMatches = ekstraSimDbContext.Matches
+                    .Where(x => (x.HomeTeamId == match.AwayTeamId || x.AwayTeamId == match.AwayTeamId)
+                           && x.AwayTeamScore != null && x.HomeTeamScore != null)
+                    .OrderByDescending(x => x.Date)
+                    .Take(10)
+                    .ToList();
+
+                double homeFormFactor = CalculateTeamFormFactor(homeLastFiveMatches, match.HomeTeamId);
+                double awayFormFactor = CalculateTeamFormFactor(awayLastFiveMatches, match.AwayTeamId);
+
+                var homeLastFiveHomeMatches = ekstraSimDbContext.Matches
+                    .Where(x => x.HomeTeamId == match.HomeTeamId)
+                    .Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null)
+                    .OrderByDescending(x => x.Date)
+                    .Take(5)
+                    .ToList();
+
+                var awayLastFiveAwayMatches = ekstraSimDbContext.Matches
+                    .Where(x => x.AwayTeamId == match.AwayTeamId)
+                    .Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null)
+                    .OrderByDescending(x => x.Date)
+                    .Take(5)
+                    .ToList();
+
+                double homeHomeFormFactor = CalculateHomeAwayFormFactor(homeLastFiveHomeMatches, match.HomeTeamId, true);
+                double awayAwayFormFactor = CalculateHomeAwayFormFactor(awayLastFiveAwayMatches, match.AwayTeamId, false);
+
+                var lastFiveH2HMatches = ekstraSimDbContext.Matches
+                    .Where(x => (x.HomeTeamId == match.HomeTeamId && x.AwayTeamId == match.AwayTeamId)
+                             || (x.HomeTeamId == match.AwayTeamId && x.AwayTeamId == match.HomeTeamId))
+                    .Where(x => x.AwayTeamScore != null && x.HomeTeamScore != null)
+                    .OrderByDescending(x => x.Date)
+                    .Take(5)
+                    .ToList();
+
+                double homeH2HFactor = CalculateH2HFactor(lastFiveH2HMatches, match.HomeTeamId);
+                double awayH2HFactor = CalculateH2HFactor(lastFiveH2HMatches, match.AwayTeamId);
+
+                homePred *= homeFormFactor * homeHomeFormFactor * homeH2HFactor;
+                awayPred *= awayFormFactor * awayAwayFormFactor * awayH2HFactor;
+            }
 
             predictionMatches.Add(match, new MatchPredictionGoals { HomeGoals = homePred.GetValueOrDefault(), AwayGoals = awayPred.GetValueOrDefault() });
         }
@@ -196,7 +297,8 @@ public partial class SimulatingService : ISimulatingService
                 DrawProbability = (double)totalDraws / numberOfSimulations,
                 AwayWinProbability = (double)totalAwayWins / numberOfSimulations,
                 NumberOfSimulations = numberOfSimulations,
-                ResultProbabilityMatrixJson = matrixJson
+                ResultProbabilityMatrixJson = matrixJson,
+                SimulationDate = DateTime.Now,
             };
             simulatedResults.Add(simulatedMatchResult);
 

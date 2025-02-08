@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f1ad2dbeccffa697f00cbec362b63f7253746f77")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c305df5fd6f6603b83635a97809943828b81791")]
 [assembly: System.Reflection.AssemblyProductAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

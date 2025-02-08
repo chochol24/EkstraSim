@@ -96,8 +96,6 @@ D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\Microsoft.JSInter
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\MudBlazor.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\EkstraSim.Shared.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\EkstraSim.Shared.pdb
-D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\tzxjg6is5z-qcudlz6uj5.gz
-D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0wz98yz2xy-179icbga5v.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\EkstraSi.0B913DFC.Up2Date
 C:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\appsettings.Development.json
 C:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\appsettings.json
@@ -187,3 +185,6 @@ C:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\refint\EkstraSim.
 C:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\EkstraSim.Frontend.pdb
 C:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\EkstraSim.Frontend.genruntimeconfig.cache
 C:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\ref\EkstraSim.Frontend.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\Newtonsoft.Json.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\tzxjg6is5z-32p77bvc6j.gz
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0wz98yz2xy-r91md4kz0z.gz
