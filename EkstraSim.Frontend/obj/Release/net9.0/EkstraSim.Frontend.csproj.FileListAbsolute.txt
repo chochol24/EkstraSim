@@ -123,7 +123,6 @@ D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\scopedcss\bundle\
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\scopedcss\projectbundle\EkstraSim.Frontend.bundle.scp.css
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\tzxjg6is5z-32p77bvc6j.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0wz98yz2xy-r91md4kz0z.gz
-D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\pwiczrpa7e-khy4lop6wu.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\o7f3jk9ujy-bqjiyaj88i.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\rqy0cnovl9-c2jlpeoesf.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\r403xsodkm-erw9l3u2r3.gz
@@ -187,3 +186,4 @@ D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\EkstraSim.Fronten
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\ref\EkstraSim.Frontend.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\jhi0r01i65-g8iqgg9bmc.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0x831btmyf-g8iqgg9bmc.gz
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\pwiczrpa7e-vqecce1u9t.gz

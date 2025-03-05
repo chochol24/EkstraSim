@@ -15,12 +15,13 @@ public class SimulatedRoundService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRoundsAsync()
+    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRoundsAsync(int seasonId, int leagueId)
     {
         var rounds = await _context.SimulatedRounds
             .Include(x => x.Season)
             .Include(x => x.League)
             .Include(x => x.SimulatedMatchResults)
+            .Where(x => x.SeasonId == seasonId && x.LeagueId == leagueId)
             .ToListAsync();
 
         List<SimulatedRoundDTO> result = [];

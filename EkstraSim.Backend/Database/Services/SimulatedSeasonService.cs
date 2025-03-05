@@ -16,7 +16,7 @@ public class SimulatedSeasonService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(GetAllSimulationsOfSeasonRequest request)
+    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
     {
         var simulations = await _context.SimulatedFinalLeagues
             .Include(x => x.Teams)

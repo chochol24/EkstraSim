@@ -5,7 +5,7 @@ using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedSeason.GET;
 
-public class GetAllSimulationsOfSeason : Endpoint<GetAllSimulationsOfSeasonRequest ,IEnumerable<SimulatedFinalLeagueDTO>>
+public class GetAllSimulationsOfSeason : Endpoint<SeasonAndLeagueRequest ,IEnumerable<SimulatedFinalLeagueDTO>>
 {
     private readonly SimulatedSeasonService _seasonService;
 
@@ -19,7 +19,7 @@ public class GetAllSimulationsOfSeason : Endpoint<GetAllSimulationsOfSeasonReque
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(GetAllSimulationsOfSeasonRequest request, CancellationToken ct)
+    public override async Task HandleAsync(SeasonAndLeagueRequest request, CancellationToken ct)
     {
         var result = await _seasonService.GetAllSimulationsOfSeason(request);
         if (result != null)

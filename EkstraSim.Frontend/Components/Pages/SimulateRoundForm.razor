@@ -1,34 +1,73 @@
-﻿@page "/simulate-round/form"
-
-@using EkstraSim.Frontend.Components.Services
+﻿@using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.Requests
 
 @inject SimulationService _simulationService;
 
-<MudForm>
-	<MudNumericField T="int" Label="Id ligi" @bind-Value="formRequest.LeagueId">
-
-	</MudNumericField>
-	<MudNumericField T="int" Label="Id sezonu" @bind-Value="formRequest.SeasonId">
-
-	</MudNumericField>
-	<MudNumericField T="int" Label="Runda" @bind-Value="formRequest.Round">
-
-	</MudNumericField>
-	<MudNumericField T="int" Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions">
-
-	</MudNumericField>
-	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmit">Symuluj</MudButton>
+<MudForm @ref="form" Validation="@formValidation" Class="form-simulate-round">
+	<MudNumericField T="int"
+					 Label="Id ligi" @bind-Value="formRequest.LeagueId"
+					 Immediate="true"
+					 Required="true"
+					 Class="numeric-field-form-simulate-round"
+					 For="@(() => formRequest.LeagueId)" />
+	<MudNumericField T="int"
+					 Label="Id sezonu" @bind-Value="formRequest.SeasonId"
+					 Immediate="true"
+					 Required="true"
+					 Class="numeric-field-form-simulate-round"
+					 For="@(() => formRequest.SeasonId)" />
+	<MudNumericField T="int"
+					 Label="Runda" @bind-Value="formRequest.Round"
+					 Immediate="true"
+					 Required="true"
+					 Class="numeric-field-form-simulate-round"
+					 For="@(() => formRequest.Round)" />
+	<MudNumericField T="int"
+					 Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions"
+					 Immediate="true"
+					 Required="true"
+					 Class="numeric-field-form-simulate-round"
+					 For="@(() => formRequest.NumberOfSimualtions)" />
+	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+			   Class="form-simulate-submit-button" OnClick="OnSubmit" Disabled="!form.IsValid" @ref="submitButton">Symuluj</MudButton>
 </MudForm>
 
+<style>
+	.form-simulate-round {
+		width: max-content;
+		padding: 10px;
+		color: white;
+	}
+
+	.numeric-field-form-simulate-round {
+		padding: 5px;
+	}
+
+	.form-simulate-submit-button {
+		background: #610b16 !important;
+	}
+
+</style>
 
 @code {
+	private MudForm form;
+	private MudButton submitButton;
+	private SimulateRoundRequest formRequest = new();
+	private string formValidation;
 
-	SimulateRoundRequest formRequest = new();
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			form.Validate();
+			submitButton.Disabled = true;
+			StateHasChanged();
+		}
+	}
 
 	private async Task OnSubmit()
 	{
-		//walidacja
 		await _simulationService.SimulateRound(formRequest);
+		formRequest = new();
 	}
 }

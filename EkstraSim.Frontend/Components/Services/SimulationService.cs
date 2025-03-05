@@ -12,13 +12,13 @@ public class SimulationService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRounds()
+    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRoundsBySeason(SeasonAndLeagueRequest request)
     {
-        var rounds = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>("/v1/api/simulated-rounds");
+        var rounds = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>($"/v1/api/simulated-rounds/{request.SeasonId}/{request.LeagueId}");
         return rounds ?? null;
     }
 
-    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(GetAllSimulationsOfSeasonRequest request)
+    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
     {
         var simulations = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedFinalLeagueDTO>>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
         return simulations ?? null;

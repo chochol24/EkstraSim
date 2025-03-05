@@ -2,41 +2,63 @@
 @using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.DTOs
 
-@inject SimulationService _simulationService; 
+@inject SimulationService _simulationService;
 @inject NavigationManager _navigationManager;
+@inject SeasonService _seasonService;
 
 @if (simulatedRounds == null)
 {
-    <p>Loading...</p>
+	<div class="loader">
+		<MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Large" />
+	</div>
 }
 else
 {
-    <MudDataGrid T="SimulatedRoundDTO" Items="@simulatedRounds" RowClick="@OpenSimulationDetails" Hover="true" Dense="true">
-        <Columns>
-            <PropertyColumn Property="x => x.League.Name" Title="Liga" />
-            <PropertyColumn Property="x => x.Season.Name" Title="Sezon" />
-            <PropertyColumn Property="x => x.Round" Title="Runda" />
-            <PropertyColumn Property="x => x.NumberOfSimulations" Title="Liczba symulacji" />
-        </Columns>
-    </MudDataGrid>
+	<MudGrid>
+		<MudItem xs="3">
+			<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChangeAsync">
+				@foreach (var season in seasons)
+				{
+					<MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
+				}
+			</MudSelect>
+		</MudItem>
+	</MudGrid>
+	<MudGrid>
+		<MudItem xs="6">
+			<MudDataGrid T="SimulatedRoundDTO" Items="@simulatedRounds.OrderByDescending(x => x.Round).ThenByDescending(x => x.NumberOfSimulations)"
+						 RowClick="@OpenSimulationDetails" Hover="true" Dense="true">
+				<Columns>
+					<PropertyColumn Property="x => x.League.Name" Title="Liga" />
+					<PropertyColumn Property="x => x.Season.Name" Title="Sezon" />
+					<PropertyColumn Property="x => x.Round" Title="Runda" />
+					<PropertyColumn Property="x => x.NumberOfSimulations" Title="Liczba symulacji" />
+				</Columns>
+			</MudDataGrid>
+		</MudItem>
+		<MudItem xs="6">
+			<SimulateRoundForm/>
+		</MudItem>
+	</MudGrid>
 }
 
+<style>
+	.mud-table td {
+		justify-content: center;
+	}
 
-@code {
-    private List<SimulatedRoundDTO> simulatedRounds = []; 
+	.mud-table th {
+		background-color: #610b16;
+	}
 
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await _simulationService.GetSimulatedRounds();
-        simulatedRounds = result.ToList();
-    }
+	.mud-table tr {
+		background: #12081c;
+		border: 2px solid #2e0b17;
+	}
 
-    private void OpenSimulationDetails(DataGridRowClickEventArgs<SimulatedRoundDTO> args)
-    {
-        var x = args.Item;
-        _navigationManager.NavigateTo($"/simulated-round/{args.Item.Id}");
-        StateHasChanged();
-    }
+		.mud-table tr:hover {
+			cursor: pointer;
+			background: #311182 !important;
+		}
+</style>
 
-
-}

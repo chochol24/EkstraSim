@@ -157,11 +157,17 @@
   {
     "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
     "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
-    "RelativePath": "v1/api/simulated-rounds",
+    "RelativePath": "v1/api/simulated-rounds/{SeasonId}/{LeagueId}",
     "HttpMethod": "GET",
     "IsController": false,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "SeasonAndLeagueRequest",
+        "Type": "EkstraSim.Shared.Requests.SeasonAndLeagueRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
         "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SimulatedRoundDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
@@ -171,7 +177,7 @@
         "StatusCode": 200
       }
     ],
-    "EndpointName": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRounds"
+    "EndpointName": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRoundsBySeason"
   },
   {
     "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
@@ -182,8 +188,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "GetAllSimulationsOfSeasonRequest",
-        "Type": "EkstraSim.Shared.Requests.GetAllSimulationsOfSeasonRequest",
+        "Name": "SeasonAndLeagueRequest",
+        "Type": "EkstraSim.Shared.Requests.SeasonAndLeagueRequest",
         "IsRequired": true
       }
     ],

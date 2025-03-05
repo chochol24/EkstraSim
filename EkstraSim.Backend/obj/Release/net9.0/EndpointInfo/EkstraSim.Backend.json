@@ -50,12 +50,12 @@
       "get": {
         "operationId": "EkstraSimBackendEndpointsSimulatedSeasonGETGetAllSimulationsOfSeason",
         "requestBody": {
-          "x-name": "GetAllSimulationsOfSeasonRequest",
+          "x-name": "SeasonAndLeagueRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GetAllSimulationsOfSeasonRequest"
+                "$ref": "#/components/schemas/SeasonAndLeagueRequest"
               }
             }
           },
@@ -81,7 +81,20 @@
     },
     "/v1/api/simulated-rounds": {
       "get": {
-        "operationId": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRounds",
+        "operationId": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRoundsBySeason",
+        "requestBody": {
+          "x-name": "SeasonAndLeagueRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeasonAndLeagueRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
             "description": "",
@@ -596,7 +609,7 @@
           }
         }
       },
-      "GetAllSimulationsOfSeasonRequest": {
+      "SeasonAndLeagueRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -779,22 +792,36 @@
       "SimulateRoundRequest": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "round",
+          "seasonId",
+          "leagueId",
+          "numberOfSimualtions"
+        ],
         "properties": {
           "round": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "maximum": 34.0,
+            "minimum": 1.0
           },
           "seasonId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "maximum": 2147483647.0,
+            "minimum": 1.0
           },
           "leagueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "maximum": 2147483647.0,
+            "minimum": 1.0
           },
           "numberOfSimualtions": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "maximum": 1000000.0,
+            "minimum": 1.0
           }
         }
       },

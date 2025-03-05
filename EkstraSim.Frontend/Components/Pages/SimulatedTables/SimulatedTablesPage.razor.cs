@@ -30,7 +30,7 @@ public partial class SimulatedTablesPage
 
     private async Task GetSimulationsOfSelectedSeasonAsync()
     {
-        var result = await _simulationService.GetAllSimulationsOfSeason(new Shared.Requests.GetAllSimulationsOfSeasonRequest(selectedSeason.Id, selectedSeason.LeagueId));
+        var result = await _simulationService.GetAllSimulationsOfSeason(new Shared.Requests.SeasonAndLeagueRequest(selectedSeason.Id, selectedSeason.LeagueId));
         simulations = result.ToList();
     }
 
