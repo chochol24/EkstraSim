@@ -1,4 +1,5 @@
 ﻿using EkstraSim.Backend.Database.Services;
+using EkstraSim.Shared.Requests;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedMatch;
@@ -20,14 +21,6 @@ public class SimulateRoundMatches : Endpoint<SimulateRoundRequest>
 
 	public override async Task HandleAsync(SimulateRoundRequest request,CancellationToken ct)
 	{
-		await _simulatingService.SimulateRoundEndpoint(request.LeagueId, request.SeasonId, 20, 100000);
+		await _simulatingService.SimulateRoundEndpoint(request.LeagueId, request.SeasonId, request.Round, request.NumberOfSimualtions);
 	}
-}
-
-public class SimulateRoundRequest
-{
-	public int LeagueId {  get; set; }
-	public int SeasonId { get; set; }
-	//public int? Round {  get; set; }
-	//public int? NumberOfSimulations { get; set; }
 }

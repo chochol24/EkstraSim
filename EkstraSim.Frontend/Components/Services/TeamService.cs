@@ -9,7 +9,6 @@ public class TeamService
     public TeamService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress ??= new Uri("https://localhost:7050/");
     }
 
     public async Task<IEnumerable<TeamDTO>> GetTeamsAsync()

@@ -5,7 +5,7 @@ using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedRound.GET;
 
-public class GetSimulatedRoundById : Endpoint<GetSimulatedRoundRequest,SimulatedRoundDTO>
+public class GetSimulatedRoundById : Endpoint<GetSimulatedRoundRequest, SimulatedRoundDTO>
 {
     private readonly SimulatedRoundService _roundService;
 

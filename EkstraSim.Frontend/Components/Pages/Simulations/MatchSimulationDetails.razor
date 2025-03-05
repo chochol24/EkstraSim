@@ -13,6 +13,58 @@
 }
 else
 {
+    
+        <MudCard Style="max-width: 800px; margin: auto;">
+            <MudCardContent>
+                <!-- Wiersz z nazwami drużyn i wynikiem -->
+                <MudGrid AlignItems="Center">
+                    <MudItem xs="5">
+                    <MudText Typo="Typo.h6" Align="Align.Center">@match.Match.HomeTeam.Name</MudText>
+                    </MudItem>
+                    <MudItem xs="2">
+                    <MudText Typo="Typo.h5" Align="Align.Center">@match.PredictedHomeScore : @match.PredictedAwayScore</MudText>
+                    </MudItem>
+                    <MudItem xs="5">
+                    <MudText Typo="Typo.h6" Align="Align.Center">@match.Match.AwayTeam.Name</MudText>
+                    </MudItem>
+                </MudGrid>
+
+                <MudDivider Class="my-2" />
+
+                <!-- Wiersz z procentowymi szansami -->
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gospodarzy</MudText>
+                    <MudProgressLinear Value="@(match.HomeWinProbability * 100)" Color="Color.Success" Size="Size.Large">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Surface">
+                            <b>@(Math.Round(match.HomeWinProbability * 100, 2))%</b>
+                            </MudText>
+                        </MudProgressLinear>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na remis</MudText>
+                    <MudProgressLinear Value="@(match.DrawProbability * 100)" Color="Color.Info" Size="Size.Large">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Default">
+                            <b>@(Math.Round(match.DrawProbability * 100, 2))%</b>
+                            </MudText>
+                        </MudProgressLinear>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gości</MudText>
+                    <MudProgressLinear Value="@(match.AwayWinProbability * 100)" Color="Color.Error" Size="Size.Large">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Default">
+                            <b>@(Math.Round(match.AwayWinProbability * 100, 2))%</b>
+                            </MudText>
+                        </MudProgressLinear>
+                    </MudItem>
+                </MudGrid>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Secondary">
+                Ilość symulacji: @match.NumberOfSimulations
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+
     <MudCard Class="mx-auto my-4" Style="max-width:800px;">
         <MudCardContent>
             <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
@@ -53,7 +105,7 @@ else
                                     else if (probability > 6) 
                                     {
                                         green = 255;
-                                        red = (int)(255 * (10 - probability) / 3);
+                                        red = (int)(255 * (10 - probability) / 4);
                                     }
                                     else if (probability > 3) 
                                     {
@@ -111,35 +163,7 @@ else
 
 
             Console.WriteLine($"Wyniki dla meczu {match.Match.HomeTeam.Name} vs {match.Match.AwayTeam.Name}:");
-            // Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
-            // for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
-            // {
-            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
-            //    {
-            //         double percentage = percentageScores[homeGoals, awayGoals] * 100;
-            //        if (percentage > 0)
-            //        {
-            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
-            //        }
-            //    }
-            // }
 
-            // double maxProbability = 0;
-            // int bestHomeScore = 0;
-            // int bestAwayScore = 0;
-
-            // for (int i = 0; i <= 10; i++)
-            // {
-            //     for (int j = 0; j <= 10; j++)
-            //     {
-            //         if (percentageScores[i, j] > maxProbability)
-            //         {
-            //             maxProbability = percentageScores[i, j];
-            //             bestHomeScore = i;
-            //             bestAwayScore = j;
-            //         }
-            //     }
-            // }
 
             for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
             {

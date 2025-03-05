@@ -13,16 +13,16 @@
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2900"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022aNPcLFwdCCGS2v1guSR64Htd4Ly5uclT7taAptnMPbs=\u0022"},{"Name":"Last-Modified","Value":"Thu, 30 Jan 2025 19:23:31 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/EkstraSim.Frontend/EkstraSim.Frontend.bundle.scp.css">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\EkstraSim.Frontend.eywh1hugjt.bundle.scp.css'))</AssetFile>
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-6tlF1ZqHxunZPzeQueC5UkBPdQTqpa7\u002B0w1aiQY8f04="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"5983"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00226tlF1ZqHxunZPzeQueC5UkBPdQTqpa7\u002B0w1aiQY8f04=\u0022"},{"Name":"Last-Modified","Value":"Thu, 30 Jan 2025 19:24:07 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l\u002BPJgU3jyJZpM2o="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2253"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00220H7Ro0IObCBlp4q7neOMwG6m99P4l\u002BPJgU3jyJZpM2o=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Mar 2025 11:11:49 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/EkstraSim.Frontend/EkstraSim.Frontend.eywh1hugjt.bundle.scp.css">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\EkstraSim.Frontend.eywh1hugjt.bundle.scp.css'))</AssetFile>
+    <StaticWebAssetEndpoint Include="_content/EkstraSim.Frontend/EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"eywh1hugjt"},{"Name":"integrity","Value":"sha256-6tlF1ZqHxunZPzeQueC5UkBPdQTqpa7\u002B0w1aiQY8f04="},{"Name":"label","Value":"_content/EkstraSim.Frontend/EkstraSim.Frontend.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"5983"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00226tlF1ZqHxunZPzeQueC5UkBPdQTqpa7\u002B0w1aiQY8f04=\u0022"},{"Name":"Last-Modified","Value":"Thu, 30 Jan 2025 19:24:07 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"g8iqgg9bmc"},{"Name":"integrity","Value":"sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l\u002BPJgU3jyJZpM2o="},{"Name":"label","Value":"_content/EkstraSim.Frontend/EkstraSim.Frontend.bundle.scp.css"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2253"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00220H7Ro0IObCBlp4q7neOMwG6m99P4l\u002BPJgU3jyJZpM2o=\u0022"},{"Name":"Last-Modified","Value":"Wed, 05 Mar 2025 11:11:49 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/EkstraSim.Frontend/favicon.ifv42okdf2.png">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\favicon.png'))</AssetFile>

@@ -31,6 +31,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xJbmRleC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulatedTables/SimulatedTablesPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0ZWRUYWJsZXNcU2ltdWxhdGVkVGFibGVzUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulateRoundForm.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0ZVJvdW5kRm9ybS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/MatchSimulationDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0aW9uc1xNYXRjaFNpbXVsYXRpb25EZXRhaWxzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -58,7 +66,3 @@ build_metadata.AdditionalFiles.CssScope =
 [D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-hp7shr8eyx
-
-[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Layout/NavMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudS5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = b-zr8w1v4qnz

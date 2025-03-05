@@ -1,0 +1,178 @@
+﻿@page "/season"
+
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+
+@inject SimulationService _simulationService
+@inject SeasonService _seasonService
+
+@if (isLoading)
+{
+	<div class="loader">
+		<MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Large" />
+	</div>
+}
+else
+{
+	<MudGrid>
+		<MudItem xs="3">
+			<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChangeAsync">
+				@foreach (var season in seasons)
+				{
+					<MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
+				}
+			</MudSelect>
+		</MudItem>
+		<MudItem xs="6">
+			<MudSelect T="SimulatedFinalLeagueDTO" Label="Symulacja" ValueChanged="AssignPlaces" ReadOnly="@(!seasons.Any())">
+				@foreach (var simulation in simulations)
+				{
+					<MudSelectItem Value="simulation">@simulation.League.Name @simulation.Season.Name : @simulation.NumberOfSimulations symulacji, po kolejce nr @(simulation.RoundBeforeSimulation - 1)</MudSelectItem>
+				}
+			</MudSelect>
+		</MudItem>
+	</MudGrid>
+	@if (selectedSimulation is not null)
+	{
+		<MudGrid>
+			<MudItem xs="9" >
+				<MudDataGrid T="SimulatedTeamInFinalTableDTO"
+							 Items="@(selectedSimulation.Teams.OrderBy(x => x.Place).ToList())"
+							 SortMode="SortMode.Multiple"
+							 Hover="true"
+							 Dense="true"
+							 RowClick="SelectTeam" ColumnResizeMode="ResizeMode.Container"
+							 SelectedItem="@selectedTeam" 
+							 RowClassFunc="GetRowClass">
+					<Columns>
+						<PropertyColumn Property="x => x.Place" Title="Miejsce" SortBy="x => x.Place" Style="width: 50px;" />
+						<PropertyColumn Property="x => x.Team.Name" Title="Drużyna"  />
+						<PropertyColumn Property="x => x.AveragePoints" Title="Średnie punkty" Format="f2" />
+						<PropertyColumn Property="x => x.FirstPlaceProbability" Title="TOP 1 %" Format="p2"  />
+						<PropertyColumn Property="x => x.TopFourProbability" Title="TOP 4 %" Format="p2" />
+						<PropertyColumn Property="x => x.RelegationProbability" Title="SPADEK %" Format="p2" />
+					</Columns>
+				</MudDataGrid>
+			</MudItem>
+			<MudItem xs="3">
+				@if (selectedTeam is not null)
+				{
+					<MudPaper Class="pa-4">
+						<MudText Typo="Typo.h5" Align="Align.Center">@selectedTeam.Team.Name</MudText>
+						<MudDivider Class="my-2" />
+
+						<table class="selected_team_table">
+							<thead>
+								<tr class="selected_team_head_tr">
+									<th class="selected_team_head_th">Miejsce</th>
+									<th class="selected_team_head_th">Procent</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var kvp in selectedTeam.PlacesDistribution.OrderBy(x => x.Key))
+								{
+									<tr class="@(kvp.Key == selectedTeam.Place ? "selected_team_body_most_tr" : "selected_team_body_tr")">
+										<td class="@(kvp.Key == selectedTeam.Place ? "selected_team_body_most_td" : "selected_team_body_td")">@kvp.Key</td>
+										<td class="@(kvp.Key == selectedTeam.Place ? "selected_team_body_most_td" : "selected_team_body_td")">@kvp.Value.ToString("P3")</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</MudPaper>
+				}
+				else
+				{
+					<MudPaper Class="pa-4">
+						<MudText Typo="Typo.subtitle1" Align="Align.Center">
+							Wybierz drużynę z tabeli, aby zobaczyć szczegóły.
+						</MudText>
+					</MudPaper>
+				}
+			</MudItem>
+		</MudGrid>
+	}
+}
+
+<style>
+	.loader {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100vh;
+	}
+
+	.mud-table-container {
+		padding: 5px;
+		height: fit-content;
+	}
+
+	.mud-table td {
+		justify-content: center;
+	}
+
+	.mud-table tr.first-place {
+		background-color: #1c631c;
+	}
+
+	.mud-table tr.top-three {
+		background-color: #0640bd;
+	}
+
+	.mud-table tr.relegation-zone {
+		background-color: #850000;
+	}
+
+	.mud-table-cell {
+		color: white !important;
+	}
+
+	.selected_team_table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.selected_team_head_th {
+		padding: 8px;
+		text-align: center;
+		width: 25%;
+	}
+
+	.selected_team_head_tr, .mud-table th {
+		background-color: #610b16;
+	}
+
+	.selected_team_body_td {
+		padding: 4px;
+		text-align: center;
+		width: 25%;
+	}
+
+	.selected_team_body_most_td {
+		padding: 4px;
+		text-align: center;
+		width: 25%;
+		color: lightgreen;
+		font: 900;
+	}
+
+	.selected_team_body_tr, .mud-table tr {
+		background: #12081c;
+		border: 2px solid #2e0b17;
+	}
+
+		.selected_team_body_tr:hover, .mud-table tr:hover {
+			cursor: pointer;
+			background: #311182 !important;
+		}
+
+	.selected_team_body_most_tr {
+		background: #401245;
+		border: 2px solid #2e0b17;
+	}
+
+		.selected_team_body_most_tr:hover {
+			cursor: pointer;
+			background: #311182;
+		}
+
+</style>

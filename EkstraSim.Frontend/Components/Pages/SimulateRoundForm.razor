@@ -1,0 +1,34 @@
+﻿@page "/simulate-round/form"
+
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.Requests
+
+@inject SimulationService _simulationService;
+
+<MudForm>
+	<MudNumericField T="int" Label="Id ligi" @bind-Value="formRequest.LeagueId">
+
+	</MudNumericField>
+	<MudNumericField T="int" Label="Id sezonu" @bind-Value="formRequest.SeasonId">
+
+	</MudNumericField>
+	<MudNumericField T="int" Label="Runda" @bind-Value="formRequest.Round">
+
+	</MudNumericField>
+	<MudNumericField T="int" Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions">
+
+	</MudNumericField>
+	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="OnSubmit">Symuluj</MudButton>
+</MudForm>
+
+
+@code {
+
+	SimulateRoundRequest formRequest = new();
+
+	private async Task OnSubmit()
+	{
+		//walidacja
+		await _simulationService.SimulateRound(formRequest);
+	}
+}

@@ -46,6 +46,39 @@
         }
       }
     },
+    "/v1/api/simulated-season": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSimulatedSeasonGETGetAllSimulationsOfSeason",
+        "requestBody": {
+          "x-name": "GetAllSimulationsOfSeasonRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAllSimulationsOfSeasonRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SimulatedFinalLeagueDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/simulated-rounds": {
       "get": {
         "operationId": "EkstraSimBackendEndpointsSimulatedRoundGETGetAllSimulatedRounds",
@@ -172,6 +205,26 @@
         }
       }
     },
+    "/v1/api/seasons": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsSeasonGETGetSeasons",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/league/goals": {
       "put": {
         "operationId": "EkstraSimBackendEndpointsLeaguePUTAverageLeagueGoals",
@@ -225,20 +278,13 @@
           }
         }
       },
-      "SimulatedRoundDTO": {
+      "SimulatedFinalLeagueDTO": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "id": {
             "type": "integer",
             "format": "int32"
-          },
-          "leagueId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "league": {
-            "$ref": "#/components/schemas/LeagueDTO"
           },
           "seasonId": {
             "type": "integer",
@@ -247,18 +293,56 @@
           "season": {
             "$ref": "#/components/schemas/SeasonDTO"
           },
-          "round": {
+          "leagueId": {
             "type": "integer",
             "format": "int32"
+          },
+          "league": {
+            "$ref": "#/components/schemas/LeagueDTO"
+          },
+          "roundBeforeSimulation": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulatedTeamInFinalTableDTO"
+            }
           },
           "numberOfSimulations": {
             "type": "integer",
             "format": "int32"
           },
-          "simulatedMatchResults": {
+          "simulationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "SeasonDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "league": {
+            "$ref": "#/components/schemas/LeagueDTO"
+          },
+          "matches": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+              "$ref": "#/components/schemas/MatchDTO"
             }
           }
         }
@@ -299,32 +383,6 @@
             "items": {
               "$ref": "#/components/schemas/SeasonDTO"
             }
-          },
-          "matches": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MatchDTO"
-            }
-          }
-        }
-      },
-      "SeasonDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "leagueId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "league": {
-            "$ref": "#/components/schemas/LeagueDTO"
           },
           "matches": {
             "type": "array",
@@ -404,6 +462,189 @@
           "displayResult": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "SimulatedTeamInFinalTableDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "teamId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamDTO"
+          },
+          "simulatedFinalLeagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "simulatedFinalLeague": {
+            "$ref": "#/components/schemas/SimulatedFinalLeagueDTO"
+          },
+          "averagePoints": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageGoalDifference": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageGoalsScored": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageGoalsConceded": {
+            "type": "number",
+            "format": "double"
+          },
+          "firstPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "secondPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "thirdPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "fourthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "fifthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "sixthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "seventhPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "eighthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "ninthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "tenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "eleventhPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "twelfthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "thirteenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "fourteenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "fifteenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "sixteenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "seventeenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "eighteenthPlaceProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "topFourProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "relegationProbability": {
+            "type": "number",
+            "format": "double"
+          },
+          "place": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "placesDistribution": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        }
+      },
+      "GetAllSimulationsOfSeasonRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "seasonId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SimulatedRoundDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "league": {
+            "$ref": "#/components/schemas/LeagueDTO"
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "season": {
+            "$ref": "#/components/schemas/SeasonDTO"
+          },
+          "round": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfSimulations": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "simulatedMatchResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+            }
           }
         }
       },
@@ -539,11 +780,19 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "leagueId": {
+          "round": {
             "type": "integer",
             "format": "int32"
           },
           "seasonId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfSimualtions": {
             "type": "integer",
             "format": "int32"
           }

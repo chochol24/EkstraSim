@@ -7,16 +7,20 @@
 
 <MudLayout>
     <MudAppBar>
-        My Application
+        EkstraSim
     </MudAppBar>
     <MudDrawer Open="true">
         <MudNavMenu>
             <MudNavLink Href="/teams">Drużyny</MudNavLink>
             <MudNavLink Href="/simulated-rounds">Symulowane rundy</MudNavLink>
+            <MudNavLink Href="/simulate-round/form">Formularz symulowania rundy</MudNavLink>
+            <MudNavLink Href="/season">Sezon</MudNavLink>
         </MudNavMenu>
     </MudDrawer>
     <MudMainContent>
-        @Body
+        <div style="padding:10px;">
+            @Body
+        </div> 
     </MudMainContent>
 </MudLayout>
 

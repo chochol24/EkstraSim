@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Folder Include="Endpoints\Match\" />
+    <Folder Include="Endpoints\SimulatedRound\POST\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 

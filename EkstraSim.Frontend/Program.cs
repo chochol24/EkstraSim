@@ -15,8 +15,11 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri("https://localhost:7050/")
 });
 
+builder.Services.AddScoped<SeasonService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<SimulationService>();
+builder.Services.AddScoped<UpdateDatabaseService>();
+
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Requests;
 
 namespace EkstraSim.Frontend.Components.Services;
 
@@ -9,13 +10,18 @@ public class SimulationService
     public SimulationService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress ??= new Uri("https://localhost:7050/");
     }
 
     public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRounds()
     {
         var rounds = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>("/v1/api/simulated-rounds");
         return rounds ?? null;
+    }
+
+    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(GetAllSimulationsOfSeasonRequest request)
+    {
+        var simulations = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedFinalLeagueDTO>>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
+        return simulations ?? null;
     }
 
     public async Task<SimulatedRoundDTO> GetSimulatedRoundResults(int simulatedRoundId)
@@ -29,4 +35,10 @@ public class SimulationService
         var match = await _httpClient.GetFromJsonAsync<SimulatedMatchResultDTO>($"v1/api/simulated-match/{simulatedMatchId}");
         return match ?? null;
     }
+
+    public async Task SimulateRound(SimulateRoundRequest simulatedRoundRequest)
+    {
+        await _httpClient.PutAsJsonAsync($"v1/api/simulate/round", simulatedRoundRequest);
+    }
 }
+

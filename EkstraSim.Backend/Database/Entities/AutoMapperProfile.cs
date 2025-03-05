@@ -23,5 +23,9 @@ public class AutoMapperProfile : Profile
 
         CreateMap<Team, TeamDTO>();
 
+        CreateMap<SimulatedFinalLeague, SimulatedFinalLeagueDTO>();
+
+        CreateMap<SimulatedTeamInFinalTable, SimulatedTeamInFinalTableDTO>()
+            .ForMember(dest => dest.SimulatedFinalLeague, opt => opt.Ignore());
     }
 }
