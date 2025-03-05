@@ -16,7 +16,6 @@ else
     
         <MudCard Style="max-width: 800px; margin: auto;">
             <MudCardContent>
-                <!-- Wiersz z nazwami drużyn i wynikiem -->
                 <MudGrid AlignItems="Center">
                     <MudItem xs="5">
                     <MudText Typo="Typo.h6" Align="Align.Center">@match.Match.HomeTeam.Name</MudText>
@@ -30,8 +29,6 @@ else
                 </MudGrid>
 
                 <MudDivider Class="my-2" />
-
-                <!-- Wiersz z procentowymi szansami -->
                 <MudGrid>
                     <MudItem xs="4">
                         <MudText Typo="Typo.subtitle2" Align="Align.Center">Szansa na wygraną gospodarzy</MudText>
@@ -67,9 +64,6 @@ else
 
     <MudCard Class="mx-auto my-4" Style="max-width:800px;">
         <MudCardContent>
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
-                Macierz wyników z prawdopodobieństwem
-            </MudText>
             <MudPaper Class="pa-4">
                 <table class="mud-table" style="width:100%; border-collapse: collapse;">
                     <thead>

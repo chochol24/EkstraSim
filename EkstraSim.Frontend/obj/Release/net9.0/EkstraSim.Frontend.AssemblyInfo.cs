@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EkstraSim.Frontend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+13588f165d278819f6e18170271cff83f34197a8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+634479c96f71101b707e68ca1ae5a589116807b0")]
 [assembly: System.Reflection.AssemblyProductAttribute("EkstraSim.Frontend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EkstraSim.Frontend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
