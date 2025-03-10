@@ -68,6 +68,8 @@
 	private async Task OnSubmit()
 	{
 		await _simulationService.SimulateRound(formRequest);
-		formRequest = new();
+		form.ResetValidation();
+		formRequest = new SimulateRoundRequest();
+		
 	}
 }

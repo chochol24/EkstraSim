@@ -22,3 +22,5 @@ D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\EkstraSim.Shared.dl
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\refint\EkstraSim.Shared.dll
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\EkstraSim.Shared.pdb
 D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\ref\EkstraSim.Shared.dll
+D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\EkstraSim.Shared.Resources.SnackbarMessages.resources
+D:\Inżynierka\EkstraSim\EkstraSim.Shared\obj\Release\net9.0\EkstraSim.Shared.csproj.GenerateResource.cache

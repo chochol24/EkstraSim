@@ -1,25 +1,25 @@
 ﻿using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Results;
 
 namespace EkstraSim.Frontend.Components.Services;
 
 public class UpdateDatabaseService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpServiceHelper _helper;
     private readonly string _prefix = "v1/api";
 
     public UpdateDatabaseService(HttpClient httpClient)
     {
-        _httpClient = httpClient;
+        _helper = new HttpServiceHelper(httpClient);
     }
 
-    public async Task UpdateAverageLeagueGoals(AverageLeagueGoalsUpdateRequest request)
+    public async Task<EkstraSimResult<bool>> UpdateAverageLeagueGoalsAsync(AverageLeagueGoalsUpdateRequest request)
     {
-        await _httpClient.PutAsJsonAsync($"{_prefix}/league/goals", request);
+        return await _helper.SendPutRequestAsync<bool>($"{_prefix}/league/goals", request);
     }
-
-    public async Task UpdateAverageTeamsGoals()
+        
+    public async Task<EkstraSimResult<bool>> UpdateAverageTeamsGoalsAsync()
     {
-        await _httpClient.PutAsync($"{_prefix}/team/goals", null);
+        return await _helper.SendPutRequestAsync<bool>($"{_prefix}/team/goals");
     }
 }
-

@@ -1,5 +1,6 @@
 ﻿using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Resources;
 using MudBlazor;
 using Shared;
 
@@ -67,7 +68,15 @@ public partial class MatchesPage
             editStates[match.Id] = !editStates[match.Id];
             if(!editStates[match.Id])
             {
-                await _matchService.UpdateMatchResult(new Shared.Requests.UpdateMatchResultRequest(match.Id, match.HomeTeamScore.GetValueOrDefault(), match.AwayTeamScore.GetValueOrDefault()));
+                var result = await _matchService.UpdateMatchResultAsync(new UpdateMatchResultRequest(match.Id, match.HomeTeamScore.GetValueOrDefault(), match.AwayTeamScore.GetValueOrDefault()));
+                if (result.Success)
+                {
+                    Snackbar.Add(SnackbarMessages.Match_Result_Updated, Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add(SnackbarMessages.Match_Result_Update_Failed, Severity.Error);
+                }
             }
         }
         else
@@ -89,18 +98,41 @@ public partial class MatchesPage
 
     private async Task LoadMatches(int round)
     {
-        matches.Clear();
-        var result = await _matchService.GetRoundMatchesAsync(new Shared.Requests.GetMatchesByRoundRequest(selectedSeason.LeagueId, selectedSeason.Id, round));
-        matches = result.ToList();
+        if(selectedSeason is not null)
+        {
+            matches.Clear();
+            var result = await _matchService.GetRoundMatchesAsync(new GetMatchesByRoundRequest(selectedSeason.LeagueId, selectedSeason.Id, round));
+            if (result.Success && result.Data is not null)
+            {
+                matches = result.Data.ToList();
+            }
+        }
     }
 
     private async Task UpdateAverageLeagueGoals()
     {
-        await _dataBaseService.UpdateAverageLeagueGoals(new AverageLeagueGoalsUpdateRequest(1));
+        var result = await _dataBaseService.UpdateAverageLeagueGoalsAsync(new AverageLeagueGoalsUpdateRequest(1));
+        if (result.Success)
+        {
+            Snackbar.Add(SnackbarMessages.League_Averages_Updated, Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.League_Averages_Update_Failed, Severity.Error);
+        }
+
     }
 
     private async Task UpdateAverageTeamsGoals()
     {
-        await _dataBaseService.UpdateAverageTeamsGoals();
+        var result = await _dataBaseService.UpdateAverageTeamsGoalsAsync();
+        if (result.Success)
+        {
+            Snackbar.Add(SnackbarMessages.Team_Averages_Updated, Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Team_Averages_Update_Failed, Severity.Error);
+        }
     }
 }
