@@ -238,6 +238,62 @@
         }
       }
     },
+    "/v1/api/matches/update-result": {
+      "put": {
+        "operationId": "EkstraSimBackendEndpointsMatchPUTUpdateMatchById",
+        "requestBody": {
+          "x-name": "UpdateMatchResultRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMatchResultRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/api/matches": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsMatchGETGetRoundMatches",
+        "requestBody": {
+          "x-name": "GetMatchesByRoundRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetMatchesByRoundRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/api/league/goals": {
       "put": {
         "operationId": "EkstraSimBackendEndpointsLeaguePUTAverageLeagueGoals",
@@ -822,6 +878,42 @@
             "format": "int32",
             "maximum": 1000000.0,
             "minimum": 1.0
+          }
+        }
+      },
+      "UpdateMatchResultRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "matchId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "homeTeamScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "awayTeamScore": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "GetMatchesByRoundRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "seasonId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "round": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

@@ -18,6 +18,7 @@ builder.Services.AddScoped<SimulatedRoundService>();
 builder.Services.AddScoped<SimulatedMatchService>();
 builder.Services.AddScoped<SimulatedSeasonService>();
 builder.Services.AddScoped<SeasonService>();
+builder.Services.AddScoped<MatchService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

@@ -1,0 +1,146 @@
+﻿@page "/matches"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+
+@inject NavigationManager _navigationManager;
+@inject SeasonService _seasonService;
+@inject MatchService _matchService;
+@inject UpdateDatabaseService _dataBaseService;
+
+@if (isLoading)
+{
+	<div class="loader">
+		<MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Large" />
+	</div>
+}
+else
+{
+	<MudGrid Spacing="3">
+		<MudItem xs="2">
+			<MudGrid Spacing="2">
+				<MudItem xs="12">
+					<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChange">
+						@foreach (var season in seasons)
+						{
+							<MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
+						}
+					</MudSelect>
+				</MudItem>
+				@if (selectedSeason is not null)
+				{
+					<MudItem xs="12">
+						<MudDataGrid T="int" Items="@_rounds" Class="full-height-grid"
+									 RowClick="@OpenRoundMatchesAsync" Hover="true" Dense="true">
+							<Columns>
+								<TemplateColumn Title="Kolejki">
+									<CellTemplate>
+										Kolejka @(context.Item).
+									</CellTemplate>
+								</TemplateColumn>
+							</Columns>
+						</MudDataGrid>
+					</MudItem>
+				}
+			</MudGrid>
+		</MudItem>
+		@if (matches.Any() && selectedSeason != null)
+		{
+			<MudItem xs="10">
+				<MudPaper Class="pa-4" Elevation="1" Style="margin: 10px;">
+					<MudText Typo="Typo.h5" Align="Align.Center">
+						@selectedSeason.League.Name @selectedSeason.Name - Kolejka @(currentPickedRound).
+					</MudText>
+				</MudPaper>
+				<MudGrid Spacing="3">
+					@foreach (var match in matches)
+					{
+						<MudItem xs="12" md="6">
+							<MudCard>
+								<MudCardContent>
+									<MudGrid Justify="Justify.Center">
+										<MudItem xs="4">
+											<MudText Typo="Typo.h6" Align="Align.Right">
+												@match.HomeTeam.Name
+											</MudText>
+										</MudItem>
+										<MudItem xs="4">
+											<MudGrid Justify="Justify.Center">
+												<MudItem xs="4">
+													<MudNumericField T="int?" @bind-Value="match.HomeTeamScore" ReadOnly="@(!IsEditing(match))" HideSpinButtons="true" Class="score-input" />
+												</MudItem>
+												<MudItem xs="1">
+													<MudText Typo="Typo.h6" Align="Align.Center">:</MudText>
+												</MudItem>
+												<MudItem xs="4">
+													<MudNumericField T="int?" @bind-Value="match.AwayTeamScore" ReadOnly="@(!IsEditing(match))" HideSpinButtons="true" Class="score-input" />
+												</MudItem>
+											</MudGrid>
+										</MudItem>
+										<MudItem xs="4">
+											<MudText Typo="Typo.h6" Align="Align.Left">
+												@match.AwayTeam.Name
+											</MudText>
+										</MudItem>
+									</MudGrid>
+								</MudCardContent>
+								<MudCardActions>
+									<MudToggleIconButton Icon="@Icons.Material.Filled.Edit"
+														 ToggledIcon="@Icons.Material.Filled.Save"
+														 Color="@Color.Info" ToggledColor="@Color.Success"
+														 ToggledChanged="@(async () => await ToggleEdit(match))"
+														 Title="@(IsEditing(match) ? "Zapisz wynik" : "Edytuj wynik")" @ref="toggleButton" />
+									@if (editStates.ContainsKey(match.Id) && editStates[match.Id])
+									{
+										<MudIconButton Icon="@Icons.Material.Filled.Cancel" OnClick="async () => await CancelEdit(match)" Color="Color.Error" />
+									}
+								</MudCardActions>
+							</MudCard>
+						</MudItem>
+					}
+
+					<MudItem xs="12" md="6">
+						<MudCard>
+							<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageLeagueGoals" Color="Color.Secondary">Zaktualizuj średnie bramki ligi</MudButton>
+							<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageTeamsGoals" Color="Color.Secondary">Zaktualizuj średnie bramki drużyn</MudButton>
+						</MudCard>
+					</MudItem>
+				</MudGrid>
+			</MudItem>
+		}
+	</MudGrid>
+}
+
+<style>
+	.mud-table-container {
+		padding: 5px;
+		height: fit-content;
+	}
+
+	.mud-table td {
+		justify-content: center;
+	}
+
+	.mud-table th {
+		background-color: #610b16;
+	}
+
+	.mud-table tr {
+		background: #12081c;
+		border: 2px solid #2e0b17;
+	}
+
+		.mud-table tr:hover {
+			cursor: pointer;
+			background: #311182 !important;
+		}
+
+	.full-height-grid {
+		height: calc(100vh - 150px);
+		overflow-y: auto;
+	}
+
+	.mud-input-control.mud-input-number-control input[type=number] {
+		text-align: center;
+	}
+
+</style>

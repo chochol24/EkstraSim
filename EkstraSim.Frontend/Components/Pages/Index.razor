@@ -2,25 +2,8 @@
 @using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.Requests;
 
-@inject UpdateDatabaseService _dataBaseService;
-
-
-
 <h3>Tymczasowa strona główna</h3>
-
-<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageLeagueGoals" Color="Color.Secondary">Zaktualizuj średnie bramki ligi</MudButton>
-<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageTeamsGoals" Color="Color.Secondary">Zaktualizuj średnie bramki drużyn</MudButton>
-
 
 @code {
 
-	private async Task UpdateAverageLeagueGoals()
-	{
-		await _dataBaseService.UpdateAverageLeagueGoals(new AverageLeagueGoalsUpdateRequest(1));
-	}
-
-	private async Task UpdateAverageTeamsGoals()
-	{
-		await _dataBaseService.UpdateAverageTeamsGoals();
-	}
 }

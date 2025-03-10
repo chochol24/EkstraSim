@@ -19,6 +19,7 @@ builder.Services.AddScoped<SeasonService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<SimulationService>();
 builder.Services.AddScoped<UpdateDatabaseService>();
+builder.Services.AddScoped<MatchService>();
 
 
 var app = builder.Build();
