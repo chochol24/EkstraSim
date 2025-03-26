@@ -15,11 +15,11 @@ public class UpdateDatabaseService
 
     public async Task<EkstraSimResult<bool>> UpdateAverageLeagueGoalsAsync(AverageLeagueGoalsUpdateRequest request)
     {
-        return await _helper.SendPutRequestAsync<bool>($"{_prefix}/league/goals", request);
+        return await _helper.SendPutAsync<bool>($"{_prefix}/league/goals", request);
     }
         
     public async Task<EkstraSimResult<bool>> UpdateAverageTeamsGoalsAsync()
     {
-        return await _helper.SendPutRequestAsync<bool>($"{_prefix}/team/goals");
+        return await _helper.SendPutAsync<bool>($"{_prefix}/team/goals");
     }
 }

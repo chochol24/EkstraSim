@@ -1,11 +1,13 @@
 ﻿@page "/simulated-match/{SimulatedMatchId:int}"
 @using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.DTOs
+@using EkstraSim.Shared.Resources
 @using Newtonsoft.Json
 
 
 @inject SimulationService _simulationService;
 @inject NavigationManager _navigationManager;
+@inject ISnackbar Snackbar
 
 @if (match == null)
 {
@@ -145,7 +147,16 @@ else
     protected override async Task OnInitializedAsync()
     {
         var result = await _simulationService.GetSimulatedMatch(SimulatedMatchId);
-        match = result;
+
+        if (result.Data != null && result.Success == true)
+        {
+            match = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Simulations_Match_Get_Failed, Severity.Error);
+        }
+
         DeserializeMatrixWithScoresPercentage();
     }
 

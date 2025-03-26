@@ -37,7 +37,14 @@ public partial class MatchesPage
     private async Task GetSeasonsAsync()
     {
         var result = await _seasonService.GetSeasonsAsync();
-        seasons = result.ToList();
+        if(result.Data != null && result.Success == true)
+        {
+            seasons = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Seasons_Get_Failed, Severity.Error);
+        }
     }
 
     private void SeasonChange(SeasonDTO season)

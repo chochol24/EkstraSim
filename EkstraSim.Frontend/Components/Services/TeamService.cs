@@ -1,20 +1,19 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Results;
 
 namespace EkstraSim.Frontend.Components.Services;
 
 public class TeamService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpServiceHelper _httpHelper;
 
-    public TeamService(HttpClient httpClient)
+    public TeamService(HttpServiceHelper httpHelper)
     {
-        _httpClient = httpClient;
+        _httpHelper = httpHelper;
     }
 
-    public async Task<IEnumerable<TeamDTO>> GetTeamsAsync()
+    public async Task<EkstraSimResult<List<TeamDTO>>> GetTeamsAsync()
     {
-        var teams = await _httpClient.GetFromJsonAsync<IEnumerable<TeamDTO>>("/v1/api/teams");
-        return teams ?? new List<TeamDTO>();
+        return await _httpHelper.SendGetListAsync<TeamDTO>("/v1/api/teams");
     }
-
 }

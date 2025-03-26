@@ -1,9 +1,11 @@
 ﻿@page "/simulated-round/{SimulatedRoundId:int}"
 @using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.DTOs
+@using EkstraSim.Shared.Resources
 
 @inject SimulationService _simulationService;
 @inject NavigationManager _navigationManager;
+@inject ISnackbar Snackbar
 
 @if (simulatedRound == null)
 {
@@ -81,7 +83,14 @@ else
 	protected override async Task OnInitializedAsync()
 	{
 		var result = await _simulationService.GetSimulatedRoundResults(SimulatedRoundId);
-		simulatedRound = result;
+        if (result.Data != null && result.Success == true)
+        {
+            simulatedRound = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Simulations_Round_Get_Failed, Severity.Error);
+        }
 
 	}
 

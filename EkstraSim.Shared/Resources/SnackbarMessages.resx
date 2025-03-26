@@ -129,6 +129,24 @@
   <data name="Match_Result_Update_Failed" xml:space="preserve">
     <value>Nie udało się zaktualizować wyniku spotkania.</value>
   </data>
+  <data name="Seasons_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrć danych sezonów.</value>
+  </data>
+  <data name="Simulations_Match_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać symulacji danego meczu.</value>
+  </data>
+  <data name="Simulations_Rounds_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać symulacji rund.</value>
+  </data>
+  <data name="Simulations_Round_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać symulacji danej rundy.</value>
+  </data>
+  <data name="Simulations_Season_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać symulacji danego sezonu.</value>
+  </data>
+  <data name="Teams_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać listy drużyn.</value>
+  </data>
   <data name="Team_Averages_Updated" xml:space="preserve">
     <value>Zaktualizowano średnie drużyn.</value>
   </data>

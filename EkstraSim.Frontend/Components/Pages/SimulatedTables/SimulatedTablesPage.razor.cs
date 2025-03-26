@@ -1,4 +1,5 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Resources;
 using MudBlazor;
 
 namespace EkstraSim.Frontend.Components.Pages.SimulatedTables;
@@ -31,13 +32,28 @@ public partial class SimulatedTablesPage
     private async Task GetSimulationsOfSelectedSeasonAsync()
     {
         var result = await _simulationService.GetAllSimulationsOfSeason(new Shared.Requests.SeasonAndLeagueRequest(selectedSeason.Id, selectedSeason.LeagueId));
-        simulations = result.ToList();
+
+        if(result.Data != null && result.Success == true)
+        {
+            simulations = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Simulations_Season_Get_Failed, Severity.Error);
+        }
     }
 
     private async Task GetSeasonsAsync()
     {
         var result = await _seasonService.GetSeasonsAsync();
-        seasons = result.ToList();
+        if (result.Data != null && result.Success == true)
+        {
+            seasons = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Seasons_Get_Failed, Severity.Error);
+        }
     }
 
     private void SelectTeam(DataGridRowClickEventArgs<SimulatedTeamInFinalTableDTO> args)

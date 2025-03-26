@@ -1,9 +1,10 @@
 ﻿@page "/teams"
 @using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.Resources
 @using Shared.DTOs
 
 @inject TeamService _teamService
-
+@inject ISnackbar Snackbar
 <h3>Teams</h3>
 
 @if (teams == null)
@@ -27,7 +28,15 @@ else
     protected override async Task OnInitializedAsync()
     {
         var result = await _teamService.GetTeamsAsync();
-        teams = result.ToList();
+
+        if (result.Data != null && result.Success == true)
+        {
+            teams = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(SnackbarMessages.Teams_Get_Failed, Severity.Error);
+        }
     }
 
 

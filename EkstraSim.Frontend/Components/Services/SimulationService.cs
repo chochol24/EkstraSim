@@ -1,44 +1,40 @@
 ﻿using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Results;
 
 namespace EkstraSim.Frontend.Components.Services;
 
 public class SimulationService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpServiceHelper _httpHelper;
 
-    public SimulationService(HttpClient httpClient)
+    public SimulationService(HttpServiceHelper httpHelper)
     {
-        _httpClient = httpClient;
+        _httpHelper = httpHelper;
     }
 
-    public async Task<IEnumerable<SimulatedRoundDTO>> GetSimulatedRoundsBySeason(SeasonAndLeagueRequest request)
+    public async Task<EkstraSimResult<List<SimulatedRoundDTO>>> GetSimulatedRoundsBySeason(SeasonAndLeagueRequest request)
     {
-        var rounds = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedRoundDTO>>($"/v1/api/simulated-rounds/{request.SeasonId}/{request.LeagueId}");
-        return rounds ?? null;
+        return await _httpHelper.SendGetListAsync<SimulatedRoundDTO>($"/v1/api/simulated-rounds/{request.SeasonId}/{request.LeagueId}");
     }
 
-    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
+    public async Task<EkstraSimResult<List<SimulatedFinalLeagueDTO>>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
     {
-        var simulations = await _httpClient.GetFromJsonAsync<IEnumerable<SimulatedFinalLeagueDTO>>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
-        return simulations ?? null;
+        return await _httpHelper.SendGetListAsync<SimulatedFinalLeagueDTO>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
     }
 
-    public async Task<SimulatedRoundDTO> GetSimulatedRoundResults(int simulatedRoundId)
+    public async Task<EkstraSimResult<SimulatedRoundDTO>> GetSimulatedRoundResults(int simulatedRoundId)
     {
-        var round = await _httpClient.GetFromJsonAsync<SimulatedRoundDTO>($"v1/api/simulated-round/{simulatedRoundId}");
-        return round ?? null;
+        return await _httpHelper.SendGetAsync<SimulatedRoundDTO>($"v1/api/simulated-round/{simulatedRoundId}");
     }
 
-    public async Task<SimulatedMatchResultDTO> GetSimulatedMatch(int simulatedMatchId)
+    public async Task<EkstraSimResult<SimulatedMatchResultDTO>> GetSimulatedMatch(int simulatedMatchId)
     {
-        var match = await _httpClient.GetFromJsonAsync<SimulatedMatchResultDTO>($"v1/api/simulated-match/{simulatedMatchId}");
-        return match ?? null;
+        return await _httpHelper.SendGetAsync<SimulatedMatchResultDTO>($"v1/api/simulated-match/{simulatedMatchId}");
     }
 
-    public async Task SimulateRound(SimulateRoundRequest simulatedRoundRequest)
+    public async Task<EkstraSimResult<bool>> SimulateRound(SimulateRoundRequest simulatedRoundRequest)
     {
-        await _httpClient.PutAsJsonAsync($"v1/api/simulate/round", simulatedRoundRequest);
+        return await _httpHelper.SendPutAsync<bool>($"v1/api/simulate/round", simulatedRoundRequest);
     }
 }
-

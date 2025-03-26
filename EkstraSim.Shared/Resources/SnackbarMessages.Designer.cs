@@ -97,6 +97,51 @@ namespace EkstraSim.Shared.Resources {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrć danych sezonów..
+        /// </summary>
+        public static string Seasons_Get_Failed {
+            get {
+                return ResourceManager.GetString("Seasons_Get_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać symulacji danego meczu..
+        /// </summary>
+        public static string Simulations_Match_Get_Failed {
+            get {
+                return ResourceManager.GetString("Simulations_Match_Get_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać symulacji danej rundy..
+        /// </summary>
+        public static string Simulations_Round_Get_Failed {
+            get {
+                return ResourceManager.GetString("Simulations_Round_Get_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać symulacji rund..
+        /// </summary>
+        public static string Simulations_Rounds_Get_Failed {
+            get {
+                return ResourceManager.GetString("Simulations_Rounds_Get_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać symulacji danego sezonu..
+        /// </summary>
+        public static string Simulations_Season_Get_Failed {
+            get {
+                return ResourceManager.GetString("Simulations_Season_Get_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się zaktualizować średnich drużyn..
         /// </summary>
         public static string Team_Averages_Update_Failed {
@@ -111,6 +156,15 @@ namespace EkstraSim.Shared.Resources {
         public static string Team_Averages_Updated {
             get {
                 return ResourceManager.GetString("Team_Averages_Updated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać listy drużyn..
+        /// </summary>
+        public static string Teams_Get_Failed {
+            get {
+                return ResourceManager.GetString("Teams_Get_Failed", resourceCulture);
             }
         }
     }

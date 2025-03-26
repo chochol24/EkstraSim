@@ -1,20 +1,19 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Results;
 
 namespace EkstraSim.Frontend.Components.Services;
 
 public class SeasonService
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpServiceHelper _httpHelper;
 
-    public SeasonService(HttpClient httpClient)
+    public SeasonService(HttpServiceHelper httpHelper)
     {
-        _httpClient = httpClient;
+        _httpHelper = httpHelper;
     }
 
-    public async Task<IEnumerable<SeasonDTO>> GetSeasonsAsync()
+    public async Task<EkstraSimResult<List<SeasonDTO>>> GetSeasonsAsync()
     {
-        var teams = await _httpClient.GetFromJsonAsync<IEnumerable<SeasonDTO>>("/v1/api/seasons");
-        return teams ?? new List<SeasonDTO>();
+        return await _httpHelper.SendGetListAsync<SeasonDTO>("/v1/api/seasons");
     }
-
 }
