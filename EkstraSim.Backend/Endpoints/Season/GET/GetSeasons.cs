@@ -1,10 +1,11 @@
 ﻿using EkstraSim.Backend.Database.Services;
 using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Results;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.Season.GET;
 
-public class GetSeasons : EndpointWithoutRequest<IEnumerable<SeasonDTO>>
+public class GetSeasons : EndpointWithoutRequest<EkstraSimResult<IEnumerable<SeasonDTO>>>
 {
     private readonly SeasonService _seasonService;
 
@@ -21,14 +22,6 @@ public class GetSeasons : EndpointWithoutRequest<IEnumerable<SeasonDTO>>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var result = await _seasonService.GetSeasonsAsync();
-        if (result != null)
-        {
-            await SendAsync(result, cancellation: ct);
-        }
-        else
-        {
-
-            //obsluga bledu
-        }
+        await SendAsync(result, result.Success ? 200 : 500, ct);
     }
 }

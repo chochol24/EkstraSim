@@ -89,7 +89,7 @@ else
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Simulations_Round_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
 
 	}

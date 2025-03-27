@@ -31,11 +31,11 @@ else
 
         if (result.Data != null && result.Success == true)
         {
-            teams = result.Data;
+            teams = result.Data.ToList();
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Teams_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
 

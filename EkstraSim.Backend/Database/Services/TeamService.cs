@@ -3,13 +3,17 @@ using Shared;
 using System.Diagnostics;
 using EkstraSim.Shared.DTOs;
 using AutoMapper;
+using EkstraSim.Shared.Results;
+using EkstraSim.Shared.Resources;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EkstraSim.Backend.Database.Services;
 
 public interface ITeamService
 {
-	public Task<IEnumerable<TeamDTO>> GetAllTeamsAsync();
-	public Task BaseRecalculateEloRankingAllTeamsAsync();
+	public Task<EkstraSimResult<IEnumerable<TeamDTO>>> GetAllTeamsAsync();
+
+    public Task BaseRecalculateEloRankingAllTeamsAsync();
 	public Task UpdateAverageTeamGoals();
 }
 
@@ -80,28 +84,41 @@ public class TeamService : ITeamService
 		stopwatch.Stop();
 	}
 
-	public async Task<IEnumerable<TeamDTO>> GetAllTeamsAsync()
-	{
-		var teams = await _context.Teams.ToListAsync();
+    public async Task<EkstraSimResult<IEnumerable<TeamDTO>>> GetAllTeamsAsync()
+    {
+        try
+        {
+            var teams = await _context.Teams.ToListAsync();
+            var result = teams.Select(team => _mapper.Map<TeamDTO>(team)).ToList();
 
-		List<TeamDTO> result = [];
-		foreach (var team in teams)
-		{
-			result.Add(_mapper.Map<TeamDTO>(team));
-		}
+            if (teams.IsNullOrEmpty())
+            {
+                return new EkstraSimResult<IEnumerable<TeamDTO>>
+                {
+                    Success = false,
+                    Data = new List<TeamDTO>(),
+                    ErrorMessage = $"{SnackbarMessages.Error_Teams_Null}"
+                };
+            }
 
-		if (result != null)
-		{
-			return result.AsEnumerable();
-		}
-		else
-		{
-			//TODO obsluga
-			throw new Exception();
-		}
-	}
+            return new EkstraSimResult<IEnumerable<TeamDTO>>
+            {
+                Success = true,
+                Data = result
+            };
+        }
+        catch (Exception ex)
+        {
+            return new EkstraSimResult<IEnumerable<TeamDTO>>
+            {
+                Success = false,
+                Data = new List<TeamDTO>(),
+                ErrorMessage = $"{SnackbarMessages.Error_Get}{ex.Message}"
+            };
+        }
+    }
 
-	public async Task UpdateAverageTeamGoals()
+    public async Task UpdateAverageTeamGoals()
 	{
 		var teams = await _context.Teams
 			.Include(t => t.AwayMatches)

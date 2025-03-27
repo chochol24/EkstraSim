@@ -14,6 +14,7 @@ public class TeamService
 
     public async Task<EkstraSimResult<List<TeamDTO>>> GetTeamsAsync()
     {
-        return await _httpHelper.SendGetListAsync<TeamDTO>("/v1/api/teams");
+        var result = await _httpHelper.SendGetAsync<List<TeamDTO>>("/v1/api/teams");
+        return result;
     }
 }

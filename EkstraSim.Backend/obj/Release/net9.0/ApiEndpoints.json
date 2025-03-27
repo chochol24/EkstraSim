@@ -55,7 +55,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.MatchDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.MatchDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -97,7 +97,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SeasonDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SeasonDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -168,7 +168,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "EkstraSim.Shared.DTOs.SimulatedMatchResultDTO",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[EkstraSim.Shared.DTOs.SimulatedMatchResultDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -193,7 +193,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "EkstraSim.Shared.DTOs.SimulatedRoundDTO",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[EkstraSim.Shared.DTOs.SimulatedRoundDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -218,7 +218,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SimulatedRoundDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SimulatedRoundDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -243,7 +243,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SimulatedFinalLeagueDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SimulatedFinalLeagueDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],
@@ -296,7 +296,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.TeamDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.TeamDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "application/json"
         ],

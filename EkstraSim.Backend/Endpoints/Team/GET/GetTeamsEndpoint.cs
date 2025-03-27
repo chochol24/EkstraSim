@@ -1,10 +1,11 @@
 ﻿using EkstraSim.Backend.Database.Services;
 using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Results;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints;
 
-public class GetTeamsEndpoint : EndpointWithoutRequest<IEnumerable<TeamDTO>>
+public class GetTeamsEndpoint : EndpointWithoutRequest<EkstraSimResult<IEnumerable<TeamDTO>>>
 {
 	private readonly ITeamService _teamService;
 
@@ -18,17 +19,9 @@ public class GetTeamsEndpoint : EndpointWithoutRequest<IEnumerable<TeamDTO>>
 		AllowAnonymous();
 	}
 
-	public override async Task HandleAsync(CancellationToken ct)
-	{
-		var result = await _teamService.GetAllTeamsAsync();
-		if (result != null)
-		{
-			await SendAsync(result, cancellation: ct);
-		}
-		else
-		{
-			
-			//obsluga bledu
-		}
-	}
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var result = await _teamService.GetAllTeamsAsync();
+        await SendAsync(result, result.Success ? 200 : 500, ct);
+    }
 }

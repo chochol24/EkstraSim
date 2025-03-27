@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Resources;
+using EkstraSim.Shared.Results;
 using Microsoft.EntityFrameworkCore;
 
 namespace EkstraSim.Backend.Database.Services;
@@ -16,30 +18,45 @@ public class SimulatedSeasonService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<SimulatedFinalLeagueDTO>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
+    public async Task<EkstraSimResult<IEnumerable<SimulatedFinalLeagueDTO>>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
     {
-        var simulations = await _context.SimulatedFinalLeagues
-            .Include(x => x.Teams)
-                .ThenInclude(t => t.Team)
-            .Include(x => x.Season)
-            .Include(x => x.League)
-            .Where(x => x.SeasonId == request.SeasonId && x.LeagueId == request.LeagueId)
-            .ToListAsync();
+        try
+        {
+            var simulations = await _context.SimulatedFinalLeagues
+                .Include(x => x.Teams)
+                    .ThenInclude(t => t.Team)
+                .Include(x => x.Season)
+                .Include(x => x.League)
+                .Where(x => x.SeasonId == request.SeasonId && x.LeagueId == request.LeagueId)
+                .ToListAsync();
 
-        List<SimulatedFinalLeagueDTO> result = [];
-        foreach (var simulation in simulations)
-        {
-            result.Add(_mapper.Map<SimulatedFinalLeagueDTO>(simulation));
-        }
+            var result = simulations.Select(simulation => _mapper.Map<SimulatedFinalLeagueDTO>(simulation)).ToList();
 
-        if (result != null)
-        {
-            return result.AsEnumerable();
+            if (!result.Any())
+            {
+                return new EkstraSimResult<IEnumerable<SimulatedFinalLeagueDTO>>
+                {
+                    Success = false,
+                    Data = new List<SimulatedFinalLeagueDTO>(),
+                    ErrorMessage = SnackbarMessages.Error_Simulations_Null
+                };
+            }
+
+            return new EkstraSimResult<IEnumerable<SimulatedFinalLeagueDTO>>
+            {
+                Success = true,
+                Data = result
+            };
         }
-        else
+        catch (Exception ex)
         {
-            //TODO obsluga
-            throw new Exception();
+            return new EkstraSimResult<IEnumerable<SimulatedFinalLeagueDTO>>
+            {
+                Success = false,
+                Data = new List<SimulatedFinalLeagueDTO>(),
+                ErrorMessage = $"{SnackbarMessages.Error_Get}{ex.Message}"
+            };
         }
     }
+
 }

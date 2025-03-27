@@ -1,11 +1,12 @@
 ﻿using EkstraSim.Backend.Database.Services;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Results;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedRound.GET;
 
-public class GetAllSimulatedRoundsBySeason : Endpoint<SeasonAndLeagueRequest ,IEnumerable<SimulatedRoundDTO>>
+public class GetAllSimulatedRoundsBySeason : Endpoint<SeasonAndLeagueRequest , EkstraSimResult<IEnumerable<SimulatedRoundDTO>>>
 {
     private readonly SimulatedRoundService _roundService;
 
@@ -22,14 +23,6 @@ public class GetAllSimulatedRoundsBySeason : Endpoint<SeasonAndLeagueRequest ,IE
     public override async Task HandleAsync(SeasonAndLeagueRequest request, CancellationToken ct)
     {
         var result = await _roundService.GetSimulatedRoundsAsync(request.SeasonId, request.LeagueId);
-        if (result != null)
-        {
-            await SendAsync(result, cancellation: ct);
-        }
-        else
-        {
-
-            //obsluga bledu
-        }
+        await SendAsync(result, result.Success ? 200 : 500, ct);
     }
 }

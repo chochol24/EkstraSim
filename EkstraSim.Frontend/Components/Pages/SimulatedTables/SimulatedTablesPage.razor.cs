@@ -39,7 +39,7 @@ public partial class SimulatedTablesPage
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Simulations_Season_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
 
@@ -52,7 +52,7 @@ public partial class SimulatedTablesPage
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Seasons_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
 

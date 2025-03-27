@@ -61,6 +61,96 @@ namespace EkstraSim.Shared.Resources {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Niezdefiniowany błąd..
+        /// </summary>
+        public static string Error_Base {
+            get {
+                return ResourceManager.GetString("Error_Base", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Błąd deserializacji..
+        /// </summary>
+        public static string Error_Deserialize {
+            get {
+                return ResourceManager.GetString("Error_Deserialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Błąd podczas pobierania danych: .
+        /// </summary>
+        public static string Error_Get {
+            get {
+                return ResourceManager.GetString("Error_Get", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak meczy w bazie..
+        /// </summary>
+        public static string Error_Matches_Null {
+            get {
+                return ResourceManager.GetString("Error_Matches_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak sezonów w bazie..
+        /// </summary>
+        public static string Error_Seasons_Null {
+            get {
+                return ResourceManager.GetString("Error_Seasons_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie znaleziono symulowanego meczu..
+        /// </summary>
+        public static string Error_SimulatedMatch_NotFound {
+            get {
+                return ResourceManager.GetString("Error_SimulatedMatch_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie znaleziono symulowanej rundy..
+        /// </summary>
+        public static string Error_SimulatedRound_NotFound {
+            get {
+                return ResourceManager.GetString("Error_SimulatedRound_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak symulowanych rund w bazie..
+        /// </summary>
+        public static string Error_SimulatedRounds_Null {
+            get {
+                return ResourceManager.GetString("Error_SimulatedRounds_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak symulacji w bazie..
+        /// </summary>
+        public static string Error_Simulations_Null {
+            get {
+                return ResourceManager.GetString("Error_Simulations_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak drużyn w bazie..
+        /// </summary>
+        public static string Error_Teams_Null {
+            get {
+                return ResourceManager.GetString("Error_Teams_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało sie zaktualizować średnich ligowych..
         /// </summary>
         public static string League_Averages_Update_Failed {

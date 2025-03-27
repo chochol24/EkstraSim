@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Resources;
+using EkstraSim.Shared.Results;
 using Microsoft.EntityFrameworkCore;
 
 namespace EkstraSim.Backend.Database.Services;
@@ -14,26 +16,41 @@ public class SeasonService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<SeasonDTO>> GetSeasonsAsync()
+    public async Task<EkstraSimResult<IEnumerable<SeasonDTO>>> GetSeasonsAsync()
     {
-        var seasons = await _context.Seasons
-            .Include(x => x.League)
-            .ToListAsync();
+        try
+        {
+            var seasons = await _context.Seasons
+                .Include(x => x.League)
+                .ToListAsync();
 
-        List<SeasonDTO> result = [];
-        foreach (var season in seasons)
-        {
-            result.Add(_mapper.Map<SeasonDTO>(season));
-        }
+            var result = seasons.Select(season => _mapper.Map<SeasonDTO>(season)).ToList();
 
-        if (result != null)
-        {
-            return result.AsEnumerable();
+            if (!result.Any())
+            {
+                return new EkstraSimResult<IEnumerable<SeasonDTO>>
+                {
+                    Success = false,
+                    Data = new List<SeasonDTO>(),
+                    ErrorMessage = SnackbarMessages.Error_Seasons_Null
+                };
+            }
+
+            return new EkstraSimResult<IEnumerable<SeasonDTO>>
+            {
+                Success = true,
+                Data = result
+            };
         }
-        else
+        catch (Exception ex)
         {
-            //TODO obsluga
-            throw new Exception();
+            return new EkstraSimResult<IEnumerable<SeasonDTO>>
+            {
+                Success = false,
+                Data = new List<SeasonDTO>(),
+                ErrorMessage = $"{SnackbarMessages.Error_Get}{ex.Message}"
+            };
         }
     }
+
 }

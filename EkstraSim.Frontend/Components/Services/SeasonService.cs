@@ -14,6 +14,6 @@ public class SeasonService
 
     public async Task<EkstraSimResult<List<SeasonDTO>>> GetSeasonsAsync()
     {
-        return await _httpHelper.SendGetListAsync<SeasonDTO>("/v1/api/seasons");
+        return await _httpHelper.SendGetAsync<List<SeasonDTO>>("/v1/api/seasons");
     }
 }

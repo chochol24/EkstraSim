@@ -1,12 +1,13 @@
 ﻿using EkstraSim.Backend.Database.Services;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Results;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedMatch;
 
 
-public class GetSimulatedMatchById : Endpoint<GetSimulatedMatchResultsRequest, SimulatedMatchResultDTO>
+public class GetSimulatedMatchById : Endpoint<GetSimulatedMatchResultsRequest, EkstraSimResult<SimulatedMatchResultDTO>>
 {
     private readonly SimulatedMatchService _matchService;
 
@@ -23,14 +24,6 @@ public class GetSimulatedMatchById : Endpoint<GetSimulatedMatchResultsRequest, S
     public override async Task HandleAsync(GetSimulatedMatchResultsRequest request, CancellationToken ct)
     {
         var result = await _matchService.GetSimulatedMatchByIdAsync(request.SimulatedMatchId);
-        if (result != null)
-        {
-            await SendAsync(result, cancellation: ct);
-        }
-        else
-        {
-
-            //obsluga bledu
-        }
+        await SendAsync(result, result.Success ? 200 : 500, ct);
     }
 }

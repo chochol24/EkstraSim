@@ -1,12 +1,13 @@
 ﻿using EkstraSim.Backend.Database.Services;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Results;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.Match.GET;
 
 
-public class GetRoundMatches : Endpoint<GetMatchesByRoundRequest, IEnumerable<MatchDTO>>
+public class GetRoundMatches : Endpoint<GetMatchesByRoundRequest, EkstraSimResult<IEnumerable<MatchDTO>>>
 {
     private readonly MatchService _matchService;
 
@@ -23,15 +24,7 @@ public class GetRoundMatches : Endpoint<GetMatchesByRoundRequest, IEnumerable<Ma
     public override async Task HandleAsync(GetMatchesByRoundRequest req, CancellationToken ct)
     {
         var result = await _matchService.GetMatchesByRound(req);
-        if (result != null)
-        {
-            await SendAsync(result, cancellation: ct);
-        }
-        else
-        {
-
-            //obsluga bledu
-        }
+        await SendAsync(result, result.Success ? 200 : 500, ct);
     }
 }
 

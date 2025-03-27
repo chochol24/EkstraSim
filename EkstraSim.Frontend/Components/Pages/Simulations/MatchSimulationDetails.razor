@@ -154,7 +154,7 @@ else
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Simulations_Match_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
 
         DeserializeMatrixWithScoresPercentage();

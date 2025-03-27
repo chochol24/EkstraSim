@@ -15,12 +15,12 @@ public class SimulationService
 
     public async Task<EkstraSimResult<List<SimulatedRoundDTO>>> GetSimulatedRoundsBySeason(SeasonAndLeagueRequest request)
     {
-        return await _httpHelper.SendGetListAsync<SimulatedRoundDTO>($"/v1/api/simulated-rounds/{request.SeasonId}/{request.LeagueId}");
+        return await _httpHelper.SendGetAsync<List<SimulatedRoundDTO>>($"/v1/api/simulated-rounds/{request.SeasonId}/{request.LeagueId}");
     }
 
     public async Task<EkstraSimResult<List<SimulatedFinalLeagueDTO>>> GetAllSimulationsOfSeason(SeasonAndLeagueRequest request)
     {
-        return await _httpHelper.SendGetListAsync<SimulatedFinalLeagueDTO>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
+        return await _httpHelper.SendGetAsync<List<SimulatedFinalLeagueDTO>>($"/v1/api/simulated-season/{request.SeasonId}/{request.LeagueId}");
     }
 
     public async Task<EkstraSimResult<SimulatedRoundDTO>> GetSimulatedRoundResults(int simulatedRoundId)

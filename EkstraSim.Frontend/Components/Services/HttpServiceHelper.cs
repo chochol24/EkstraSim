@@ -1,4 +1,8 @@
-﻿using EkstraSim.Shared.Results;
+﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Resources;
+using EkstraSim.Shared.Results;
+using MudBlazor;
+using System.Text.Json;
 
 namespace EkstraSim.Frontend.Components.Services;
 
@@ -15,40 +19,32 @@ public class HttpServiceHelper
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<T>(url);
-            return new EkstraSimResult<T>
-            {
-                Success = true,
-                Data = response!
-            };
-        }
-        catch (Exception ex)
-        {
-            return new EkstraSimResult<T>
-            {
-                Success = false,
-                ErrorMessage = ex.Message
-            };
-        }
-    }
+            var httpResponse = await _httpClient.GetAsync(url);
+            var content = await httpResponse.Content.ReadAsStringAsync();
 
-    public async Task<EkstraSimResult<List<T>>> SendGetListAsync<T>(string url)
-    {
-        try
-        {
-            var response = await _httpClient.GetFromJsonAsync<List<T>>(url);
-            return new EkstraSimResult<List<T>>
+            var result = JsonSerializer.Deserialize<EkstraSimResult<T>>(content, new JsonSerializerOptions
             {
-                Success = true,
-                Data = response ?? new List<T>()
-            };
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result == null)
+            {
+                return new EkstraSimResult<T>
+                {
+                    Success = false,
+                    Data = default,
+                    ErrorMessage = SnackbarMessages.Error_Deserialize
+                };
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            return new EkstraSimResult<List<T>>
+            return new EkstraSimResult<T>
             {
                 Success = false,
-                Data = new List<T>(),
+                Data = default,
                 ErrorMessage = ex.Message
             };
         }

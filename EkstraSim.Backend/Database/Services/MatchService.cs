@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
+using EkstraSim.Shared.Resources;
+using EkstraSim.Shared.Results;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EkstraSim.Backend.Database.Services;
 
@@ -31,28 +34,42 @@ public class MatchService
         }
     }
 
-    public async Task<IEnumerable<MatchDTO>> GetMatchesByRound(GetMatchesByRoundRequest req)
+    public async Task<EkstraSimResult<IEnumerable<MatchDTO>>> GetMatchesByRound(GetMatchesByRoundRequest req)
     {
-        var matches = await _context.Matches
-            .Include(x => x.AwayTeam)
-            .Include(x => x.HomeTeam)
-            .Where(x => x.SeasonId == req.SeasonId && x.LeagueId == req.LeagueId && x.Round == req.Round)
-            .ToListAsync();
+        try
+        {
+            var matches = await _context.Matches
+                .Include(x => x.AwayTeam)
+                .Include(x => x.HomeTeam)
+                .Where(x => x.SeasonId == req.SeasonId && x.LeagueId == req.LeagueId && x.Round == req.Round)
+                .ToListAsync();
 
-        List<MatchDTO> result = [];
-        foreach (var match in matches)
-        {
-            result.Add(_mapper.Map<MatchDTO>(match));
-        }
+            if(matches.IsNullOrEmpty())
+            {
+                return new EkstraSimResult<IEnumerable<MatchDTO>>
+                {
+                    Success = false,
+                    Data = new List<MatchDTO>(),
+                    ErrorMessage = $"{SnackbarMessages.Error_Matches_Null}"
+                };
+            }
 
-        if (result != null)
-        {
-            return result.AsEnumerable();
+            var result = matches.Select(_mapper.Map<MatchDTO>).ToList();
+
+            return new EkstraSimResult<IEnumerable<MatchDTO>>
+            {
+                Success = true,
+                Data = result
+            };
         }
-        else
+        catch (Exception ex)
         {
-            //TODO obsluga
-            throw new Exception();
+            return new EkstraSimResult<IEnumerable<MatchDTO>>
+            {
+                Success = false,
+                Data = new List<MatchDTO>(),
+                ErrorMessage = $"{SnackbarMessages.Error_Get}{ex.Message}"
+            };
         }
     }
 }

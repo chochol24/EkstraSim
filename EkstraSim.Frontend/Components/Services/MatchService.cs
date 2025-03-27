@@ -15,7 +15,7 @@ public class MatchService
 
     public async Task<EkstraSimResult<List<MatchDTO>>> GetRoundMatchesAsync(GetMatchesByRoundRequest req)
     {
-        return await _httpHelper.SendGetListAsync<MatchDTO>($"/v1/api/matches/{req.LeagueId}/{req.SeasonId}/{req.Round}");
+        return await _httpHelper.SendGetAsync<List<MatchDTO>>($"/v1/api/matches/{req.LeagueId}/{req.SeasonId}/{req.Round}");
     }
 
     public async Task<EkstraSimResult<bool>> UpdateMatchResultAsync(UpdateMatchResultRequest req)

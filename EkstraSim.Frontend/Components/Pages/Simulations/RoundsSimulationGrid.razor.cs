@@ -31,7 +31,7 @@ public partial class RoundsSimulationGrid
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Seasons_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
     private async Task SeasonChangeAsync(SeasonDTO season)
@@ -45,7 +45,7 @@ public partial class RoundsSimulationGrid
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Simulations_Rounds_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
 

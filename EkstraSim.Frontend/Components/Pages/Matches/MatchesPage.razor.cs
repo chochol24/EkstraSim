@@ -43,7 +43,7 @@ public partial class MatchesPage
         }
         else
         {
-            Snackbar.Add(SnackbarMessages.Seasons_Get_Failed, Severity.Error);
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
         }
     }
 

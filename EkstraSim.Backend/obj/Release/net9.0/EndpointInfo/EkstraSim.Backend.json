@@ -15,10 +15,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TeamDTO"
-                  }
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfTeamDTO"
                 }
               }
             }
@@ -68,10 +65,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SimulatedFinalLeagueDTO"
-                  }
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfSimulatedFinalLeagueDTO"
                 }
               }
             }
@@ -101,10 +95,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SimulatedRoundDTO"
-                  }
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfSimulatedRoundDTO"
                 }
               }
             }
@@ -134,7 +125,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SimulatedRoundDTO"
+                  "$ref": "#/components/schemas/EkstraSimResultOfSimulatedRoundDTO"
                 }
               }
             }
@@ -164,7 +155,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+                  "$ref": "#/components/schemas/EkstraSimResultOfSimulatedMatchResultDTO"
                 }
               }
             }
@@ -227,10 +218,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SeasonDTO"
-                  }
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfSeasonDTO"
                 }
               }
             }
@@ -283,10 +271,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MatchDTO"
-                  }
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfMatchDTO"
                 }
               }
             }
@@ -330,6 +315,26 @@
   },
   "components": {
     "schemas": {
+      "EkstraSimResultOfIEnumerableOfTeamDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/TeamDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "TeamDTO": {
         "type": "object",
         "additionalProperties": false,
@@ -344,6 +349,26 @@
           "elo": {
             "type": "number",
             "format": "decimal"
+          }
+        }
+      },
+      "EkstraSimResultOfIEnumerableOfSimulatedFinalLeagueDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/SimulatedFinalLeagueDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -679,6 +704,26 @@
           }
         }
       },
+      "EkstraSimResultOfIEnumerableOfSimulatedRoundDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/SimulatedRoundDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "SimulatedRoundDTO": {
         "type": "object",
         "additionalProperties": false,
@@ -801,6 +846,27 @@
           }
         }
       },
+      "EkstraSimResultOfSimulatedRoundDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SimulatedRoundDTO"
+              }
+            ]
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "GetSimulatedRoundRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -808,6 +874,27 @@
           "simulatedRoundId": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "EkstraSimResultOfSimulatedMatchResultDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SimulatedMatchResultDTO"
+              }
+            ]
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -881,6 +968,26 @@
           }
         }
       },
+      "EkstraSimResultOfIEnumerableOfSeasonDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/SeasonDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "UpdateMatchResultRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -896,6 +1003,26 @@
           "awayTeamScore": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "EkstraSimResultOfIEnumerableOfMatchDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/MatchDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
