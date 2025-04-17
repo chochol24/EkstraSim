@@ -1,5 +1,6 @@
 ﻿using EkstraSim.Frontend.Components.Pages.Simulations;
 using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Requests;
 using EkstraSim.Shared.Resources;
 using MudBlazor;
 
@@ -48,7 +49,7 @@ public partial class SimulatedTablesPage
 
     private async Task GetSeasonsAsync()
     {
-        var result = await _seasonService.GetSeasonsAsync();
+        var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(1));
         if (result.Data != null && result.Success == true)
         {
             seasons = result.Data;

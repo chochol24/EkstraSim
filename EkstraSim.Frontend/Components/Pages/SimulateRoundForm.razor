@@ -1,21 +1,37 @@
 ﻿@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
 @using EkstraSim.Shared.Requests
+@using EkstraSim.Shared.Resources
 
 @inject SimulationService _simulationService;
+@inject LeagueService _leagueService;
+@inject SeasonService _seasonService;
+@inject ISnackbar Snackbar;
 
 <MudForm @ref="form" Validation="@formValidation" Class="form-simulate-round">
-	<MudNumericField T="int"
-					 Label="Id ligi" @bind-Value="formRequest.LeagueId"
-					 Immediate="true"
-					 Required="true"
-					 Class="numeric-field-form-simulate-round"
-					 For="@(() => formRequest.LeagueId)" />
-	<MudNumericField T="int"
-					 Label="Id sezonu" @bind-Value="formRequest.SeasonId"
-					 Immediate="true"
-					 Required="true"
-					 Class="numeric-field-form-simulate-round"
-					 For="@(() => formRequest.SeasonId)" />
+	<MudSelect T="int"
+			   Label="Liga"
+			   @bind-Value="formRequest.LeagueId"
+			   Required="true"
+			   For="@(() => formRequest.LeagueId)"
+			   Class="numeric-field-form-simulate-round"
+			   SelectedValuesChanged="OnLeagueChanged">
+		@foreach (var league in leagues)
+		{
+			<MudSelectItem Value="league.Id">@league.Name</MudSelectItem>
+		}
+	</MudSelect>
+	<MudSelect T="int"
+			   Label="Sezon"
+			   @bind-Value="formRequest.SeasonId"
+			   Required="true"
+			   For="@(() => formRequest.SeasonId)"
+			   Class="numeric-field-form-simulate-round" Disabled="!seasons.Any()">
+		@foreach (var season in seasons)
+		{
+			<MudSelectItem Value="season.Id">@season.Name</MudSelectItem>
+		}
+	</MudSelect>
 	<MudNumericField T="int"
 					 Label="Runda" @bind-Value="formRequest.Round"
 					 Immediate="true"
@@ -29,13 +45,14 @@
 					 Class="numeric-field-form-simulate-round"
 					 For="@(() => formRequest.NumberOfSimualtions)" />
 	<MudButton ButtonType="ButtonType.Button"
-			   Variant="Variant.Filled" 
+			   Variant="Variant.Filled"
 			   Color="Color.Primary"
-			   Class="form-simulate-submit-button" 
-			   OnClick="OnSubmit" 
-			   Disabled="@(!form?.IsValid ?? true)" 
+			   Class="form-simulate-submit-button"
+			   OnClick="OnSubmit"
+			   Disabled="@(!form?.IsValid ?? true)"
 			   @ref="submitButton">
-			   Symuluj </MudButton>
+		Symuluj
+	</MudButton>
 </MudForm>
 
 <style>
@@ -61,6 +78,9 @@
 	private SimulateRoundRequest formRequest = new();
 	private string formValidation;
 
+	private List<LeagueDTO> leagues = [];
+	private List<SeasonDTO> seasons = [];
+
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
@@ -71,12 +91,53 @@
 		}
 	}
 
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadLeagues();
+	}
+
+	private async Task OnLeagueChanged()
+	{
+		await LoadSeasons();
+	}
+
+	private async Task LoadSeasons()
+	{
+		var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(formRequest.LeagueId));
+		if (result.Data != null && result.Success == true)
+		{
+			seasons = result.Data.OrderByDescending(x => x.Name).ToList();
+		}
+		else
+		{
+			Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
+			formRequest.SeasonId = 0;
+			seasons.Clear();
+		}
+	}
+
+	private async Task LoadLeagues()
+	{
+		var leaguesResult = await _leagueService.GetAllLeaguesAsync();
+		if (leaguesResult.Success && leaguesResult.Data != null)
+		{
+			leagues = leaguesResult.Data;
+		}
+		else
+		{
+			Snackbar.Add(leaguesResult.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
+			seasons.Clear();
+			formRequest.LeagueId = 0;
+			formRequest.SeasonId = 0;
+		}
+	}
+
 	private async Task OnSubmit()
 	{
 
 		await _simulationService.SimulateRound(formRequest);
 		form.ResetValidation();
 		formRequest = new SimulateRoundRequest();
-		
+
 	}
 }

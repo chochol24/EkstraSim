@@ -36,7 +36,7 @@ public partial class MatchesPage
 
     private async Task GetSeasonsAsync()
     {
-        var result = await _seasonService.GetSeasonsAsync();
+        var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(1));
         if(result.Data != null && result.Success == true)
         {
             seasons = result.Data;

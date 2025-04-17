@@ -212,6 +212,19 @@
     "/v1/api/seasons": {
       "get": {
         "operationId": "EkstraSimBackendEndpointsSeasonGETGetSeasons",
+        "requestBody": {
+          "x-name": "SeasonRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeasonRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
             "description": "",
@@ -298,6 +311,23 @@
         "responses": {
           "204": {
             "description": ""
+          }
+        }
+      }
+    },
+    "/v1/api/leagues": {
+      "get": {
+        "operationId": "EkstraSimBackendEndpointsLeagueGETGetAllLeagues",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EkstraSimResultOfIEnumerableOfLeagueDTO"
+                }
+              }
+            }
           }
         }
       }
@@ -1000,6 +1030,16 @@
           }
         }
       },
+      "SeasonRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "leagueId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "UpdateMatchResultRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -1063,6 +1103,26 @@
           "leagueId": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "EkstraSimResultOfIEnumerableOfLeagueDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/LeagueDTO"
+            }
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
           }
         }
       }

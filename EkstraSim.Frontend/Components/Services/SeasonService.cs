@@ -1,4 +1,5 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Requests;
 using EkstraSim.Shared.Results;
 
 namespace EkstraSim.Frontend.Components.Services;
@@ -12,8 +13,8 @@ public class SeasonService
         _httpHelper = httpHelper;
     }
 
-    public async Task<EkstraSimResult<List<SeasonDTO>>> GetSeasonsAsync()
+    public async Task<EkstraSimResult<List<SeasonDTO>>> GetSeasonsAsync(SeasonRequest request)
     {
-        return await _httpHelper.SendGetAsync<List<SeasonDTO>>("/v1/api/seasons");
+        return await _httpHelper.SendGetAsync<List<SeasonDTO>>($"/v1/api/seasons/{request.LeagueId}");
     }
 }

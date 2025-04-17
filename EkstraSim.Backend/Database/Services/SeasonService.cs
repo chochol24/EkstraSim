@@ -16,12 +16,13 @@ public class SeasonService
         _mapper = mapper;
     }
 
-    public async Task<EkstraSimResult<IEnumerable<SeasonDTO>>> GetSeasonsAsync()
+    public async Task<EkstraSimResult<IEnumerable<SeasonDTO>>> GetSeasonsByLeagueIdAsync(int leagueId)
     {
         try
         {
             var seasons = await _context.Seasons
                 .Include(x => x.League)
+                .Where(x => x.LeagueId == leagueId)
                 .ToListAsync();
 
             var result = seasons.Select(season => _mapper.Map<SeasonDTO>(season)).ToList();

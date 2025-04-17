@@ -1,21 +1,64 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Resources;
+using EkstraSim.Shared.Results;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EkstraSim.Backend.Database.Services;
 
 public interface ILeagueService
 {
 	public Task UpdateAverageLeagueGoals(int leagueId);
+    public Task<EkstraSimResult<IEnumerable<LeagueDTO>>> GetAllLeagues();
 }
 
 public class LeagueService : ILeagueService
 {
 	private readonly EkstraSimDbContext _context;
-	public LeagueService(EkstraSimDbContext context)
+	private readonly IMapper _mapper;
+	public LeagueService(EkstraSimDbContext context, IMapper mapper)
 	{
 		_context = context;
+		_mapper = mapper;
 	}
 
-	public async Task UpdateAverageLeagueGoals(int leagueId)
+    public async Task<EkstraSimResult<IEnumerable<LeagueDTO>>> GetAllLeagues()
+    {
+		try
+		{
+			var leagues = await _context.Leagues.ToListAsync();
+			if (leagues.IsNullOrEmpty())
+			{
+				return new EkstraSimResult<IEnumerable<LeagueDTO>>
+				{
+					Success = false,
+					Data = Enumerable.Empty<LeagueDTO>(),
+					ErrorMessage = $"{SnackbarMessages.Error_Leagues_Null}"
+				};
+			}
+
+			var result = leagues.Select(_mapper.Map<LeagueDTO>).ToList();
+
+			return new EkstraSimResult<IEnumerable<LeagueDTO>>
+			{
+				Success = true,
+				Data = result
+			};
+		}
+		catch (Exception ex)
+		{
+            return new EkstraSimResult<IEnumerable<LeagueDTO>>
+            {
+                Success = false,
+                Data = new List<LeagueDTO>(),
+                ErrorMessage = $"{SnackbarMessages.Error_Get}{ex.Message}"
+            };
+        }
+
+    }
+
+    public async Task UpdateAverageLeagueGoals(int leagueId)
 	{
 		var league = await _context.Leagues.FindAsync(leagueId);
 		if (league != null)

@@ -88,6 +88,15 @@ namespace EkstraSim.Shared.Resources {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak lig w bazie..
+        /// </summary>
+        public static string Error_Leagues_Null {
+            get {
+                return ResourceManager.GetString("Error_Leagues_Null", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Brak meczy w bazie..
         /// </summary>
         public static string Error_Matches_Null {

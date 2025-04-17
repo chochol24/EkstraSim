@@ -126,6 +126,9 @@
   <data name="Error_Get" xml:space="preserve">
     <value>Błąd podczas pobierania danych: </value>
   </data>
+  <data name="Error_Leagues_Null" xml:space="preserve">
+    <value>Brak lig w bazie.</value>
+  </data>
   <data name="Error_Matches_Null" xml:space="preserve">
     <value>Brak meczy w bazie.</value>
   </data>

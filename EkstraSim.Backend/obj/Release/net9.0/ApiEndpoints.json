@@ -42,6 +42,25 @@
   {
     "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
     "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
+    "RelativePath": "v1/api/leagues",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.LeagueDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "EndpointName": "EkstraSimBackendEndpointsLeagueGETGetAllLeagues"
+  },
+  {
+    "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
+    "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
     "RelativePath": "v1/api/matches/{LeagueId}/{SeasonId}/{Round}",
     "HttpMethod": "GET",
     "IsController": false,
@@ -90,11 +109,17 @@
   {
     "ContainingType": "FastEndpoints.MainExtensions\u002B\u003C\u003Ec",
     "Method": "\u003CMapFastEndpoints\u003Eb__2_1",
-    "RelativePath": "v1/api/seasons",
+    "RelativePath": "v1/api/seasons/{LeagueId}",
     "HttpMethod": "GET",
     "IsController": false,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "SeasonRequest",
+        "Type": "EkstraSim.Shared.Requests.SeasonRequest",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": [
       {
         "Type": "EkstraSim.Shared.Results.EkstraSimResult\u00601[[System.Collections.Generic.IEnumerable\u00601[[EkstraSim.Shared.DTOs.SeasonDTO, EkstraSim.Shared, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",

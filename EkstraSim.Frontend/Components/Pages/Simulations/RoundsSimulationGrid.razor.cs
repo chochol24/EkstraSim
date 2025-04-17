@@ -1,4 +1,5 @@
 ﻿using EkstraSim.Shared.DTOs;
+using EkstraSim.Shared.Requests;
 using EkstraSim.Shared.Resources;
 using MudBlazor;
 
@@ -24,10 +25,10 @@ public partial class RoundsSimulationGrid
 
     private async Task GetSeasonsAsync()
     {
-        var result = await _seasonService.GetSeasonsAsync();
+        var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(1));
         if (result.Data != null && result.Success == true)
         {
-            seasons = result.Data;
+            seasons = result.Data.OrderByDescending(x => x.Name).ToList();
         }
         else
         {
@@ -38,7 +39,7 @@ public partial class RoundsSimulationGrid
     {
         selectedSeason = season;
 
-        var result = await _simulationService.GetSimulatedRoundsBySeason(new Shared.Requests.SeasonAndLeagueRequest(season.Id, season.LeagueId));
+        var result = await _simulationService.GetSimulatedRoundsBySeason(new SeasonAndLeagueRequest(season.Id, season.LeagueId));
         if (result.Data != null && result.Success == true)
         {
             simulatedRounds = result.Data;
@@ -46,6 +47,7 @@ public partial class RoundsSimulationGrid
         else
         {
             Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
+            simulatedRounds.Clear();
         }
     }
 
