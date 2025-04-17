@@ -1,4 +1,5 @@
-﻿using EkstraSim.Shared.DTOs;
+﻿using EkstraSim.Frontend.Components.Pages.Simulations;
+using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Resources;
 using MudBlazor;
 
@@ -13,8 +14,10 @@ public partial class SimulatedTablesPage
     private SimulatedTeamInFinalTableDTO selectedTeam;
     private SeasonDTO selectedSeason;
 
-    private bool isLoading = true;
+    private SimulatedTableForm tableForm = new();
 
+    private bool isLoading = true;
+    private bool isFormVisible = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -115,5 +118,11 @@ public partial class SimulatedTablesPage
             >= 16 and <= 18 => "relegation-zone",
             _ => ""
         };
+    }
+
+
+    private void SwitchFormVisible()
+    {
+        isFormVisible = !isFormVisible;
     }
 }

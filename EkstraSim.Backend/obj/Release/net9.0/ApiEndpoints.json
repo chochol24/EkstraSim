@@ -138,8 +138,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "SimulateLeagueTableRequest",
-        "Type": "EkstraSim.Backend.Endpoints.SimulatedMatch.SimulateLeagueTableRequest",
+        "Name": "SimulateTableRequest",
+        "Type": "EkstraSim.Shared.Requests.SimulateTableRequest",
         "IsRequired": true
       }
     ],

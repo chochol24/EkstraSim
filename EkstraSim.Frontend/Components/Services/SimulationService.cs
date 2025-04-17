@@ -37,4 +37,9 @@ public class SimulationService
     {
         return await _httpHelper.SendPutAsync<bool>($"v1/api/simulate/round", simulatedRoundRequest);
     }
+
+    public async Task<EkstraSimResult<bool>> SimulateTable(SimulateTableRequest simulateTableRequest)
+    {
+        return await _httpHelper.SendPutAsync<bool>($"v1/api/simulate/table", simulateTableRequest);
+    }
 }

@@ -1,9 +1,10 @@
 ﻿using EkstraSim.Backend.Database.Services;
+using EkstraSim.Shared.Requests;
 using FastEndpoints;
 
 namespace EkstraSim.Backend.Endpoints.SimulatedMatch;
 
-public class SimulateLeagueTable : Endpoint<SimulateLeagueTableRequest>
+public class SimulateLeagueTable : Endpoint<SimulateTableRequest>
 {
 	private readonly ISimulatingService _simulatingService;
 
@@ -18,16 +19,8 @@ public class SimulateLeagueTable : Endpoint<SimulateLeagueTableRequest>
 		AllowAnonymous();
 	}
 
-	public override async Task HandleAsync(SimulateLeagueTableRequest request, CancellationToken ct)
+	public override async Task HandleAsync(SimulateTableRequest request, CancellationToken ct)
 	{
-		await _simulatingService.SimulateRestOfTheSeason(request.LeagueId, request.SeasonId, request.Round.GetValueOrDefault(), request.NumberOfSimulations.GetValueOrDefault());
+		await _simulatingService.SimulateRestOfTheSeason(request.LeagueId, request.SeasonId, request.Round, request.NumberOfSimualtions);
 	}
-}
-
-public class SimulateLeagueTableRequest
-{
-	public int LeagueId { get; set; }
-	public int SeasonId { get; set; }
-	public int? Round {  get; set; }
-	public int? NumberOfSimulations { get; set; }
 }

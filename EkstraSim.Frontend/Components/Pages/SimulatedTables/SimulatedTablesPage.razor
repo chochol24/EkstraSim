@@ -2,7 +2,7 @@
 
 @using EkstraSim.Frontend.Components.Services
 @using EkstraSim.Shared.DTOs
-
+@using EkstraSim.Frontend.Components.Pages.Simulations
 @inject SimulationService _simulationService
 @inject SeasonService _seasonService
 @inject ISnackbar Snackbar
@@ -24,7 +24,7 @@ else
 				}
 			</MudSelect>
 		</MudItem>
-		<MudItem xs="6">
+		<MudItem xs="4">
 			<MudSelect T="SimulatedFinalLeagueDTO" Label="Symulacja" ValueChanged="AssignPlaces" ReadOnly="@(!seasons.Any())">
 				@foreach (var simulation in simulations)
 				{
@@ -32,6 +32,15 @@ else
 				}
 			</MudSelect>
 		</MudItem>
+		<MudItem>
+			<MudButton ButtonType="ButtonType.Button" OnClick="SwitchFormVisible">Pokaż formularz</MudButton>
+		</MudItem>
+		@if(isFormVisible)
+		{
+			<MudItem xs="3">
+				<SimulatedTableForm @ref="tableForm"/>
+			</MudItem>
+		}
 	</MudGrid>
 	@if (selectedSimulation is not null)
 	{

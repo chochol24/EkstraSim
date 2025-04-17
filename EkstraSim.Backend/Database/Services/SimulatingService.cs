@@ -218,6 +218,9 @@ public partial class SimulatingService : ISimulatingService
 
         for (int i = 0; i < numberOfSimulations; i++)
         {
+            if (i % 100 == 0)
+                await Task.Yield();
+
             Dictionary<Match, MatchResult> roundResult = [];
             foreach (Match match in matchesToSimulate)
             {

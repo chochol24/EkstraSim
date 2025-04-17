@@ -167,12 +167,12 @@
       "put": {
         "operationId": "EkstraSimBackendEndpointsSimulatedMatchSimulateLeagueTable",
         "requestBody": {
-          "x-name": "SimulateLeagueTableRequest",
+          "x-name": "SimulateTableRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SimulateLeagueTableRequest"
+                "$ref": "#/components/schemas/SimulateTableRequest"
               }
             }
           },
@@ -908,27 +908,39 @@
           }
         }
       },
-      "SimulateLeagueTableRequest": {
+      "SimulateTableRequest": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "round",
+          "seasonId",
+          "leagueId",
+          "numberOfSimualtions"
+        ],
         "properties": {
-          "leagueId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "seasonId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "round": {
             "type": "integer",
             "format": "int32",
-            "nullable": true
+            "maximum": 34.0,
+            "minimum": 1.0
           },
-          "numberOfSimulations": {
+          "seasonId": {
             "type": "integer",
             "format": "int32",
-            "nullable": true
+            "maximum": 2147483647.0,
+            "minimum": 1.0
+          },
+          "leagueId": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 2147483647.0,
+            "minimum": 1.0
+          },
+          "numberOfSimualtions": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 1000000.0,
+            "minimum": 1.0
           }
         }
       },
