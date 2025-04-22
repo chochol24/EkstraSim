@@ -492,7 +492,11 @@ public partial class SimulatingService : ISimulatingService
                             var matchesToSimulate = await dbContext.Matches
                                 .Include(m => m.HomeTeam)
                                 .Include(m => m.AwayTeam)
-                                .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId && m.Round == round)
+                                .Where(m => m.LeagueId == leagueId
+                                     && m.SeasonId == seasonId
+                                     && m.Round == round
+                                     && m.HomeTeamScore == null
+                                     && m.AwayTeamScore == null)
                                 .Select(m => new Match
                                 {
                                     Id = m.Id,
@@ -509,6 +513,9 @@ public partial class SimulatingService : ISimulatingService
                                 })
                                 .ToListAsync()
                                 .ConfigureAwait(false);
+
+                            if (!matchesToSimulate.Any())
+                                continue;
 
                             var response = await SimulateRoundForLeagueSim(matchesToSimulate, leagueId, dbContext);
                             teamsSimulated = await UpdateTeamAverages(response, teamsSimulated, dbContext);

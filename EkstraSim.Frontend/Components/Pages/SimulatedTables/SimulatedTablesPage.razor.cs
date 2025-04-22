@@ -19,6 +19,7 @@ public partial class SimulatedTablesPage
 
     private bool isLoading = true;
     private bool isFormVisible = false;
+    private bool isSubmitting = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -35,11 +36,11 @@ public partial class SimulatedTablesPage
 
     private async Task GetSimulationsOfSelectedSeasonAsync()
     {
-        var result = await _simulationService.GetAllSimulationsOfSeason(new Shared.Requests.SeasonAndLeagueRequest(selectedSeason.Id, selectedSeason.LeagueId));
+        var result = await _simulationService.GetAllSimulationsOfSeason(new SeasonAndLeagueRequest(selectedSeason.Id, selectedSeason.LeagueId));
 
         if(result.Data != null && result.Success == true)
         {
-            simulations = result.Data;
+            simulations = result.Data.OrderByDescending(x => x.RoundBeforeSimulation).ToList();
         }
         else
         {
@@ -52,7 +53,7 @@ public partial class SimulatedTablesPage
         var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(1));
         if (result.Data != null && result.Success == true)
         {
-            seasons = result.Data;
+            seasons = result.Data.OrderByDescending(x => x.Name).ToList();
         }
         else
         {
@@ -125,5 +126,20 @@ public partial class SimulatedTablesPage
     private void SwitchFormVisible()
     {
         isFormVisible = !isFormVisible;
+    }
+
+    private async Task OnSubmitForm()
+    {
+        isSubmitting = true;
+    }
+
+    private async Task AfterSubmitForm()
+    {
+        isSubmitting = false;
+        selectedSimulation = null;
+        selectedTeam = null;
+        selectedSeason = null;
+        await GetSeasonsAsync();
+        StateHasChanged();
     }
 }

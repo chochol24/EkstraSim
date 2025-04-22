@@ -11,6 +11,7 @@ public partial class RoundsSimulationGrid
     private List<SeasonDTO> seasons = [];
     private SeasonDTO selectedSeason;
     private bool isLoading = true;
+    private bool isSubmitting = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,5 +57,16 @@ public partial class RoundsSimulationGrid
         var x = args.Item;
         _navigationManager.NavigateTo($"/simulated-round/{args.Item.Id}");
         StateHasChanged();
+    }
+
+    private async Task OnSubmitForm()
+    {
+        isSubmitting = true;
+    }
+
+    private async Task AfterSubmitForm()
+    {
+        isSubmitting = false;
+        await SeasonChangeAsync(selectedSeason);
     }
 }

@@ -2,13 +2,12 @@
 @using EkstraSim.Shared.DTOs
 @using EkstraSim.Shared.Requests
 @using EkstraSim.Shared.Resources
-
 @inject SimulationService _simulationService;
 @inject LeagueService _leagueService;
 @inject SeasonService _seasonService;
 @inject ISnackbar Snackbar;
 
-<MudForm @ref="form" Validation="@formValidation" Class="form-simulate-round">
+<MudForm @ref="form" Validation="@formValidation" Class="form-simulate-table">
 	<MudSelect T="int"
 			   Label="Liga"
 			   @bind-Value="formRequest.LeagueId"
@@ -36,7 +35,7 @@
 					 Label="Runda" @bind-Value="formRequest.Round"
 					 Immediate="true"
 					 Required="true"
-					 Class="numeric-field-form-simulate-round"
+					 Class="numeric-field-form-simulate-table"
 					 For="@(() => formRequest.Round)" />
 	<MudNumericField T="int"
 					 Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions"
@@ -44,25 +43,18 @@
 					 Required="true"
 					 Class="numeric-field-form-simulate-round"
 					 For="@(() => formRequest.NumberOfSimualtions)" />
-	<MudButton ButtonType="ButtonType.Button"
-			   Variant="Variant.Filled"
-			   Color="Color.Primary"
-			   Class="form-simulate-submit-button"
-			   OnClick="OnSubmit"
-			   Disabled="@(!form?.IsValid ?? true)"
-			   @ref="submitButton">
-		Symuluj
-	</MudButton>
+	<MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary"
+			   Class="form-simulate-submit-button" OnClick="OnSubmit" Disabled="!form.IsValid" @ref="submitButton">Symuluj</MudButton>
 </MudForm>
 
 <style>
-	.form-simulate-round {
+	.form-simulate-table {
 		width: max-content;
 		padding: 10px;
 		color: white;
 	}
 
-	.numeric-field-form-simulate-round {
+	.numeric-field-form-simulate-table {
 		padding: 5px;
 	}
 
@@ -78,10 +70,9 @@
 	[Parameter]
 	public EventCallback AfterSubmitForm { get; set; }
 
-
 	private MudForm form;
 	private MudButton submitButton;
-	private SimulateRoundRequest formRequest = new();
+	private SimulateTableRequest formRequest = new();
 	private string formValidation;
 
 	private List<LeagueDTO> leagues = [];
@@ -145,7 +136,7 @@
 
 		try
 		{
-			await _simulationService.SimulateRound(formRequest);
+			await _simulationService.SimulateTable(formRequest);
 		}
 
 		catch (Exception ex)
@@ -158,8 +149,10 @@
 				await AfterSubmitForm.InvokeAsync();
 
 			form.ResetValidation();
-			formRequest = new SimulateRoundRequest();
+			formRequest = new SimulateTableRequest();
 		}
 
 	}
+
+
 }

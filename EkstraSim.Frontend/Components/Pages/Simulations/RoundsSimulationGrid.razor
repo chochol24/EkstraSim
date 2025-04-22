@@ -7,6 +7,15 @@
 @inject SeasonService _seasonService;
 @inject ISnackbar Snackbar;
 
+@if (isSubmitting)
+{
+	<div class="overlay">
+		<MudProgressCircular Indeterminate="true" Size="Size.Large" />
+		Trwa symulacja...
+	</div>
+}
+
+
 @if (simulatedRounds == null)
 {
 	<div class="loader">
@@ -38,7 +47,7 @@ else
 			</MudDataGrid>
 		</MudItem>
 		<MudItem xs="6">
-			<SimulateRoundForm/>
+			<SimulateRoundForm OnSubmitForm="@OnSubmitForm" AfterSubmitForm="@AfterSubmitForm" />
 		</MudItem>
 	</MudGrid>
 }
@@ -61,5 +70,19 @@ else
 			cursor: pointer;
 			background: #311182 !important;
 		}
+
+
+	.overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0,0,0,0.6);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 2000;
+	}
 </style>
 

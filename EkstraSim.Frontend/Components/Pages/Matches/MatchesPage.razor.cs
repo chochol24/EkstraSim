@@ -39,7 +39,7 @@ public partial class MatchesPage
         var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(1));
         if(result.Data != null && result.Success == true)
         {
-            seasons = result.Data;
+            seasons = result.Data.OrderByDescending(x => x.Name).ToList();
         }
         else
         {
