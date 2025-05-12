@@ -436,7 +436,7 @@ public partial class SimulatingService : ISimulatingService
                 {
                     Console.WriteLine($"Rozpoczynam symulację dla zadaniu {currentIndex}");
                     var optionsBuilder = new DbContextOptionsBuilder<EkstraSimDbContext>();
-                    optionsBuilder.UseSqlServer("Server=DESKTOP-FIU7O2T\\SQLEXPRESS;Database=EkstraSimDB;Trusted_Connection=True;TrustServerCertificate=True;");
+                    optionsBuilder.UseSqlServer("Server=tcp:jw-ekstrasim.database.windows.net,1433;Initial Catalog=EkstraSimDB;Persist Security Info=False;User ID=ekstrasim_agent;Password=acnMv4priq$Ry3WA;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
                     Stopwatch swForEach = Stopwatch.StartNew();
 
