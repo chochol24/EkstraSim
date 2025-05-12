@@ -606,7 +606,8 @@ public partial class SimulatingService : ISimulatingService
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        var allMatches = teams.SelectMany(t => t.HomeMatches)
+        var allMatches = teams
+            .SelectMany(t => t.HomeMatches)
             .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
             .ToList();
 
@@ -645,16 +646,11 @@ public partial class SimulatingService : ISimulatingService
             });
         }
 
-        listOfTeamsStats.Sort(new TeamStatsComparer(allMatches));
-
-        for (int i = 0; i < listOfTeamsStats.Count; i++)
-        {
-            listOfTeamsStats[i].Place = i + 1;
-        }
+        var sortedStats = TeamStatsComparer.SortSeason(listOfTeamsStats, allMatches);
 
         sw.Stop();
         Console.WriteLine($"Czas przeliczania jednego sezonu (tabela):{sw.Elapsed.ToString()}");
-        return listOfTeamsStats;
+        return sortedStats;
     }
 
     public class SimulatedTeamSeasonStats
@@ -728,5 +724,8 @@ public partial class SimulatingService : ISimulatingService
     {
         return ((currentAverage ?? 0) * currentCount + newValue) / (currentCount + 1);
     }
+
+   
+
 }
 

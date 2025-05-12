@@ -4,98 +4,121 @@ namespace EkstraSim.Backend.Database.Services;
 
 public partial class SimulatingService
 {
-    public class TeamStatsComparer : IComparer<SimulatedTeamSeasonStats>
+    public static class TeamStatsComparer
     {
-        private readonly List<Match> _allMatches;
-
-        public TeamStatsComparer(List<Match> allMatches)
+        public static List<SimulatedTeamSeasonStats> SortSeason(List<SimulatedTeamSeasonStats> stats, List<Match> allMatches)
         {
-            _allMatches = allMatches;
+            var grouped = stats
+                .GroupBy(s => s.Points)
+                .OrderByDescending(g => g.Key);
+
+            var finalSorted = new List<SimulatedTeamSeasonStats>();
+            foreach (var group in grouped)
+            {
+                var tieGroup = group.ToList();
+                if (tieGroup.Count == 1)
+                {
+                    finalSorted.Add(tieGroup[0]);
+                }
+                else
+                {
+                    var sortedSubgroup = SortTieGroup(tieGroup, allMatches);
+                    finalSorted.AddRange(sortedSubgroup);
+                }
+            }
+
+            for (int i = 0; i < finalSorted.Count; i++)
+                finalSorted[i].Place = i + 1;
+
+            return finalSorted;
         }
 
-        public int Compare(SimulatedTeamSeasonStats x, SimulatedTeamSeasonStats y)
+        private static List<SimulatedTeamSeasonStats> SortTieGroup(
+            List<SimulatedTeamSeasonStats> tieGroup,
+            List<Match> allMatches)
         {
-            //1. Punkty
-            int result = y.Points.CompareTo(x.Points);
-            if (result != 0)
-                return result;
-
-            //2. Punkty w bezpośrednich meczach
-            var directMatches = GetDirectMatches(x.TeamId, y.TeamId);
-            var xDirectPoints = CalculatePointsInMatches(x.TeamId, directMatches);
-            var yDirectPoints = CalculatePointsInMatches(y.TeamId, directMatches);
-
-            result = yDirectPoints.CompareTo(xDirectPoints);
-            if (result != 0)
-                return result;
-
-            //3. Różnica bramek w bezpośrednich meczach 
-            var xDirectGoalDifference = CalculateGoalDifference(x.TeamId, directMatches);
-            var yDirectGoalDifference = CalculateGoalDifference(y.TeamId, directMatches);
-
-            result = yDirectGoalDifference.CompareTo(xDirectGoalDifference);
-            if (result != 0)
-                return result;
-
-            //4. Różnica bramek w całym sezonie
-            result = y.GoalDifference.CompareTo(x.GoalDifference);
-            if (result != 0)
-                return result;
-
-            //5. Liczba bramek w sezonie
-            result = y.GoalsScored.CompareTo(x.GoalsScored);
-            if (result != 0)
-                return result;
-
-            //6. Liczba wygranych w sezonie
-            result = y.Wins.CompareTo(x.Wins);
-            if (result != 0)
-                return result;
-
-            //7. Liczba zwycięstw na wyjeździe
-            result = y.AwayWins.CompareTo(x.AwayWins);
-            return result;
-
-        }
-        private List<Match> GetDirectMatches(int team1Id, int team2Id)
-        {
-            return _allMatches
-                .Where(m => (m.HomeTeamId == team1Id && m.AwayTeamId == team2Id) ||
-                            (m.HomeTeamId == team2Id && m.AwayTeamId == team1Id))
+           var headToHeadMatches = allMatches
+                .Where(m => tieGroup.Any(t => t.TeamId == m.HomeTeamId)
+                         && tieGroup.Any(t => t.TeamId == m.AwayTeamId))
                 .ToList();
+
+            var miniStats = tieGroup.Select(team => new
+            {
+                Team = team,
+                H2HPoints = CalculatePointsInMatches(team.TeamId, headToHeadMatches),
+                H2HGoalDiff = CalculateGoalDifference(team.TeamId, headToHeadMatches),
+                H2HGoalsScored = CalculateGoalsScored(team.TeamId, headToHeadMatches)
+            }).ToList();
+
+            bool isPair = miniStats.Count == 2;
+
+            var ordered = miniStats
+                .OrderByDescending(s => s.H2HPoints)
+                .ThenByDescending(s => s.H2HGoalDiff);
+
+            if (!isPair)
+                ordered = ordered.ThenByDescending(s => s.H2HGoalsScored);
+
+            // Wspólne kryteria globalne
+            ordered = ordered
+                .ThenByDescending(s => s.Team.GoalDifference)
+                .ThenByDescending(s => s.Team.GoalsScored)
+                .ThenByDescending(s => s.Team.Wins)
+                .ThenByDescending(s => s.Team.AwayWins);
+
+            // Ostatnie kryterium: losowanie
+            ordered = ordered
+                .ThenBy(s => Guid.NewGuid()); // symulacja losowania
+
+            return ordered.Select(s => s.Team).ToList();
         }
 
-        private int CalculatePointsInMatches(int teamId, List<Match> matches)
+        private static int CalculatePointsInMatches(int teamId, List<Match> matches)
         {
             int points = 0;
-            foreach (var match in matches)
+            foreach (var m in matches)
             {
-                if (match.HomeTeamId == teamId)
+                if (m.HomeTeamId == teamId)
                 {
-                    if (match.HomeTeamScore > match.AwayTeamScore) points += 3;
-                    else if (match.HomeTeamScore == match.AwayTeamScore) points += 1;
+                    if (m.HomeTeamScore > m.AwayTeamScore) points += 3;
+                    else if (m.HomeTeamScore == m.AwayTeamScore) points += 1;
                 }
-                else if (match.AwayTeamId == teamId)
+                else if (m.AwayTeamId == teamId)
                 {
-                    if (match.AwayTeamScore > match.HomeTeamScore) points += 3;
-                    else if (match.AwayTeamScore == match.HomeTeamScore) points += 1;
+                    if (m.AwayTeamScore > m.HomeTeamScore) points += 3;
+                    else if (m.AwayTeamScore == m.HomeTeamScore) points += 1;
                 }
             }
             return points;
         }
 
-        private int CalculateGoalDifference(int teamId, List<Match> matches)
+        private static int CalculateGoalDifference(int teamId, List<Match> matches)
         {
-            int goalDifference = 0;
-            foreach (var match in matches)
+            int diff = 0;
+            foreach (var m in matches)
             {
-                if (match.HomeTeamId == teamId)
-                    goalDifference += match.HomeTeamScore.GetValueOrDefault() - match.AwayTeamScore.GetValueOrDefault();
-                else if (match.AwayTeamId == teamId)
-                    goalDifference += match.AwayTeamScore.GetValueOrDefault() - match.HomeTeamScore.GetValueOrDefault();
+                if (m.HomeTeamId == teamId)
+                    diff += m.HomeTeamScore.GetValueOrDefault() - m.AwayTeamScore.GetValueOrDefault();
+                else if (m.AwayTeamId == teamId)
+                    diff += m.AwayTeamScore.GetValueOrDefault() - m.HomeTeamScore.GetValueOrDefault();
             }
-            return goalDifference;
+            return diff;
         }
+
+        private static int CalculateGoalsScored(int teamId, List<Match> matches)
+        {
+            int goals = 0;
+            foreach (var m in matches)
+            {
+                if (m.HomeTeamId == teamId)
+                    goals += m.HomeTeamScore.GetValueOrDefault();
+                else if (m.AwayTeamId == teamId)
+                    goals += m.AwayTeamScore.GetValueOrDefault();
+            }
+            return goals;
+        }
+
     }
+
 }
 

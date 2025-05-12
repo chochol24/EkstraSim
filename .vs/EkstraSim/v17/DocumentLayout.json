@@ -3,32 +3,80 @@
   "WorkspaceRootPath": "D:\\In\u017Cynierka\\EkstraSim\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\teamstatscomparer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\teamstatscomparer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatedseasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatedseasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatingservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulations\\roundssimulationgrid.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulations\\roundssimulationgrid.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulations\\matchsimulationdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulations\\matchsimulationdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulateroundform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulateroundform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulations\\roundssimulationgrid.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulations\\roundssimulationgrid.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulateroundform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulateroundform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\simulationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\simulationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\requests\\seasonandleaguerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\requests\\seasonandleaguerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\leagueservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\leagueservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\matchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\matchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatedroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatedroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtablespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\dtos\\simulatedteaminfinaltabledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\dtos\\simulatedteaminfinaltabledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\httpservicehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\httpservicehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatedseasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatedseasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulations\\simulatedrounddetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -39,16 +87,8 @@
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulatedtables\\simulatedtableform.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\matches\\matchespage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\endpoints\\simulatedseason\\get\\getallsimulationsofseason.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -63,24 +103,12 @@
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\endpoints\\league\\get\\getallleagues.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\simulationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\simulationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\matchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\matchservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\seasonservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\requests\\seasonrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\requests\\seasonrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\requests\\seasonandleaguerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\requests\\seasonandleaguerequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\endpoints\\team\\get\\getteamsendpoint.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -113,10 +141,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\leagueservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\leagueservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\results\\ekstrasimresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -157,14 +181,6 @@
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\teams.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\simulations\\matchsimulationdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\simulations\\matchsimulationdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\services\\httpservicehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\services\\httpservicehelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\csvservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\csvservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -185,10 +201,6 @@
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\endpoints\\simulatedround\\get\\getsimulatedroundbyid.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\simulatedroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\simulatedroundservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\endpoints\\simulatedround\\get\\getallsimulatedroundsbyseason.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\endpoints\\simulatedround\\get\\getallsimulatedroundsbyseason.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -199,10 +211,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\endpoints\\match\\get\\getroundmatches.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\endpoints\\match\\get\\getroundmatches.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\services\\teamstatscomparer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|solutionrelative:ekstrasim.backend\\database\\services\\teamstatscomparer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{01EE100D-450A-4BFB-B2EE-C12F1F3C9697}|EkstraSim.Backend\\EkstraSim.Backend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.backend\\database\\entities\\team.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -245,10 +253,6 @@
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\pages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\pages\\index.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\requests\\updatematchresultrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\requests\\updatematchresultrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -282,10 +286,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.frontend\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{6C48D42C-E661-4F72-B5B0-0CD9F76BE6BB}|EkstraSim.Frontend\\EkstraSim.Frontend.csproj|solutionrelative:ekstrasim.frontend\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\dtos\\simulatedteaminfinaltabledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|solutionrelative:ekstrasim.shared\\dtos\\simulatedteaminfinaltabledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{358ECA83-C5F8-4388-8677-1BC6B1AEBFFE}|EkstraSim.Shared\\EkstraSim.Shared.csproj|d:\\in\u017Cynierka\\ekstrasim\\ekstrasim.shared\\dtos\\simulatedfinalleaguedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -410,12 +410,254 @@
           "SelectedChildIndex": 5,
           "Children": [
             {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RoundsSimulationGrid.razor.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwEUAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-05T13:53:54.547Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "SeasonService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-05T12:00:47.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "SimulationService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAYwCUAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-05T13:06:10.516Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MatchSimulationDetails.razor",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
+              "ViewState": "AgIAAKkAAAAAAAAAAAAAwJwAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-06T18:05:56.573Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "SimulateRoundForm.razor",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAUwI4AAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-13T15:54:18.838Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "TeamStatsComparer.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs*",
+              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-16T21:20:14.902Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SimulatingService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
+              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
+              "ViewState": "AgIAAGcCAAAAAAAAAAAgwIcBAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-13T20:41:00.445Z",
+              "EditorCaption": ""
+            },
+            {
               "$type": "Bookmark",
               "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
+              "Title": "RoundsSimulationGrid.razor",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
+              "ViewState": "AgIAADMAAAAAAAAAAAAAACwAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-01-30T21:00:32.754Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Index.razor",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Index.razor",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Index.razor",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Index.razor",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Index.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-01-30T19:33:00.08Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SeasonAndLeagueRequest.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
+              "RelativeToolTip": "EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-24T20:51:35.454Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "MatchesPage.razor.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAuwDYAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-10T00:20:16.029Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "SimulatedTablesPage.razor.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
+              "ViewState": "AgIAAHYAAAAAAAAAAAASwIoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-10T01:17:05.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "LeagueService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-17T10:51:45.591Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "MatchService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAQwAwAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-10T00:21:03.263Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "SimulatedRoundService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
+              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-30T21:39:33.747Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "SimulatedSeasonService.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
+              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABEAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-24T20:50:07.24Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "SimulatedTeamInFinalTableDTO.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
+              "RelativeToolTip": "EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAIAwwEQAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-03T12:52:19.972Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "SimulatedTablesPage.razor",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
+              "ViewState": "AgIAABQAAAAAAAAAAAAMwCsAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-03-10T01:15:35.982Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "HttpServiceHelper.cs",
+              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
+              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
+              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
+              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAYwGcAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-10T11:29:43.022Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
               "Title": "SimulatedRoundDetails.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\SimulatedRoundDetails.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\SimulatedRoundDetails.razor",
@@ -427,94 +669,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "RoundsSimulationGrid.razor",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-01-30T21:00:32.754Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "SimulatedTablesPage.razor.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor.cs",
-              "ViewState": "AgIAAHoAAAAAAAAAAAAmwIoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-10T01:17:05.29Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RoundsSimulationGrid.razor.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\RoundsSimulationGrid.razor.cs",
-              "ViewState": "AgIAACUAAAAAAAAAAAAgwEIAAAAoAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-05T13:53:54.547Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "SimulatingService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
-              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatingService.cs",
-              "ViewState": "AgIAADcAAAAAAAAAAAAAAD8AAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-13T20:41:00.445Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "SimulatedSeasonService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
-              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatedSeasonService.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABEAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-24T20:50:07.24Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "SimulateRoundForm.razor",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulateRoundForm.razor",
-              "ViewState": "AgIAAF4AAAAAAAAAAAAwwJUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-02-13T15:54:18.838Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "SimulatedTablesPage.razor",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTablesPage.razor",
-              "ViewState": "AgIAADMAAAAAAAAAAAAAACsAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-03-10T01:15:35.982Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 20,
               "Title": "SimulatedTableForm.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTableForm.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\SimulatedTables\\SimulatedTableForm.razor",
@@ -526,19 +681,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "MatchesPage.razor.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAAAuwDYAAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-10T00:20:16.029Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 21,
               "Title": "MatchesPage.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Matches\\MatchesPage.razor",
@@ -550,7 +693,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 23,
               "Title": "GetSeasons.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Season\\GET\\GetSeasons.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Season\\GET\\GetSeasons.cs",
@@ -562,7 +705,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 22,
               "Title": "GetAllSimulationsOfSeason.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedSeason\\GET\\GetAllSimulationsOfSeason.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedSeason\\GET\\GetAllSimulationsOfSeason.cs",
@@ -574,7 +717,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 24,
               "Title": "GetAllLeagues.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\League\\GET\\GetAllLeagues.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\League\\GET\\GetAllLeagues.cs",
@@ -586,43 +729,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "SeasonService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\SeasonService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAsAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-05T12:00:47.985Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "SimulationService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\SimulationService.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-05T13:06:10.516Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "MatchService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\MatchService.cs",
-              "ViewState": "AgIAAAQAAAAAAAAAAAAQwAwAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-10T00:21:03.263Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 25,
               "Title": "SeasonService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SeasonService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SeasonService.cs",
@@ -634,7 +741,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 26,
               "Title": "SeasonRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SeasonRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\SeasonRequest.cs",
@@ -646,19 +753,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "SeasonAndLeagueRequest.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
-              "RelativeToolTip": "EkstraSim.Shared\\Requests\\SeasonAndLeagueRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-24T20:51:35.454Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 27,
               "Title": "GetTeamsEndpoint.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Team\\GET\\GetTeamsEndpoint.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Team\\GET\\GetTeamsEndpoint.cs",
@@ -670,7 +765,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 28,
               "Title": "BaseRecalculateEloRanking.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Team\\PUT\\BaseRecalculateEloRanking.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Team\\PUT\\BaseRecalculateEloRanking.cs",
@@ -682,7 +777,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 29,
               "Title": "AverageTeamsGoals.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Team\\PUT\\AverageTeamsGoals.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Team\\PUT\\AverageTeamsGoals.cs",
@@ -694,7 +789,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 30,
               "Title": "LeagueService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\LeagueService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\LeagueService.cs",
@@ -706,7 +801,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 31,
               "Title": "Season.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Entities\\Season.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Entities\\Season.cs",
@@ -718,7 +813,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 32,
               "Title": "AverageLeagueGoals.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\League\\PUT\\AverageLeagueGoals.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\League\\PUT\\AverageLeagueGoals.cs",
@@ -730,7 +825,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 33,
               "Title": "AutoMapperProfile.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Entities\\AutoMapperProfile.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Entities\\AutoMapperProfile.cs",
@@ -742,7 +837,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 34,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Program.cs",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Program.cs",
@@ -754,19 +849,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
-              "Title": "LeagueService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\LeagueService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-17T10:51:45.591Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 36,
               "Title": "TeamService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\TeamService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\TeamService.cs",
@@ -778,7 +861,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 37,
               "Title": "SimulatedMatchService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedMatchService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatedMatchService.cs",
@@ -790,7 +873,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 35,
               "Title": "EkstraSimResult.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Results\\EkstraSimResult.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Results\\EkstraSimResult.cs",
@@ -802,7 +885,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 41,
               "Title": "SimulateLeagueTable.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedMatch\\SimulateLeagueTable.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedMatch\\SimulateLeagueTable.cs",
@@ -814,7 +897,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 38,
               "Title": "UpdateMatchById.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Match\\PUT\\UpdateMatchById.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Match\\PUT\\UpdateMatchById.cs",
@@ -826,7 +909,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 40,
               "Title": "SimulateRoundMatches.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedMatch\\SimulateRoundMatches.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedMatch\\SimulateRoundMatches.cs",
@@ -838,7 +921,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 39,
               "Title": "ExecutionContext.cs",
               "DocumentMoniker": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\7359755a63a0eef4e8a101bde875a0a6c6013760bb23441bb9b04a92876a282b\\ExecutionContext.cs",
               "ToolTip": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\7359755a63a0eef4e8a101bde875a0a6c6013760bb23441bb9b04a92876a282b\\ExecutionContext.cs",
@@ -848,7 +931,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 42,
               "Title": "ContinuationTaskFromTask.cs",
               "DocumentMoniker": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\0e9bf3699e09c1a3c9a45cf296003cd0e7bcd1f3368f1fbab82a14982aa0659a\\ContinuationTaskFromTask.cs",
               "ToolTip": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\0e9bf3699e09c1a3c9a45cf296003cd0e7bcd1f3368f1fbab82a14982aa0659a\\ContinuationTaskFromTask.cs",
@@ -857,7 +940,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 43,
               "Title": "SimulateTableRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\SimulateTableRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\SimulateTableRequest.cs",
@@ -869,7 +952,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 48,
               "Title": "TeamService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\TeamService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\TeamService.cs",
@@ -881,19 +964,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
-              "Title": "MatchSimulationDetails.razor",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Simulations\\MatchSimulationDetails.razor",
-              "ViewState": "AgIAAG0AAAAAAAAAAAAAwJwAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-02-06T18:05:56.573Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 44,
               "Title": "Teams.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Teams.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Teams.razor",
@@ -905,19 +976,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
-              "Title": "HttpServiceHelper.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Services\\HttpServiceHelper.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAAAnwB0AAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-10T11:29:43.022Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 45,
               "Title": "CSVService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\CSVService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\CSVService.cs",
@@ -930,7 +989,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 46,
               "Title": "League.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Entities\\League.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Entities\\League.cs",
@@ -942,7 +1001,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 47,
               "Title": "UpdateDatabaseService.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Services\\UpdateDatabaseService.cs",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Services\\UpdateDatabaseService.cs",
@@ -954,19 +1013,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
-              "Title": "SimulatedRoundService.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
-              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\SimulatedRoundService.cs",
-              "ViewState": "AgIAABsAAAAAAAAAAAAAwBIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-30T21:39:33.747Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 49,
               "Title": "GetSimulatedRoundById.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedRound\\GET\\GetSimulatedRoundById.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedRound\\GET\\GetSimulatedRoundById.cs",
@@ -978,7 +1025,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 50,
               "Title": "GetAllSimulatedRoundsBySeason.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedRound\\GET\\GetAllSimulatedRoundsBySeason.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedRound\\GET\\GetAllSimulatedRoundsBySeason.cs",
@@ -990,7 +1037,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 51,
               "Title": "GetSimulatedMatchById.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\SimulatedMatch\\GetSimulatedMatchById.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\SimulatedMatch\\GetSimulatedMatchById.cs",
@@ -1002,7 +1049,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 52,
               "Title": "GetRoundMatches.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Endpoints\\Match\\GET\\GetRoundMatches.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Endpoints\\Match\\GET\\GetRoundMatches.cs",
@@ -1014,19 +1061,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
-              "Title": "TeamStatsComparer.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
-              "RelativeToolTip": "EkstraSim.Backend\\Database\\Services\\TeamStatsComparer.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-16T21:20:14.902Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 55,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Program.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Program.cs",
@@ -1038,7 +1073,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 53,
               "Title": "Team.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Entities\\Team.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Entities\\Team.cs",
@@ -1050,7 +1085,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 54,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\appsettings.json",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\appsettings.json",
@@ -1062,7 +1097,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 56,
               "Title": "launchSettings.json",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Properties\\launchSettings.json",
@@ -1074,7 +1109,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 57,
               "Title": "EkstraSimDbContext.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\EkstraSimDbContext.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\EkstraSimDbContext.cs",
@@ -1086,7 +1121,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
+              "DocumentIndex": 61,
               "Title": "AverageLeagueGoalsUpdateRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\AverageLeagueGoalsUpdateRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\AverageLeagueGoalsUpdateRequest.cs",
@@ -1098,7 +1133,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 60,
               "Title": "SimulatedMatchResultDTO.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\SimulatedMatchResultDTO.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\DTOs\\SimulatedMatchResultDTO.cs",
@@ -1110,7 +1145,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 56,
+              "DocumentIndex": 58,
               "Title": "EkstraSim.Shared.csproj",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\EkstraSim.Shared.csproj",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\EkstraSim.Shared.csproj",
@@ -1122,7 +1157,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
+              "DocumentIndex": 59,
               "Title": "Constants.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Constants.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Constants.cs",
@@ -1134,7 +1169,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 60,
+              "DocumentIndex": 62,
               "Title": "MainLayout.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Layout\\MainLayout.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Layout\\MainLayout.razor",
@@ -1146,19 +1181,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
-              "Title": "Index.razor",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Index.razor",
-              "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\Pages\\Index.razor",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\Pages\\Index.razor",
-              "RelativeToolTip": "EkstraSim.Frontend\\Components\\Pages\\Index.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-01-30T19:33:00.08Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 62,
+              "DocumentIndex": 63,
               "Title": "UpdateMatchResultRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\UpdateMatchResultRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\UpdateMatchResultRequest.cs",
@@ -1170,7 +1193,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 64,
+              "DocumentIndex": 65,
               "Title": "GetMatchesByRoundRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\GetMatchesByRoundRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\GetMatchesByRoundRequest.cs",
@@ -1182,7 +1205,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 64,
               "Title": "MatchDTO.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\MatchDTO.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\DTOs\\MatchDTO.cs",
@@ -1194,7 +1217,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
+              "DocumentIndex": 66,
               "Title": "CircuitHost.cs",
               "DocumentMoniker": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\138e799e0dd5e3e438445d96e277547aa76269ff4d1d5c1635c97b67b24951a7\\CircuitHost.cs",
               "ToolTip": "C:\\Users\\Kuba\\AppData\\Local\\Temp\\.vsdbgsrc\\138e799e0dd5e3e438445d96e277547aa76269ff4d1d5c1635c97b67b24951a7\\CircuitHost.cs",
@@ -1204,7 +1227,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 66,
+              "DocumentIndex": 67,
               "Title": "Match.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Backend\\Database\\Entities\\Match.cs",
               "RelativeDocumentMoniker": "EkstraSim.Backend\\Database\\Entities\\Match.cs",
@@ -1216,7 +1239,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 67,
+              "DocumentIndex": 68,
               "Title": "GetSimulatedRoundRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\GetSimulatedRoundRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\GetSimulatedRoundRequest.cs",
@@ -1228,7 +1251,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 68,
+              "DocumentIndex": 69,
               "Title": "GetSimulatedMatchResultsRequest.cs",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\Requests\\GetSimulatedMatchResultsRequest.cs",
               "RelativeDocumentMoniker": "EkstraSim.Shared\\Requests\\GetSimulatedMatchResultsRequest.cs",
@@ -1240,7 +1263,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 69,
+              "DocumentIndex": 70,
               "Title": "app.css",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\wwwroot\\app.css",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\wwwroot\\app.css",
@@ -1252,7 +1275,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 70,
+              "DocumentIndex": 71,
               "Title": "_Imports.razor",
               "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Frontend\\Components\\_Imports.razor",
               "RelativeDocumentMoniker": "EkstraSim.Frontend\\Components\\_Imports.razor",
@@ -1261,18 +1284,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-01-30T19:35:11.523Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 71,
-              "Title": "SimulatedTeamInFinalTableDTO.cs",
-              "DocumentMoniker": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
-              "RelativeDocumentMoniker": "EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
-              "ToolTip": "D:\\In\u017Cynierka\\EkstraSim\\EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
-              "RelativeToolTip": "EkstraSim.Shared\\DTOs\\SimulatedTeamInFinalTableDTO.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAIA1wEQAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-03T12:52:19.972Z"
             },
             {
               "$type": "Document",
