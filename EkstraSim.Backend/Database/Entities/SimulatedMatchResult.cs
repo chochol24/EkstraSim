@@ -11,8 +11,9 @@ public class SimulatedMatchResult
 	public int? LeagueId { get; set; }
 	public League? League { get; set; }
 
+    public string? Comments { get; set; }
 
-	public int PredictedHomeScore { get; set; }
+    public int PredictedHomeScore { get; set; }
 	public int PredictedAwayScore { get; set; }
 
 	public double HomeWinProbability { get; set; }

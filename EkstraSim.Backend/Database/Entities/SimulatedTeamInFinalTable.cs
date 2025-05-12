@@ -6,7 +6,8 @@ public class SimulatedTeamInFinalTable
 	public int TeamId { get; set; }
 	public Team Team { get; set; } = null!;
 
-	public int SimulatedFinalLeagueId { get; set; }
+    public string? Comments { get; set; }
+    public int SimulatedFinalLeagueId { get; set; }
 	public SimulatedFinalLeague SimulatedFinalLeague { get; set; } = null!;
 
 	public double AveragePoints { get; set; }

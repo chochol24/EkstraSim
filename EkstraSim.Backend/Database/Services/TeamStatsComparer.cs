@@ -33,9 +33,7 @@ public partial class SimulatingService
             return finalSorted;
         }
 
-        private static List<SimulatedTeamSeasonStats> SortTieGroup(
-            List<SimulatedTeamSeasonStats> tieGroup,
-            List<Match> allMatches)
+        private static List<SimulatedTeamSeasonStats> SortTieGroup(List<SimulatedTeamSeasonStats> tieGroup, List<Match> allMatches)
         {
            var headToHeadMatches = allMatches
                 .Where(m => tieGroup.Any(t => t.TeamId == m.HomeTeamId)
@@ -59,16 +57,14 @@ public partial class SimulatingService
             if (!isPair)
                 ordered = ordered.ThenByDescending(s => s.H2HGoalsScored);
 
-            // Wspólne kryteria globalne
             ordered = ordered
                 .ThenByDescending(s => s.Team.GoalDifference)
                 .ThenByDescending(s => s.Team.GoalsScored)
                 .ThenByDescending(s => s.Team.Wins)
                 .ThenByDescending(s => s.Team.AwayWins);
 
-            // Ostatnie kryterium: losowanie
             ordered = ordered
-                .ThenBy(s => Guid.NewGuid()); // symulacja losowania
+                .ThenBy(s => Guid.NewGuid());
 
             return ordered.Select(s => s.Team).ToList();
         }

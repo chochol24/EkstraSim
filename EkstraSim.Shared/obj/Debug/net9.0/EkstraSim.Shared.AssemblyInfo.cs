@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c305df5fd6f6603b83635a97809943828b81791")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88a4157c5f2cb5a13f77175615b98d3c3fbc35a8")]
 [assembly: System.Reflection.AssemblyProductAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

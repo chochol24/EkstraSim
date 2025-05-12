@@ -43,6 +43,12 @@
 					 Required="true"
 					 Class="numeric-field-form-simulate-round"
 					 For="@(() => formRequest.NumberOfSimualtions)" />
+	<MudTextField T="string"
+					 Label="Komentarz" @bind-Value="formRequest.Comments"
+					 Immediate="true"
+					 Required="false"
+					 Class="numeric-field-form-simulate-round"
+					 For="@(() => formRequest.Comments)" />
 	<MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary"
 			   Class="form-simulate-submit-button" OnClick="OnSubmit" Disabled="!form.IsValid" @ref="submitButton">Symuluj</MudButton>
 </MudForm>

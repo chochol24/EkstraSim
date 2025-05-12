@@ -20,4 +20,6 @@ public class SimulateTableRequest
     [Required(ErrorMessage = "Liczba symulacji jest wymagana")]
     [Range(1, 1000000, ErrorMessage = "Liczba symulacji musi być pomiędzy 1 a 1000000")]
     public int NumberOfSimualtions { get; set; }
+
+    public string? Comments { get; set; }
 }

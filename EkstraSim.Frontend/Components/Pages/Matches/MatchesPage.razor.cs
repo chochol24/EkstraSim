@@ -8,14 +8,14 @@ namespace EkstraSim.Frontend.Components.Pages.Matches;
 
 public partial class MatchesPage
 {
-    private List<int> _rounds = [];
-    private List<MatchDTO> matches = [];
-    private List<SeasonDTO> seasons = [];
+    private List<int> _rounds = new();
+    private List<MatchDTO> matches = new();
+    private List<SeasonDTO> seasons = new();
     private SeasonDTO? selectedSeason;
     private bool isLoading = true;
-    private Dictionary<int, bool> editStates = new Dictionary<int, bool>();
-    private MudToggleIconButton? toggleButton;
+    private bool isEditingMode = false;
     private int currentPickedRound = 0;
+    private Dictionary<int, (int? Home, int? Away)> originalScores = new();
     public MatchesPage() 
     {
         for(int i = 1; i <= Constants.NumberOfRoundsEkstaklasa; i++)
@@ -26,12 +26,8 @@ public partial class MatchesPage
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        StateHasChanged();
-
         await GetSeasonsAsync();
-
         isLoading = false;
-        StateHasChanged();
     }
 
     private async Task GetSeasonsAsync()
@@ -50,6 +46,7 @@ public partial class MatchesPage
     private void SeasonChange(SeasonDTO season)
     {
         selectedSeason = season;
+        matches.Clear();
     }
 
     private async Task OpenRoundMatchesAsync(DataGridRowClickEventArgs<int> args)
@@ -62,58 +59,61 @@ public partial class MatchesPage
             currentPickedRound = round;
         }
     }
-
-    private bool IsEditing(MatchDTO match)
+    private async Task LoadMatches(int round)
     {
-        return editStates.TryGetValue(match.Id, out var isEditing) && isEditing;
-    }
-
-    private async Task ToggleEdit(MatchDTO match)
-    {
-        if (editStates.ContainsKey(match.Id))
+        matches.Clear();
+        var result = await _matchService.GetRoundMatchesAsync(new GetMatchesByRoundRequest(selectedSeason!.LeagueId, selectedSeason.Id, round));
+        if (result.Success && result.Data != null)
         {
-            editStates[match.Id] = !editStates[match.Id];
-            if(!editStates[match.Id])
-            {
-                var result = await _matchService.UpdateMatchResultAsync(new UpdateMatchResultRequest(match.Id, match.HomeTeamScore.GetValueOrDefault(), match.AwayTeamScore.GetValueOrDefault()));
-                if (result.Success)
-                {
-                    Snackbar.Add(SnackbarMessages.Match_Result_Updated, Severity.Success);
-                }
-                else
-                {
-                    Snackbar.Add(SnackbarMessages.Match_Result_Update_Failed, Severity.Error);
-                }
-            }
+            matches = result.Data.ToList();
+            originalScores = matches.ToDictionary(m => m.Id, m => (m.HomeTeamScore, m.AwayTeamScore));
+            isEditingMode = false;
         }
         else
         {
-            editStates[match.Id] = true;
-        }
-        
-    }
-
-    private async Task CancelEdit(MatchDTO match)
-    {
-        if (editStates.ContainsKey(match.Id))
-        {
-            editStates[match.Id] = false;
-            toggleButton.Toggled = false;
-            await LoadMatches(currentPickedRound);
+            Snackbar.Add(result.ErrorMessage ?? "Błąd podczas pobierania meczów.", Severity.Error);
         }
     }
 
-    private async Task LoadMatches(int round)
+    private void ToggleEditAll()
     {
-        if(selectedSeason is not null)
+        isEditingMode = !isEditingMode;
+        if (!isEditingMode)
         {
-            matches.Clear();
-            var result = await _matchService.GetRoundMatchesAsync(new GetMatchesByRoundRequest(selectedSeason.LeagueId, selectedSeason.Id, round));
-            if (result.Success && result.Data is not null)
+            foreach (var m in matches)
             {
-                matches = result.Data.ToList();
+                var orig = originalScores[m.Id];
+                m.HomeTeamScore = orig.Home;
+                m.AwayTeamScore = orig.Away;
             }
         }
+    }
+
+    private async Task SaveAllChanges()
+    {
+        var updates = matches
+            .Where(m => originalScores.ContainsKey(m.Id) && (originalScores[m.Id].Home != m.HomeTeamScore || originalScores[m.Id].Away != m.AwayTeamScore))
+            .ToList();
+
+        foreach (var match in updates)
+        {
+            var result = await _matchService
+                .UpdateMatchResultAsync(new UpdateMatchResultRequest(match.Id, match.HomeTeamScore.GetValueOrDefault(), match.AwayTeamScore.GetValueOrDefault()));
+            if (!result.Success)
+            {
+                Snackbar.Add($"Nie udało się zaktualizować meczu {match.Id}.", Severity.Error);
+            }
+        }
+        if (updates.Any())
+        {
+            Snackbar.Add("Zapisano wszystkie zmiany.", Severity.Success);
+        }
+        isEditingMode = false;
+        foreach (var m in matches)
+        {
+            originalScores[m.Id] = (m.HomeTeamScore, m.AwayTeamScore);
+        }
+            
     }
 
     private async Task UpdateAverageLeagueGoals()
@@ -128,12 +128,8 @@ public partial class MatchesPage
             Snackbar.Add(SnackbarMessages.League_Averages_Update_Failed, Severity.Error);
         }
 
-    }
-
-    private async Task UpdateAverageTeamsGoals()
-    {
-        var result = await _dataBaseService.UpdateAverageTeamsGoalsAsync();
-        if (result.Success)
+        var result2 = await _dataBaseService.UpdateAverageTeamsGoalsAsync();
+        if (result2.Success)
         {
             Snackbar.Add(SnackbarMessages.Team_Averages_Updated, Severity.Success);
         }
@@ -142,4 +138,6 @@ public partial class MatchesPage
             Snackbar.Add(SnackbarMessages.Team_Averages_Update_Failed, Severity.Error);
         }
     }
+
+
 }

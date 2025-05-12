@@ -67,6 +67,8 @@ public partial class RoundsSimulationGrid
     private async Task AfterSubmitForm()
     {
         isSubmitting = false;
-        await SeasonChangeAsync(selectedSeason);
+        selectedSeason = null;
+        await GetSeasonsAsync();
+        StateHasChanged();
     }
 }

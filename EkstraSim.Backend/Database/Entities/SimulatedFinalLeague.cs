@@ -8,6 +8,7 @@ public class SimulatedFinalLeague
 	public int LeagueId { get; set; }
 	public League League { get; set; } = null!;
 	public int RoundBeforeSimulation { get; set; }
+	public string? Comments { get; set; }
 
 	public List<SimulatedTeamInFinalTable> Teams { get; set; } = new();
 

@@ -971,6 +971,10 @@
             "format": "int32",
             "maximum": 1000000.0,
             "minimum": 1.0
+          },
+          "comments": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

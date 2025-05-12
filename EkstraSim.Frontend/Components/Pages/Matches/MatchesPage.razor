@@ -16,99 +16,101 @@
 }
 else
 {
-	<MudGrid Spacing="3">
-		<MudItem xs="2">
-			<MudGrid Spacing="2">
-				<MudItem xs="12">
-					<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChange">
-						@foreach (var season in seasons)
-						{
-							<MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
-						}
-					</MudSelect>
-				</MudItem>
-				@if (selectedSeason is not null)
-				{
-					<MudItem xs="12">
-						<MudDataGrid T="int" Items="@_rounds" Class="full-height-grid"
-									 RowClick="@OpenRoundMatchesAsync" Hover="true" Dense="true">
-							<Columns>
-								<TemplateColumn Title="Kolejki">
-									<CellTemplate>
-										Kolejka @(context.Item).
-									</CellTemplate>
-								</TemplateColumn>
-							</Columns>
-						</MudDataGrid>
-					</MudItem>
-				}
-			</MudGrid>
-		</MudItem>
-		@if (matches.Any() && selectedSeason != null)
-		{
-			<MudItem xs="10">
-				<MudPaper Class="pa-4" Elevation="1" Style="margin: 10px;">
-					<MudText Typo="Typo.h5" Align="Align.Center">
-						@selectedSeason.League.Name @selectedSeason.Name - Kolejka @(currentPickedRound).
-					</MudText>
-				</MudPaper>
-				<MudGrid Spacing="3">
-					@foreach (var match in matches)
-					{
-						<MudItem xs="12" md="6">
-							<MudCard>
-								<MudCardContent>
-									<MudGrid Justify="Justify.Center">
-										<MudItem xs="4">
-											<MudText Typo="Typo.h6" Align="Align.Right">
-												@match.HomeTeam.Name
-											</MudText>
-										</MudItem>
-										<MudItem xs="4">
-											<MudGrid Justify="Justify.Center">
-												<MudItem xs="4">
-													<MudNumericField T="int?" @bind-Value="match.HomeTeamScore" ReadOnly="@(!IsEditing(match))" HideSpinButtons="true" Class="score-input" />
-												</MudItem>
-												<MudItem xs="1">
-													<MudText Typo="Typo.h6" Align="Align.Center">:</MudText>
-												</MudItem>
-												<MudItem xs="4">
-													<MudNumericField T="int?" @bind-Value="match.AwayTeamScore" ReadOnly="@(!IsEditing(match))" HideSpinButtons="true" Class="score-input" />
-												</MudItem>
-											</MudGrid>
-										</MudItem>
-										<MudItem xs="4">
-											<MudText Typo="Typo.h6" Align="Align.Left">
-												@match.AwayTeam.Name
-											</MudText>
-										</MudItem>
-									</MudGrid>
-								</MudCardContent>
-								<MudCardActions>
-									<MudToggleIconButton Icon="@Icons.Material.Filled.Edit"
-														 ToggledIcon="@Icons.Material.Filled.Save"
-														 Color="@Color.Info" ToggledColor="@Color.Success"
-														 ToggledChanged="@(async () => await ToggleEdit(match))"
-														 Title="@(IsEditing(match) ? "Zapisz wynik" : "Edytuj wynik")" @ref="toggleButton" />
-									@if (editStates.ContainsKey(match.Id) && editStates[match.Id])
-									{
-										<MudIconButton Icon="@Icons.Material.Filled.Cancel" OnClick="async () => await CancelEdit(match)" Color="Color.Error" />
-									}
-								</MudCardActions>
-							</MudCard>
-						</MudItem>
-					}
-
-					<MudItem xs="12" md="6">
-						<MudCard>
-							<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageLeagueGoals" Color="Color.Secondary">Zaktualizuj średnie bramki ligi</MudButton>
-							<MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageTeamsGoals" Color="Color.Secondary">Zaktualizuj średnie bramki drużyn</MudButton>
-						</MudCard>
-					</MudItem>
-				</MudGrid>
-			</MudItem>
-		}
-	</MudGrid>
+    <MudGrid Spacing="3">
+        <MudItem xs="2">
+            <MudGrid Spacing="2">
+                <MudItem xs="12">
+                    <MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChange">
+                        @foreach (var season in seasons)
+                        {
+                            <MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                @if (selectedSeason is not null)
+                {
+                    <MudItem xs="12">
+                        <MudDataGrid T="int" Items="@_rounds" Class="full-height-grid"
+                                     RowClick="@OpenRoundMatchesAsync" Hover="true" Dense="true">
+                            <Columns>
+                                <TemplateColumn Title="Kolejki">
+                                    <CellTemplate>
+                                        Kolejka @(context.Item)
+                                    </CellTemplate>
+                                </TemplateColumn>
+                            </Columns>
+                        </MudDataGrid>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudItem>
+        @if (matches.Any() && selectedSeason != null)
+        {
+            <MudItem xs="10">
+                <MudPaper Class="pa-4 mb-2" Elevation="1">
+                    <MudText Typo="Typo.h5" Align="Align.Center">
+                        @selectedSeason.League.Name @selectedSeason.Name - Kolejka @(currentPickedRound)
+                    </MudText>
+                </MudPaper>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ToggleEditAll">
+                    @((isEditingMode ? "Anuluj edycję" : "Edytuj wszystkie"))
+                </MudButton>
+                @if (isEditingMode)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="SaveAllChanges" Class="ml-2">
+                        Zapisz wszystkie
+                    </MudButton>
+                }
+                <MudGrid Spacing="3" Class="mt-2">
+                    @foreach (var match in matches)
+                    {
+                        <MudItem xs="12" md="6">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="4">
+                                            <MudText Typo="Typo.h6" Align="Align.Right">
+                                                @match.HomeTeam.Name
+                                            </MudText>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudGrid Justify="Justify.Center">
+                                                <MudItem xs="4">
+                                                    <MudNumericField T="int?" @bind-Value="match.HomeTeamScore"
+                                                                     ReadOnly="!isEditingMode" HideSpinButtons="true"
+                                                                     Class="score-input" />
+                                                </MudItem>
+                                                <MudItem xs="1">
+                                                    <MudText Typo="Typo.h6" Align="Align.Center">:</MudText>
+                                                </MudItem>
+                                                <MudItem xs="4">
+                                                    <MudNumericField T="int?" @bind-Value="match.AwayTeamScore"
+                                                                     ReadOnly="!isEditingMode" HideSpinButtons="true"
+                                                                     Class="score-input" />
+                                                </MudItem>
+                                            </MudGrid>
+                                        </MudItem>
+                                        <MudItem xs="4">
+                                            <MudText Typo="Typo.h6" Align="Align.Left">
+                                                @match.AwayTeam.Name
+                                            </MudText>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                    <MudItem xs="12" md="6">
+                        <MudCard>
+                            <MudButton ButtonType="ButtonType.Button" OnClick="UpdateAverageLeagueGoals" Color="Color.Secondary">
+                                Zaktualizuj średnie bramki
+                            </MudButton>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 <style>

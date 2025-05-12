@@ -10,6 +10,7 @@ public class SimulatedRound
     public Season Season { get; set; } = null!;
     public int Round { get; set; }
 
+    public string? Comments { get; set; }
     public int NumberOfSimulations { get; set; }
 
     public List<SimulatedMatchResult> SimulatedMatchResults { get; set; } = new();

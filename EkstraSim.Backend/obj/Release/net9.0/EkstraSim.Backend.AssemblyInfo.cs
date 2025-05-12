@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69122696ec5dcf3c607ce830d5f8d679ebf5d524")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88a4157c5f2cb5a13f77175615b98d3c3fbc35a8")]
 [assembly: System.Reflection.AssemblyProductAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EkstraSim.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

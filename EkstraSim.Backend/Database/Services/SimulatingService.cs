@@ -20,7 +20,7 @@ public class MatchPredictionGoals
 public interface ISimulatingService
 {
     Task<MatchResult> SimulateMatch(Match match, MatchPredictionGoals predicition);
-    Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000);
+    Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000, string? comments = "");
     Task<IEnumerable<SimulatedMatchResult>> SimulateRoundEndpoint(int leagueId, int seasonId, int round = 0, int numberOfSimulations = 1000);
 }
 
@@ -305,23 +305,6 @@ public partial class SimulatingService : ISimulatingService
             };
             simulatedResults.Add(simulatedMatchResult);
 
-
-            //Console.WriteLine($"Wyniki dla meczu {match.HomeTeam.Name} vs {match.AwayTeam.Name}:");
-            //Console.WriteLine("Procentowe prawdopodobieństwo dla każdego wyniku:");
-            //for (int homeGoals = 0; homeGoals <= 10; homeGoals++)
-            //{
-            //    for (int awayGoals = 0; awayGoals <= 10; awayGoals++)
-            //    {
-            //        double percentage = resultProbabilityMatrix[homeGoals, awayGoals] * 100;
-            //        if (percentage > 0)
-            //        {
-            //            Console.WriteLine($"Wynik {homeGoals}:{awayGoals} - {percentage:F2}%");
-            //        }
-            //    }
-            //}
-            //Console.WriteLine($"Najbardziej prawdopodobny wynik: {bestHomeScore}:{bestAwayScore} z prawdopodobieństwem {maxProbability * 100:F2}%");
-            //Console.WriteLine();
-
         }
         sw.Stop();
         Console.WriteLine($"Czas na wykonanie {numberOfSimulations} symulacji rundy: {sw.Elapsed}");
@@ -372,7 +355,7 @@ public partial class SimulatingService : ISimulatingService
             LeagueId = leagueId,
             SeasonId = seasonId,
             Round = round,
-            NumberOfSimulations = numberOfSimulations
+            NumberOfSimulations = numberOfSimulations,
         };
 
         foreach(var resultMatch  in results)
@@ -386,7 +369,7 @@ public partial class SimulatingService : ISimulatingService
         return results;
     }
 
-    public async Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000)
+    public async Task SimulateRestOfTheSeason(int leagueId, int seasonId, int? currentRound = 0, int? numberOfSimulations = 1000, string? comments = "")
     {
         Stopwatch sw = Stopwatch.StartNew();
         if (currentRound == 0)
@@ -425,7 +408,9 @@ public partial class SimulatingService : ISimulatingService
             LeagueId = leagueId,
             SeasonId = seasonId,
             RoundBeforeSimulation = currentRound.GetValueOrDefault(),
-            NumberOfSimulations = numberOfSimulations.GetValueOrDefault()
+            NumberOfSimulations = numberOfSimulations.GetValueOrDefault(),
+            Comments = comments,
+            SimulationDate = DateTime.Now
         };
 
         _context.SimulatedFinalLeagues.Add(simulatedLeague);
@@ -610,8 +595,6 @@ public partial class SimulatingService : ISimulatingService
             .SelectMany(t => t.HomeMatches)
             .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
             .ToList();
-
-
 
         List<SimulatedTeamSeasonStats> listOfTeamsStats = [];
         foreach (var team in teams)
