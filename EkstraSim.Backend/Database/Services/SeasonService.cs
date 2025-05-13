@@ -8,11 +8,11 @@ namespace EkstraSim.Backend.Database.Services;
 
 public class SeasonService
 {
-    private readonly EkstraSimDbContext _context;
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
     private readonly IMapper _mapper;
-    public SeasonService(EkstraSimDbContext context, IMapper mapper)
+    public SeasonService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
     {
-        _context = context;
+        _dbFactory = dbFactory;
         _mapper = mapper;
     }
 
@@ -20,7 +20,8 @@ public class SeasonService
     {
         try
         {
-            var seasons = await _context.Seasons
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var seasons = await context.Seasons
                 .Include(x => x.League)
                 .Where(x => x.LeagueId == leagueId)
                 .ToListAsync();

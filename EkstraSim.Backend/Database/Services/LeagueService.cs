@@ -15,19 +15,20 @@ public interface ILeagueService
 
 public class LeagueService : ILeagueService
 {
-	private readonly EkstraSimDbContext _context;
-	private readonly IMapper _mapper;
-	public LeagueService(EkstraSimDbContext context, IMapper mapper)
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
+    private readonly IMapper _mapper;
+	public LeagueService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
 	{
-		_context = context;
-		_mapper = mapper;
+        _dbFactory = dbFactory;
+        _mapper = mapper;
 	}
 
     public async Task<EkstraSimResult<IEnumerable<LeagueDTO>>> GetAllLeagues()
     {
 		try
 		{
-			var leagues = await _context.Leagues.ToListAsync();
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var leagues = await context.Leagues.ToListAsync();
 			if (leagues.IsNullOrEmpty())
 			{
 				return new EkstraSimResult<IEnumerable<LeagueDTO>>
@@ -60,10 +61,11 @@ public class LeagueService : ILeagueService
 
     public async Task UpdateAverageLeagueGoals(int leagueId)
 	{
-		var league = await _context.Leagues.FindAsync(leagueId);
+        await using var context = await _dbFactory.CreateDbContextAsync();
+        var league = await context.Leagues.FindAsync(leagueId);
 		if (league != null)
 		{
-			var matches = await _context.Matches.Where(x => x.LeagueId == leagueId && x.HomeTeamScore != null && x.AwayTeamScore != null).ToListAsync();
+			var matches = await context.Matches.Where(x => x.LeagueId == leagueId && x.HomeTeamScore != null && x.AwayTeamScore != null).ToListAsync();
 			int matchesCount = matches.Count();
 
 			double homeGoals = 0;
@@ -79,9 +81,9 @@ public class LeagueService : ILeagueService
 			league.AverageHomeGoalsConceded = awayGoals / matchesCount;
 			league.AverageAwayGoalsConceded = homeGoals / matchesCount;
 
-			_context.Leagues.Update(league);
+            context.Leagues.Update(league);
 
-			await _context.SaveChangesAsync();
+			await context.SaveChangesAsync();
 		}
 
 	}

@@ -1,24 +1,33 @@
-﻿
-using EkstraSim.Backend.Database.Entities;
+﻿using EkstraSim.Backend.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EkstraSim.Backend.Database.Services;
 
-public static class CSVService
+public class CSVService
 {
-	public static async Task CSVImport(EkstraSimDbContext _context)
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
+
+    public CSVService(IDbContextFactory<EkstraSimDbContext> dbFactory)
+    {
+        _dbFactory = dbFactory;
+    }
+
+
+    public async Task CSVImport()
 	{
-		//string filePath = "D:\\Inżynierka\\CSV\\Ekstraklasa_2024_2025.csv";
-		string filePath = null;
+        //string filePath = "D:\\Inżynierka\\CSV\\Ekstraklasa_2024_2025.csv";
+        await using var context = await _dbFactory.CreateDbContextAsync();
+
+        string filePath = null;
 		try
 		{
 			using (var reader = new StreamReader(filePath))
 			{ 
 				string line;
 				List<Match> matches = [];
-				Season? season = await _context.Seasons.Where(s => s.LeagueId == 1 && s.Name == "2024/2025").FirstOrDefaultAsync();
-				League? league = await _context.Leagues.Where(l => l.Id == 1).FirstOrDefaultAsync();
-				List<Team> teams = await _context.Teams.ToListAsync();
+				Season? season = await context.Seasons.Where(s => s.LeagueId == 1 && s.Name == "2024/2025").FirstOrDefaultAsync();
+				League? league = await context.Leagues.Where(l => l.Id == 1).FirstOrDefaultAsync();
+				List<Team> teams = await context.Teams.ToListAsync();
 
 				while ((line = reader.ReadLine()) != null)
 				{
@@ -55,13 +64,13 @@ public static class CSVService
 
 				foreach (var match in matches)
 				{
-					if (!_context.Teams.Any(t => t.Id == match.AwayTeamId))
+					if (!context.Teams.Any(t => t.Id == match.AwayTeamId))
 					{
 						throw new InvalidOperationException($"Team with ID {match.AwayTeamId} does not exist.");
 					}
-					await _context.Matches.AddAsync(match);
+					await context.Matches.AddAsync(match);
 				}
-				await _context.SaveChangesAsync();
+				await context.SaveChangesAsync();
 			}
 		}
 		catch (Exception e)

@@ -8,12 +8,12 @@ namespace EkstraSim.Backend.Database.Services;
 
 public class SimulatedRoundService
 {
-    private readonly EkstraSimDbContext _context;
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
 
     private readonly IMapper _mapper;
-    public SimulatedRoundService(EkstraSimDbContext context, IMapper mapper)
+    public SimulatedRoundService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
     {
-        _context = context;
+        _dbFactory = dbFactory;
         _mapper = mapper;
     }
 
@@ -21,7 +21,8 @@ public class SimulatedRoundService
     {
         try
         {
-            var rounds = await _context.SimulatedRounds
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var rounds = await context.SimulatedRounds
                 .Include(x => x.Season)
                 .Include(x => x.League)
                 .Include(x => x.SimulatedMatchResults)
@@ -62,7 +63,8 @@ public class SimulatedRoundService
     {
         try
         {
-            var round = await _context.SimulatedRounds
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var round = await context.SimulatedRounds
                 .Include(x => x.Season)
                 .Include(x => x.League)
                 .Include(x => x.SimulatedMatchResults)

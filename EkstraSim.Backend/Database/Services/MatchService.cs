@@ -11,26 +11,27 @@ namespace EkstraSim.Backend.Database.Services;
 
 public class MatchService
 {
-    private readonly EkstraSimDbContext _context;
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
     private readonly IMapper _mapper;
-    public MatchService(EkstraSimDbContext context, IMapper mapper)
+    public MatchService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
     {
-        _context = context;
+        _dbFactory = dbFactory;
         _mapper = mapper;
     }
 
     public async Task UpdateMatchResultById(UpdateMatchResultRequest req)
     {
-        var match = await _context.Matches.FindAsync(req.MatchId);
+        await using var context = await _dbFactory.CreateDbContextAsync();
+        var match = await context.Matches.FindAsync(req.MatchId);
 
         if (match != null)
         {
             match.HomeTeamScore = req.HomeTeamScore;
             match.AwayTeamScore = req.AwayTeamScore;
 
-            _context.Matches.Update(match);
+            context.Matches.Update(match);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 
@@ -38,7 +39,8 @@ public class MatchService
     {
         try
         {
-            var matches = await _context.Matches
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var matches = await context.Matches
                 .Include(x => x.AwayTeam)
                 .Include(x => x.HomeTeam)
                 .Where(x => x.SeasonId == req.SeasonId && x.LeagueId == req.LeagueId && x.Round == req.Round)

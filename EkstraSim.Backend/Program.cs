@@ -11,14 +11,22 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddDbContextFactory<EkstraSimDbContext>(opts =>
+    opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
+
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ILeagueService, LeagueService>();
-builder.Services.AddScoped<ISimulatingService, SimulatingService>();
+builder.Services.AddSingleton<ISimulatingService>(sp =>
+    SimulatingService.CreateAsync(sp.GetRequiredService<IDbContextFactory<EkstraSimDbContext>>())
+                    .GetAwaiter().GetResult()
+);
 builder.Services.AddScoped<SimulatedRoundService>();
 builder.Services.AddScoped<SimulatedMatchService>();
 builder.Services.AddScoped<SimulatedSeasonService>();
 builder.Services.AddScoped<SeasonService>();
 builder.Services.AddScoped<MatchService>();
+builder.Services.AddScoped<CSVService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -31,11 +39,6 @@ builder.Services.AddCors(options =>
                           .AllowAnyMethod()
                           .AllowAnyHeader());
 });
-
-builder.Services.AddDbContext<EkstraSimDbContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddDbContextFactory<EkstraSimDbContext>();
 
 builder.Services.AddAuthorization();
 

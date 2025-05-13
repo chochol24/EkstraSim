@@ -21,6 +21,7 @@ public class SimulateLeagueTable : Endpoint<SimulateTableRequest>
 
 	public override async Task HandleAsync(SimulateTableRequest request, CancellationToken ct)
 	{
+
 		await _simulatingService.SimulateRestOfTheSeason(request.LeagueId, request.SeasonId, request.Round, request.NumberOfSimualtions, request.Comments);
 	}
 }

@@ -7,11 +7,11 @@ namespace EkstraSim.Backend.Endpoints.ImportCSV;
 
 public class ImportCSV : EndpointWithoutRequest
 {
-	private readonly EkstraSimDbContext _context;
+	private readonly CSVService _csvService;
 
-	public ImportCSV(EkstraSimDbContext context)
+	public ImportCSV(CSVService csvService)
 	{
-		_context = context;
+        _csvService = csvService;
 	}
 	public override void Configure()
 	{
@@ -21,6 +21,6 @@ public class ImportCSV : EndpointWithoutRequest
 
 	public override async Task HandleAsync(CancellationToken ct)
 	{
-		await CSVService.CSVImport(_context);
+		await _csvService.CSVImport();
 	}
 }

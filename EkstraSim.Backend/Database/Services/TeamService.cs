@@ -19,23 +19,23 @@ public interface ITeamService
 
 public class TeamService : ITeamService
 {
-	private readonly EkstraSimDbContext _context;
-	private readonly IMapper _mapper;
-	public TeamService(EkstraSimDbContext context, IMapper mapper)
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
+    private readonly IMapper _mapper;
+	public TeamService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
 	{
-		_context = context;
+		_dbFactory = dbFactory;
 		_mapper = mapper;
 	}
 
 	public async Task BaseRecalculateEloRankingAllTeamsAsync()
 	{
-		//TODO add season
-		Stopwatch stopwatch = new Stopwatch();
+        await using var context = await _dbFactory.CreateDbContextAsync();
+        Stopwatch stopwatch = new Stopwatch();
 		stopwatch.Start();
 
-		await _context.Teams.ForEachAsync(x => x.ELO = 1300);
-		await _context.SaveChangesAsync();
-		var matches = await _context.Matches
+		await context.Teams.ForEachAsync(x => x.ELO = 1300);
+		await context.SaveChangesAsync();
+		var matches = await context.Matches
 									.Where(m => m.SeasonId != null)
 									.Where(m => m.AwayTeamScore != null && m.HomeTeamScore != null)
 									.Include(m => m.HomeTeam)
@@ -76,11 +76,11 @@ public class TeamService : ITeamService
 			match.HomeTeam.ELO = (decimal)newHomeElo;
 			match.AwayTeam.ELO = (decimal)newAwayElo;
 
-			_context.Teams.Update(match.HomeTeam);
-			_context.Teams.Update(match.AwayTeam);
+            context.Teams.Update(match.HomeTeam);
+            context.Teams.Update(match.AwayTeam);
 		}
 
-		await _context.SaveChangesAsync();
+		await context.SaveChangesAsync();
 		stopwatch.Stop();
 	}
 
@@ -88,7 +88,8 @@ public class TeamService : ITeamService
     {
         try
         {
-            var teams = await _context.Teams.ToListAsync();
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var teams = await context.Teams.ToListAsync();
             var result = teams.Select(team => _mapper.Map<TeamDTO>(team)).ToList();
 
             if (teams.IsNullOrEmpty())
@@ -120,7 +121,8 @@ public class TeamService : ITeamService
 
     public async Task UpdateAverageTeamGoals()
 	{
-		var teams = await _context.Teams
+        await using var context = await _dbFactory.CreateDbContextAsync();
+        var teams = await context.Teams
 			.Include(t => t.AwayMatches)
 			.Include(t => t.HomeMatches)
 			.ToListAsync();
@@ -210,7 +212,7 @@ public class TeamService : ITeamService
                 team.AverageAwayGoalsConceded = Math.Round(awayGoalsConceded / awaymatchesCount, 3);
 				//current
 
-				var league = await _context.Leagues.Where(x => x.Id == 1).FirstOrDefaultAsync();
+				var league = await context.Leagues.Where(x => x.Id == 1).FirstOrDefaultAsync();
 
 				if (homeMatchesCurrentSeason.Count() <= 0 || awayMatchesCurrentSeason.Count() <= 0)
 				{
@@ -260,9 +262,9 @@ public class TeamService : ITeamService
 
                 }
 
-                _context.Teams.Update(team);
+                context.Teams.Update(team);
 			}
-			await _context.SaveChangesAsync();
+			await context.SaveChangesAsync();
 		}
 
 	}

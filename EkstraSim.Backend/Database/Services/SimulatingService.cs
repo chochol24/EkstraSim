@@ -35,12 +35,9 @@ public partial class SimulatingService : ISimulatingService
     private List<Match> matches = [];
     private List<Team> teams = [];
 
-    public SimulatingService(List<League> l, List<Match> m, List<Team> t, IDbContextFactory<EkstraSimDbContext> contextFactory)
+    public SimulatingService(IDbContextFactory<EkstraSimDbContext> dbFactory)
     {
-        leagues = l;
-        matches = m;
-        teams = t;
-        _contextFactory = contextFactory;
+        _contextFactory = dbFactory;
     }
 
     public static async Task<SimulatingService> CreateAsync(IDbContextFactory<EkstraSimDbContext> dbFactory)
@@ -57,7 +54,13 @@ public partial class SimulatingService : ISimulatingService
             .Include(x => x.HomeMatches)
             .ToListAsync();
 
-        return new SimulatingService(leaguesResponse, matchesResponse, teamsRespone, dbFactory);
+        var sim = new SimulatingService(dbFactory);
+
+        sim.leagues = leaguesResponse;
+        sim.matches = matchesResponse;
+        sim.teams = teamsRespone;
+
+        return sim;
     }
 
     private static Random _random = new Random();

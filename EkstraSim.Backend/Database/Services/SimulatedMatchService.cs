@@ -9,12 +9,12 @@ namespace EkstraSim.Backend.Database.Services;
 
 public class SimulatedMatchService
 {
-    private readonly EkstraSimDbContext _context;
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
 
     private readonly IMapper _mapper;
-    public SimulatedMatchService(EkstraSimDbContext context, IMapper mapper)
+    public SimulatedMatchService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
     {
-        _context = context;
+        _dbFactory = dbFactory;
         _mapper = mapper;
     }
 
@@ -22,7 +22,8 @@ public class SimulatedMatchService
     {
         try
         {
-            var match = await _context.SimulatedMatchResults
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var match = await context.SimulatedMatchResults
                 .Include(x => x.Season)
                 .Include(x => x.League)
                 .Include(x => x.Match)
@@ -37,7 +38,7 @@ public class SimulatedMatchService
                 {
                     Success = false,
                     Data = default,
-                    ErrorMessage = SnackbarMessages.Error_SimulatedMatch_NotFound // lub inna stała, np. "Nie znaleziono meczu."
+                    ErrorMessage = SnackbarMessages.Error_SimulatedMatch_NotFound
                 };
             }
 

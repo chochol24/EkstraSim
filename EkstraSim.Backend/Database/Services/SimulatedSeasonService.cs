@@ -9,12 +9,12 @@ namespace EkstraSim.Backend.Database.Services;
 
 public class SimulatedSeasonService
 {
-    private readonly EkstraSimDbContext _context;
+    private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
 
     private readonly IMapper _mapper;
-    public SimulatedSeasonService(EkstraSimDbContext context, IMapper mapper)
+    public SimulatedSeasonService(IDbContextFactory<EkstraSimDbContext> dbFactory, IMapper mapper)
     {
-        _context = context;
+        _dbFactory = dbFactory;
         _mapper = mapper;
     }
 
@@ -22,7 +22,8 @@ public class SimulatedSeasonService
     {
         try
         {
-            var simulations = await _context.SimulatedFinalLeagues
+            await using var context = await _dbFactory.CreateDbContextAsync();
+            var simulations = await context.SimulatedFinalLeagues
                 .Include(x => x.Teams)
                     .ThenInclude(t => t.Team)
                 .Include(x => x.Season)

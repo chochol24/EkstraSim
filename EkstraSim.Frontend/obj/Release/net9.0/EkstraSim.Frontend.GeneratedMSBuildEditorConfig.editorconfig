@@ -12,65 +12,65 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = EkstraSim.Frontend
 build_property.RootNamespace = EkstraSim.Frontend
-build_property.ProjectDir = C:\Inżynierka\EkstraSim\EkstraSim.Frontend\
+build_property.ProjectDir = D:\Inżynierka\EkstraSim\EkstraSim.Frontend\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Inżynierka\EkstraSim\EkstraSim.Frontend
+build_property.MSBuildProjectDirectory = D:\Inżynierka\EkstraSim\EkstraSim.Frontend
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/App.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/App.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Index.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xJbmRleC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Matches/MatchesPage.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Matches/MatchesPage.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYXRjaGVzXE1hdGNoZXNQYWdlLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulatedTables/SimulatedTableForm.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulatedTables/SimulatedTableForm.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0ZWRUYWJsZXNcU2ltdWxhdGVkVGFibGVGb3JtLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulatedTables/SimulatedTablesPage.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulatedTables/SimulatedTablesPage.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0ZWRUYWJsZXNcU2ltdWxhdGVkVGFibGVzUGFnZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulateRoundForm.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/SimulateRoundForm.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0ZVJvdW5kRm9ybS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/MatchSimulationDetails.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/MatchSimulationDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0aW9uc1xNYXRjaFNpbXVsYXRpb25EZXRhaWxzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/RoundsSimulationGrid.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/RoundsSimulationGrid.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0aW9uc1xSb3VuZHNTaW11bGF0aW9uR3JpZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/SimulatedRoundDetails.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Simulations/SimulatedRoundDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaW11bGF0aW9uc1xTaW11bGF0ZWRSb3VuZERldGFpbHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Teams.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Pages/Teams.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xUZWFtcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Routes.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/_Imports.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Layout/MainLayout.razor]
+[D:/Inżynierka/EkstraSim/EkstraSim.Frontend/Components/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = b-hp7shr8eyx

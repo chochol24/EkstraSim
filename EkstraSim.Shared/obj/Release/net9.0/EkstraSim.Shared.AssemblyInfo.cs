@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22bd79e9505507cee32040590e677b2e146f6727")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4e7d7dec84b4a24ff816911447f35c0436c9b745")]
 [assembly: System.Reflection.AssemblyProductAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EkstraSim.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

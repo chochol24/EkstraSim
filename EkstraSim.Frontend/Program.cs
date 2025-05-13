@@ -24,7 +24,7 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://jw-ekstrasim-api-gaaqaxa6azhjcke3.polandcentral-01.azurewebsites.net")
+    BaseAddress = new Uri("https://localhost:7050/")
 });
 
 builder.Services.AddScoped<HttpServiceHelper>();
