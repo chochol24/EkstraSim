@@ -35,6 +35,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<EkstraSimDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDbContextFactory<EkstraSimDbContext>();
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
