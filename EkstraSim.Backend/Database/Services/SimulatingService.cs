@@ -390,11 +390,11 @@ public partial class SimulatingService : ISimulatingService
            simulatedRound.SimulatedMatchResults.Add(resultMatch);
         }
 
-        await using var context = await _contextFactory.CreateDbContextAsync();
-
-        context.SimulatedRounds.Add(simulatedRound);
-        await context.SaveChangesAsync();
-
+        await using (var context = await _contextFactory.CreateDbContextAsync())
+        {
+            context.SimulatedRounds.Add(simulatedRound);
+            await context.SaveChangesAsync();
+        }
         return results;
     }
 
@@ -424,10 +424,10 @@ public partial class SimulatingService : ISimulatingService
             Comments = comments,
             SimulationDate = DateTime.UtcNow
         };
-        await using (var ctx = await _contextFactory.CreateDbContextAsync())
+        await using (var context = await _contextFactory.CreateDbContextAsync())
         {
-            ctx.SimulatedFinalLeagues.Add(simulatedLeague);
-            await ctx.SaveChangesAsync();
+            context.SimulatedFinalLeagues.Add(simulatedLeague);
+            await context.SaveChangesAsync();
         }
 
         var teamIds = matches
@@ -618,17 +618,17 @@ public partial class SimulatingService : ISimulatingService
         return seasonStats;
     }
 
-    private async Task<List<SimulatedTeamSeasonStats>> CalculateSeasonStatsTeams(List<Team> teams, int leagueId, int seasonId)
+    private async Task<List<SimulatedTeamSeasonStats>> CalculateSeasonStatsTeams(List<Team> teamsRes, int leagueId, int seasonId)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
-        var allMatches = teams
+        var allMatches = teamsRes
             .SelectMany(t => t.HomeMatches)
             .Where(m => m.LeagueId == leagueId && m.SeasonId == seasonId)
             .ToList();
 
         List<SimulatedTeamSeasonStats> listOfTeamsStats = [];
-        foreach (var team in teams)
+        foreach (var team in teamsRes)
         {
             var matchesHomeTeamSeason = allMatches.Where(m => m.HomeTeamId == team.Id).ToList();
 
@@ -679,7 +679,7 @@ public partial class SimulatingService : ISimulatingService
         public int Place { get; set; }
     }
 
-    private async Task<List<Team>> UpdateTeamAverages(IEnumerable<SimulatedMatchResult> simulatedRoundResults, List<Team> teams)
+    private async Task<List<Team>> UpdateTeamAverages(IEnumerable<SimulatedMatchResult> simulatedRoundResults, List<Team> teamsRes)
     {
         var matchIds = simulatedRoundResults.Select(r => r.MatchId).ToList();
 
@@ -688,7 +688,7 @@ public partial class SimulatingService : ISimulatingService
             .ToList();
 
         var matchesDict = matchesRes.ToDictionary(m => m.Id);
-        var teamsDict = teams.ToDictionary(t => t.Id);
+        var teamsDict = teamsRes.ToDictionary(t => t.Id);
 
         foreach (var matchResult in simulatedRoundResults)
         {
@@ -728,7 +728,7 @@ public partial class SimulatingService : ISimulatingService
                 }
             }
         }
-        return teams;
+        return teamsRes;
     }
 
     private double UpdateAverage(double? currentAverage, int currentCount, int newValue)
