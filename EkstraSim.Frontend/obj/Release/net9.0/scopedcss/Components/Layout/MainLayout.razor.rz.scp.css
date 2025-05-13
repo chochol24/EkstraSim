@@ -96,3 +96,12 @@ main[b-hp7shr8eyx] {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.footer[b-hp7shr8eyx] {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: right;
+    padding: 12px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}

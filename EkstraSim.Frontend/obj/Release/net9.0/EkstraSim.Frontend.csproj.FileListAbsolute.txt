@@ -184,6 +184,6 @@ D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\EkstraSim.Fronten
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\EkstraSim.Frontend.genruntimeconfig.cache
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\bin\Release\net9.0\EkstraSim.Frontend.pdb
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\ref\EkstraSim.Frontend.dll
-D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\jhi0r01i65-g8iqgg9bmc.gz
-D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0x831btmyf-g8iqgg9bmc.gz
 D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\pwiczrpa7e-vqecce1u9t.gz
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\jhi0r01i65-hoyf0msae8.gz
+D:\Inżynierka\EkstraSim\EkstraSim.Frontend\obj\Release\net9.0\compressed\0x831btmyf-hoyf0msae8.gz

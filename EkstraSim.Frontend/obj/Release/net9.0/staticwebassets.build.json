@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "n0XTjVs+aUnMPIdnLPwv9FP+7nkFHlJjYbRWrRVo4ic=",
+  "Hash": "08VipLgsVZMFdytefd+HZMI4yrOHDM1ONWUMA464Tz0=",
   "Source": "EkstraSim.Frontend",
   "BasePath": "_content/EkstraSim.Frontend",
   "Mode": "Default",
@@ -80,12 +80,12 @@
       "OriginalItemSpec": "C:\\Users\\Kuba\\.nuget\\packages\\mudblazor\\8.2.0\\staticwebassets\\MudBlazor.min.js"
     },
     {
-      "Identity": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-g8iqgg9bmc.gz",
+      "Identity": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-hoyf0msae8.gz",
       "SourceId": "EkstraSim.Frontend",
       "SourceType": "Computed",
       "ContentRoot": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\",
       "BasePath": "_content/EkstraSim.Frontend",
-      "RelativePath": "EkstraSim.Frontend#[.{fingerprint=g8iqgg9bmc}]!.bundle.scp.css.gz",
+      "RelativePath": "EkstraSim.Frontend#[.{fingerprint=hoyf0msae8}]!.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
       "AssetRole": "Alternative",
@@ -94,8 +94,8 @@
       "RelatedAsset": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\projectbundle\\EkstraSim.Frontend.bundle.scp.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "ge06ddq3lx",
-      "Integrity": "eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=",
+      "Fingerprint": "arblqgrs2a",
+      "Integrity": "Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\projectbundle\\EkstraSim.Frontend.bundle.scp.css"
@@ -563,12 +563,12 @@
       "OriginalItemSpec": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
     },
     {
-      "Identity": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-g8iqgg9bmc.gz",
+      "Identity": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-hoyf0msae8.gz",
       "SourceId": "EkstraSim.Frontend",
       "SourceType": "Computed",
       "ContentRoot": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\",
       "BasePath": "_content/EkstraSim.Frontend",
-      "RelativePath": "EkstraSim.Frontend#[.{fingerprint=g8iqgg9bmc}]?.styles.css.gz",
+      "RelativePath": "EkstraSim.Frontend#[.{fingerprint=hoyf0msae8}]?.styles.css.gz",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
       "AssetRole": "Alternative",
@@ -577,8 +577,8 @@
       "RelatedAsset": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\bundle\\EkstraSim.Frontend.styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
-      "Fingerprint": "ge06ddq3lx",
-      "Integrity": "eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=",
+      "Fingerprint": "arblqgrs2a",
+      "Integrity": "Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\bundle\\EkstraSim.Frontend.styles.css"
@@ -1102,8 +1102,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ApplicationBundle",
-      "Fingerprint": "g8iqgg9bmc",
-      "Integrity": "0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=",
+      "Fingerprint": "hoyf0msae8",
+      "Integrity": "r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\bundle\\EkstraSim.Frontend.styles.css"
@@ -1123,8 +1123,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ProjectBundle",
-      "Fingerprint": "g8iqgg9bmc",
-      "Integrity": "0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=",
+      "Fingerprint": "hoyf0msae8",
+      "Integrity": "r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\projectbundle\\EkstraSim.Frontend.bundle.scp.css"
@@ -2761,12 +2761,12 @@
     },
     {
       "Route": "EkstraSim.Frontend.bundle.scp.css",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-g8iqgg9bmc.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-hoyf0msae8.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.001251564456"
+          "Quality": "0.001199040767"
         }
       ],
       "ResponseHeaders": [
@@ -2776,15 +2776,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2804,13 +2804,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "W/\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
@@ -2825,7 +2825,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2253"
+          "Value": "2431"
         },
         {
           "Name": "Content-Type",
@@ -2833,11 +2833,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2847,13 +2847,13 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
       "Route": "EkstraSim.Frontend.bundle.scp.css.gz",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-g8iqgg9bmc.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-hoyf0msae8.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2862,7 +2862,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "Content-Type",
@@ -2870,11 +2870,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2892,18 +2892,18 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg="
+          "Value": "sha256-Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-g8iqgg9bmc.gz",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.bundle.scp.css",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-hoyf0msae8.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.001251564456"
+          "Quality": "0.001199040767"
         }
       ],
       "ResponseHeaders": [
@@ -2913,15 +2913,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2941,13 +2941,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "W/\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -2955,12 +2955,12 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.bundle.scp.css",
       "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\projectbundle\\EkstraSim.Frontend.bundle.scp.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2970,7 +2970,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2253"
+          "Value": "2431"
         },
         {
           "Name": "Content-Type",
@@ -2978,11 +2978,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -2992,7 +2992,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -3000,13 +3000,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.bundle.scp.css.gz",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-g8iqgg9bmc.gz",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.bundle.scp.css.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\0x831btmyf-hoyf0msae8.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3015,7 +3015,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "Content-Type",
@@ -3023,11 +3023,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3045,7 +3045,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -3053,18 +3053,18 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg="
+          "Value": "sha256-Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.styles.css",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-g8iqgg9bmc.gz",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.styles.css",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-hoyf0msae8.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.001251564456"
+          "Quality": "0.001199040767"
         }
       ],
       "ResponseHeaders": [
@@ -3074,15 +3074,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3102,13 +3102,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "W/\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -3116,12 +3116,12 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.styles.css",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.styles.css",
       "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\scopedcss\\bundle\\EkstraSim.Frontend.styles.css",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3131,7 +3131,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2253"
+          "Value": "2431"
         },
         {
           "Name": "Content-Type",
@@ -3139,11 +3139,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3153,7 +3153,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -3161,13 +3161,13 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
-      "Route": "EkstraSim.Frontend.g8iqgg9bmc.styles.css.gz",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-g8iqgg9bmc.gz",
+      "Route": "EkstraSim.Frontend.hoyf0msae8.styles.css.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-hoyf0msae8.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3176,7 +3176,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "Content-Type",
@@ -3184,11 +3184,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3206,7 +3206,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "g8iqgg9bmc"
+          "Value": "hoyf0msae8"
         },
         {
           "Name": "label",
@@ -3214,18 +3214,18 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg="
+          "Value": "sha256-Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k="
         }
       ]
     },
     {
       "Route": "EkstraSim.Frontend.styles.css",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-g8iqgg9bmc.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-hoyf0msae8.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.001251564456"
+          "Quality": "0.001199040767"
         }
       ],
       "ResponseHeaders": [
@@ -3235,15 +3235,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3263,13 +3263,13 @@
         },
         {
           "Name": "ETag",
-          "Value": "W/\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "W/\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         }
       ],
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
@@ -3284,7 +3284,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "2253"
+          "Value": "2431"
         },
         {
           "Name": "Content-Type",
@@ -3292,11 +3292,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o=\""
+          "Value": "\"r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3306,13 +3306,13 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-0H7Ro0IObCBlp4q7neOMwG6m99P4l+PJgU3jyJZpM2o="
+          "Value": "sha256-r0q4/ty/isrK7nct7II4TjOsvVHHSfK2OoOhPeLlcks="
         }
       ]
     },
     {
       "Route": "EkstraSim.Frontend.styles.css.gz",
-      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-g8iqgg9bmc.gz",
+      "AssetFile": "D:\\Inżynierka\\EkstraSim\\EkstraSim.Frontend\\obj\\Release\\net9.0\\compressed\\jhi0r01i65-hoyf0msae8.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3321,7 +3321,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "798"
+          "Value": "833"
         },
         {
           "Name": "Content-Type",
@@ -3329,11 +3329,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg=\""
+          "Value": "\"Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 26 Mar 2025 14:07:24 GMT"
+          "Value": "Tue, 13 May 2025 20:47:05 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -3351,7 +3351,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-eNdIeULlSsig9yVS5JlwUl9xb7+NnycPFzlAqs1dKcg="
+          "Value": "sha256-Oof8q3SYGlOZdDvcEuGmzgJbNP/fhUr1uuk+K8SCA6k="
         }
       ]
     },

@@ -20,6 +20,8 @@ public partial class SimulatedTablesPage
     private bool isLoading = true;
     private bool isFormVisible = false;
     private bool isSubmitting = false;
+
+    private string formButtonText = "Pokaż formularz";
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -126,6 +128,19 @@ public partial class SimulatedTablesPage
     private void SwitchFormVisible()
     {
         isFormVisible = !isFormVisible;
+
+        if(isFormVisible && selectedSimulation == null)
+        {
+            formButtonText = "Ukryj formularz";
+        }
+        else if ((!isFormVisible && selectedSimulation == null) || (!isFormVisible && selectedSimulation != null))
+        {
+            formButtonText = "Pokaż formularz";
+        }
+        else if (isFormVisible && selectedSimulation != null)
+        {
+            formButtonText = "Pokaż szczegółowe dane drużyny";
+        }
     }
 
     private async Task OnSubmitForm()

@@ -41,39 +41,43 @@ else
 			</MudSelect>
 		</MudItem>
 		<MudItem>
-			<MudButton ButtonType="ButtonType.Button" OnClick="SwitchFormVisible">Pokaż formularz</MudButton>
+			<MudButton ButtonType="ButtonType.Button" OnClick="SwitchFormVisible">@formButtonText</MudButton>
 		</MudItem>
-		@if(isFormVisible)
-		{
-			<MudItem xs="3">
-				<SimulatedTableForm @ref="tableForm" OnSubmitForm="@OnSubmitForm" AfterSubmitForm="@AfterSubmitForm"/>
-			</MudItem>
-		}
+
 	</MudGrid>
-	@if (selectedSimulation is not null)
-	{
-		<MudGrid>
-			<MudItem xs="9" >
+	<MudGrid>
+		<MudItem xs="9">
+			@if (selectedSimulation is not null)
+			{
 				<MudDataGrid T="SimulatedTeamInFinalTableDTO"
 							 Items="@(selectedSimulation.Teams.OrderBy(x => x.Place).ToList())"
 							 SortMode="SortMode.Multiple"
 							 Hover="true"
 							 Dense="true"
 							 RowClick="SelectTeam" ColumnResizeMode="ResizeMode.Container"
-							 SelectedItem="@selectedTeam" 
+							 SelectedItem="@selectedTeam"
 							 RowClassFunc="GetRowClass">
 					<Columns>
 						<PropertyColumn Property="x => x.Place" Title="Miejsce" SortBy="x => x.Place" Style="width: 50px;" />
-						<PropertyColumn Property="x => x.Team.Name" Title="Drużyna"  />
+						<PropertyColumn Property="x => x.Team.Name" Title="Drużyna" />
 						<PropertyColumn Property="x => x.AveragePoints" Title="Średnie punkty" Format="f2" />
-						<PropertyColumn Property="x => x.FirstPlaceProbability" Title="TOP 1 [%]" Format="p2"  />
+						<PropertyColumn Property="x => x.FirstPlaceProbability" Title="TOP 1 [%]" Format="p2" />
 						<PropertyColumn Property="x => x.TopFourProbability" Title="TOP 4 [%]" Format="p2" />
 						<PropertyColumn Property="x => x.RelegationProbability" Title="SPADEK [%]" Format="p2" />
 					</Columns>
 				</MudDataGrid>
-			</MudItem>
+			}
+		</MudItem>
+		@if (isFormVisible)
+		{
 			<MudItem xs="3">
-				@if (selectedTeam is not null)
+				<SimulatedTableForm @ref="tableForm" OnSubmitForm="@OnSubmitForm" AfterSubmitForm="@AfterSubmitForm" />
+			</MudItem>
+		}
+		else
+		{
+			<MudItem xs="3">
+				@if (selectedTeam != null && selectedSimulation != null)
 				{
 					<MudPaper Class="pa-4">
 						<MudText Typo="Typo.h5" Align="Align.Center">@selectedTeam.Team.Name</MudText>
@@ -98,7 +102,7 @@ else
 						</table>
 					</MudPaper>
 				}
-				else
+				else if (selectedSimulation != null && selectedTeam == null)
 				{
 					<MudPaper Class="pa-4">
 						<MudText Typo="Typo.subtitle1" Align="Align.Center">
@@ -107,8 +111,9 @@ else
 					</MudPaper>
 				}
 			</MudItem>
-		</MudGrid>
-	}
+		}
+	</MudGrid>
+
 }
 
 <style>
