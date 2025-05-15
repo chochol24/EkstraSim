@@ -76,7 +76,7 @@
 	[Parameter]
 	public EventCallback OnSubmitForm { get; set; }
 	[Parameter]
-	public EventCallback AfterSubmitForm { get; set; }
+	public EventCallback<SimulateRoundRequest> AfterSubmitForm { get; set; }
 
 
 	private MudForm form;
@@ -155,7 +155,7 @@
 		finally
 		{
 			if (AfterSubmitForm.HasDelegate)
-				await AfterSubmitForm.InvokeAsync();
+				await AfterSubmitForm.InvokeAsync(formRequest);
 
 			form.ResetValidation();
 			formRequest = new SimulateRoundRequest();

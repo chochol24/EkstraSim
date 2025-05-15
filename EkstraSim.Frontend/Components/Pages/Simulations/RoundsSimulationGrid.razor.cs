@@ -38,17 +38,17 @@ public partial class RoundsSimulationGrid
     }
     private async Task SeasonChangeAsync(SeasonDTO season)
     {
+        simulatedRounds.Clear();
         selectedSeason = season;
 
         var result = await _simulationService.GetSimulatedRoundsBySeason(new SeasonAndLeagueRequest(season.Id, season.LeagueId));
         if (result.Data != null && result.Success == true)
         {
-            simulatedRounds = result.Data;
+            simulatedRounds = result.Data.ToList();
         }
         else
         {
             Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Base, Severity.Error);
-            simulatedRounds.Clear();
         }
     }
 
@@ -64,11 +64,20 @@ public partial class RoundsSimulationGrid
         isSubmitting = true;
     }
 
-    private async Task AfterSubmitForm()
+    private async Task AfterSubmitForm(SimulateRoundRequest req)
     {
         isSubmitting = false;
-        selectedSeason = null;
         await GetSeasonsAsync();
+        
+        var seasonResponse = seasons.FirstOrDefault(x => x.Id == req.SeasonId);
+        if (seasonResponse != null)
+        {
+            await SeasonChangeAsync(selectedSeason);
+        }
+        else
+        {
+            selectedSeason = null;
+        }
         StateHasChanged();
     }
 }

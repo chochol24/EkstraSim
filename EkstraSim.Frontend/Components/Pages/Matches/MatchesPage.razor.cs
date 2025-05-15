@@ -14,6 +14,7 @@ public partial class MatchesPage
     private SeasonDTO? selectedSeason;
     private bool isLoading = true;
     private bool isEditingMode = false;
+    private bool isSubmitting = false;
     private int currentPickedRound = 0;
     private Dictionary<int, (int? Home, int? Away)> originalScores = new();
     public MatchesPage() 
@@ -118,6 +119,7 @@ public partial class MatchesPage
 
     private async Task UpdateAverageLeagueGoals()
     {
+        isSubmitting = true;
         var result = await _dataBaseService.UpdateAverageLeagueGoalsAsync(new AverageLeagueGoalsUpdateRequest(1));
         if (result.Success)
         {
@@ -137,6 +139,7 @@ public partial class MatchesPage
         {
             Snackbar.Add(SnackbarMessages.Team_Averages_Update_Failed, Severity.Error);
         }
+        isSubmitting = false;
     }
 
 
