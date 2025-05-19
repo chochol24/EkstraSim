@@ -181,13 +181,13 @@ public partial class SimulatingService : ISimulatingService
             var awayDefenseStrengthHistorical = match.AwayTeam.AverageAwayGoalsConcededHistorical / league.AverageAwayGoalsConceded;
 
             //prediction
-            var homePred = (homeAttackStrengthCurrent * awayDefenseStrengthCurrent * league.AverageHomeGoalsScored * 0.67)
-                      + (homeAttackStrengthPrevious * awayDefenseStrengthPrevious * league.AverageHomeGoalsScored * 0.3)
-                      + (homeAttackStrengthHistorical * awayDefenseStrengthHistorical * league.AverageHomeGoalsScored * 0.03);
+            var homePred = (homeAttackStrengthCurrent * awayDefenseStrengthCurrent * league.AverageHomeGoalsScored * Constants.CurrentSeasonScale)
+                      + (homeAttackStrengthPrevious * awayDefenseStrengthPrevious * league.AverageHomeGoalsScored * Constants.PreviousSeasonScale)
+                      + (homeAttackStrengthHistorical * awayDefenseStrengthHistorical * league.AverageHomeGoalsScored * Constants.HistoricalScale);
 
-            var awayPred = (awayAttackStrengthCurrent * homeDefenseStrengthCurrent * league.AverageAwayGoalsScored * 0.67)
-                         + (awayAttackStrengthPrevious * homeDefenseStrengthPrevious * league.AverageAwayGoalsScored * 0.3)
-                         + (awayAttackStrengthHistorical * homeDefenseStrengthHistorical * league.AverageAwayGoalsScored * 0.03);
+            var awayPred = (awayAttackStrengthCurrent * homeDefenseStrengthCurrent * league.AverageAwayGoalsScored * Constants.CurrentSeasonScale)
+                         + (awayAttackStrengthPrevious * homeDefenseStrengthPrevious * league.AverageAwayGoalsScored * Constants.PreviousSeasonScale)
+                         + (awayAttackStrengthHistorical * homeDefenseStrengthHistorical * league.AverageAwayGoalsScored * Constants.PreviousSeasonScale);
 
             if (numberOfSimulations > 1)
             {

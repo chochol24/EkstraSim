@@ -25,7 +25,7 @@ else
 {
 	<MudGrid>
 		<MudItem xs="3">
-			<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChangeAsync">
+			<MudSelect T="SeasonDTO" Label="Sezon" ValueChanged="SeasonChangeAsync" Value="selectedSeason">
 				@foreach (var season in seasons)
 				{
 					<MudSelectItem Value="season">@season.Name - @season.League.Name</MudSelectItem>
@@ -33,7 +33,7 @@ else
 			</MudSelect>
 		</MudItem>
 		<MudItem xs="4">
-			<MudSelect T="SimulatedFinalLeagueDTO" Label="Symulacja" ValueChanged="AssignPlaces" ReadOnly="@(!seasons.Any())">
+			<MudSelect T="SimulatedFinalLeagueDTO" Label="Symulacja" ValueChanged="AssignPlaces" ReadOnly="@(!seasons.Any())" Value="selectedSimulation">
 				@foreach (var simulation in simulations)
 				{
 					<MudSelectItem Value="simulation">@simulation.League.Name @simulation.Season.Name : @simulation.NumberOfSimulations symulacji, po kolejce nr @(simulation.RoundBeforeSimulation - 1)</MudSelectItem>

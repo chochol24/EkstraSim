@@ -9,63 +9,63 @@
 
 <MudForm @ref="form" Validation="@formValidation" Class="form-simulate-table">
 	<MudSelect T="int"
-			   Label="Liga"
-			   @bind-Value="formRequest.LeagueId"
-			   Required="true"
-			   For="@(() => formRequest.LeagueId)"
-			   Class="numeric-field-form-simulate-round"
-			   SelectedValuesChanged="OnLeagueChanged">
+	Label="Liga"
+	@bind-Value="formRequest.LeagueId"
+	Required="true"
+	For="@(() => formRequest.LeagueId)"
+	Class="numeric-field-form-simulate-round"
+	SelectedValuesChanged="OnLeagueChanged">
 		@foreach (var league in leagues)
 		{
 			<MudSelectItem Value="league.Id">@league.Name</MudSelectItem>
 		}
 	</MudSelect>
 	<MudSelect T="int"
-			   Label="Sezon"
-			   @bind-Value="formRequest.SeasonId"
-			   Required="true"
-			   For="@(() => formRequest.SeasonId)"
-			   Class="numeric-field-form-simulate-round" Disabled="!seasons.Any()">
+	Label="Sezon"
+	@bind-Value="formRequest.SeasonId"
+	Required="true"
+	For="@(() => formRequest.SeasonId)"
+	Class="numeric-field-form-simulate-round" Disabled="!seasons.Any()">
 		@foreach (var season in seasons)
 		{
 			<MudSelectItem Value="season.Id">@season.Name</MudSelectItem>
 		}
 	</MudSelect>
 	<MudNumericField T="int"
-					 Label="Runda" @bind-Value="formRequest.Round"
-					 Immediate="true"
-					 Required="true"
-					 Class="numeric-field-form-simulate-table"
-					 For="@(() => formRequest.Round)" />
+	Label="Runda" @bind-Value="formRequest.Round"
+	Immediate="true"
+	Required="true"
+	Class="numeric-field-form-simulate-table"
+	For="@(() => formRequest.Round)" />
 	<MudNumericField T="int"
-					 Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions"
-					 Immediate="true"
-					 Required="true"
-					 Class="numeric-field-form-simulate-round"
-					 For="@(() => formRequest.NumberOfSimualtions)" />
+	Label="Liczba symulacjii" @bind-Value="formRequest.NumberOfSimualtions"
+	Immediate="true"
+	Required="true"
+	Class="numeric-field-form-simulate-round"
+	For="@(() => formRequest.NumberOfSimualtions)" />
 	<MudTextField T="string"
-					 Label="Komentarz" @bind-Value="formRequest.Comments"
-					 Immediate="true"
-					 Required="false"
-					 Class="numeric-field-form-simulate-round"
-					 For="@(() => formRequest.Comments)" />
+	Label="Komentarz" @bind-Value="formRequest.Comments"
+	Immediate="true"
+	Required="false"
+	Class="numeric-field-form-simulate-round"
+	For="@(() => formRequest.Comments)" />
 	<MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary"
-			   Class="form-simulate-submit-button" OnClick="OnSubmit" Disabled="!form.IsValid" @ref="submitButton">Symuluj</MudButton>
+	Class="form-simulate-submit-button" OnClick="OnSubmit" Disabled="!form.IsValid" @ref="submitButton">Symuluj</MudButton>
 </MudForm>
 
 <style>
 	.form-simulate-table {
-		width: max-content;
-		padding: 10px;
-		color: white;
+	width: max-content;
+	padding: 10px;
+	color: white;
 	}
 
 	.numeric-field-form-simulate-table {
-		padding: 5px;
+	padding: 5px;
 	}
 
 	.form-simulate-submit-button {
-		background: #610b16 !important;
+	background: #610b16 !important;
 	}
 
 </style>
@@ -74,7 +74,7 @@
 	[Parameter]
 	public EventCallback OnSubmitForm { get; set; }
 	[Parameter]
-	public EventCallback AfterSubmitForm { get; set; }
+	public EventCallback<SimulateTableRequest> AfterSubmitForm { get; set; }
 
 	private MudForm form;
 	private MudButton submitButton;
@@ -152,9 +152,9 @@
 		finally
 		{
 			if (AfterSubmitForm.HasDelegate)
-				await AfterSubmitForm.InvokeAsync();
+				await AfterSubmitForm.InvokeAsync(formRequest);
 
-			form.ResetValidation();
+			await form.ResetAsync();
 			formRequest = new SimulateTableRequest();
 		}
 

@@ -148,13 +148,24 @@ public partial class SimulatedTablesPage
         isSubmitting = true;
     }
 
-    private async Task AfterSubmitForm()
+    private async Task AfterSubmitForm(SimulateTableRequest req)
     {
         isSubmitting = false;
+        seasons.Clear();
         selectedSimulation = null;
         selectedTeam = null;
-        selectedSeason = null;
         await GetSeasonsAsync();
+        var seasonResponse = seasons.FirstOrDefault(x => x.Id == req.SeasonId);
+        if(seasonResponse != null)
+        {
+            await SeasonChangeAsync(seasonResponse);
+        }
+        else
+        {
+            selectedSeason = null;
+        }
         StateHasChanged();
+
+        tableForm = new SimulatedTableForm();
     }
 }
