@@ -1,6 +1,7 @@
 using EkstraSim.Backend.Database;
 using EkstraSim.Backend.Database.Entities;
 using EkstraSim.Backend.Database.Services;
+using EkstraSim.Backend.Database.Services.Research;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,14 @@ builder.Services.AddScoped<SimulatedSeasonService>();
 builder.Services.AddScoped<SeasonService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddScoped<CSVService>();
+
+builder.Services.AddScoped<CsvImportService>();
+builder.Services.AddScoped<PromotedTeamsService>();
+builder.Services.AddScoped<SeasonStructureService>();
+builder.Services.AddScoped<ResearchOrchestrationService>();
+builder.Services.AddScoped<ResearchRunService>();
+builder.Services.AddScoped<RoundPredictionService>();
+builder.Services.AddSingleton<IResearchRunLauncher, ResearchRunLauncher>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 

@@ -27,5 +27,14 @@ public class AutoMapperProfile : Profile
 
         CreateMap<SimulatedTeamInFinalTable, SimulatedTeamInFinalTableDTO>()
             .ForMember(dest => dest.SimulatedFinalLeague, opt => opt.Ignore());
+
+        CreateMap<ModelEvaluationRun, ModelEvaluationRunDTO>()
+            .ForMember(dest => dest.League, opt => opt.MapFrom(src => src.League))
+            .ForMember(dest => dest.Season, opt => opt.MapFrom(src => src.Season));
+
+        CreateMap<ModelPrediction, ModelPredictionDTO>()
+            .ForMember(dest => dest.Match, opt => opt.MapFrom(src => src.Match));
+
+        CreateMap<ModelRoundMetric, ModelRoundMetricDTO>();
     }
 }
