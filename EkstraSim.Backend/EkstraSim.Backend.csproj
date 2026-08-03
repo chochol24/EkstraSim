@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EkstraSim.Shared\EkstraSim.Shared.csproj" />
+    <ProjectReference Include="..\EkstraSim.Prediction\EkstraSim.Prediction.csproj" />
   </ItemGroup>
 
 </Project>
