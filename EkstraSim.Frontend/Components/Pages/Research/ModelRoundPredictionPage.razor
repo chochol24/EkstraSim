@@ -1,0 +1,228 @@
+@page "/model-prediction"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+@using EkstraSim.Shared.Requests
+@using EkstraSim.Shared.Resources
+
+@inject ResearchService _researchService
+@inject LeagueService _leagueService
+@inject SeasonService _seasonService
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Class="pb-3">Predykcja kolejki wybranym modelem</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="4">
+        <MudPaper Class="prediction-form" Elevation="2">
+            <MudSelect T="int" Label="Liga" Value="request.LeagueId" ValueChanged="OnLeagueChangedAsync" Dense="true">
+                @foreach (var league in leagues)
+                {
+                    <MudSelectItem Value="league.Id">@league.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="int" Label="Sezon" @bind-Value="request.SeasonId" Disabled="!seasons.Any()" Dense="true">
+                @foreach (var season in seasons)
+                {
+                    <MudSelectItem Value="season.Id">@season.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="string" Label="Model" @bind-Value="request.ModelName" Dense="true">
+                @foreach (var model in availableModels)
+                {
+                    <MudSelectItem T="string" Value="@model">@model</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudNumericField T="int" Label="Kolejka" @bind-Value="request.Round" Min="1" Max="60" Immediate="true" Margin="Margin.Dense" />
+
+            <MudNumericField T="int?" Label="Trening do kolejki (puste = poprzednia)" @bind-Value="request.TrainingLastRound"
+                             Min="0" Max="60" Margin="Margin.Dense" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="prediction-submit mt-3"
+                       OnClick="PredictAsync"
+                       Disabled="@(isPredicting || request.SeasonId == 0 || request.Round <= 0 || string.IsNullOrWhiteSpace(request.ModelName))">
+                @(isPredicting ? "Liczę..." : "Przewiduj")
+            </MudButton>
+
+            <MudText Typo="Typo.caption" Class="pt-2">
+                Model trenuje się na historii i kolejkach do odcięcia, a potem przewiduje wskazaną kolejkę.
+                Działa też dla kolejek jeszcze nierozegranych — wtedy nie ma metryk, tylko predykcja.
+            </MudText>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="8">
+        @if (isPredicting)
+        {
+            <MudProgressLinear Indeterminate="true" Color="Color.Info" />
+        }
+        else if (predictions.Any())
+        {
+            <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                <thead>
+                    <tr>
+                        <th>Mecz</th>
+                        <th>λ gosp.</th>
+                        <th>λ gość</th>
+                        <th>1</th>
+                        <th>X</th>
+                        <th>2</th>
+                        <th>Typ</th>
+                        <th>Wynik</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var prediction in predictions)
+                    {
+                        <tr>
+                            <td>@prediction.Match?.HomeTeam?.Name — @prediction.Match?.AwayTeam?.Name</td>
+                            <td>@prediction.ExpectedHomeGoals.ToString("F2")</td>
+                            <td>@prediction.ExpectedAwayGoals.ToString("F2")</td>
+                            <td>@Percent(prediction.HomeWinProbability)</td>
+                            <td>@Percent(prediction.DrawProbability)</td>
+                            <td>@Percent(prediction.AwayWinProbability)</td>
+                            <td><b>@prediction.PredictedHomeScore:@prediction.PredictedAwayScore</b></td>
+                            <td>
+                                @if (HasResult(prediction))
+                                {
+                                    <span class="@(prediction.ExactScoreCorrect ? "hit" : prediction.OutcomeCorrect ? "partial" : "")">
+                                        @prediction.ActualHomeScore:@prediction.ActualAwayScore
+                                    </span>
+                                }
+                                else
+                                {
+                                    <text>—</text>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            @if (predictions.Any(HasResult))
+            {
+                <MudText Typo="Typo.body2" Class="pt-2">
+                    Trafione wyniki dokładne: @predictions.Count(p => p.ExactScoreCorrect) /
+                    @predictions.Count(HasResult), trafione 1X2: @predictions.Count(p => p.OutcomeCorrect).
+                    Zielony = dokładny wynik, żółty = poprawny rezultat.
+                </MudText>
+            }
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                Wypełnij formularz i kliknij „Przewiduj".
+            </MudAlert>
+        }
+    </MudItem>
+</MudGrid>
+
+<style>
+    .prediction-form {
+        padding: 16px;
+    }
+
+    .prediction-submit {
+        background: #610b16 !important;
+    }
+
+    .hit {
+        color: #00e676;
+        font-weight: bold;
+    }
+
+    .partial {
+        color: #ffd54f;
+    }
+</style>
+
+@code {
+    private PredictRoundRequest request = new();
+    private List<LeagueDTO> leagues = [];
+    private List<SeasonDTO> seasons = [];
+    private List<string> availableModels = [];
+    private List<ModelPredictionDTO> predictions = [];
+    private bool isPredicting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var modelsResult = await _researchService.GetModelsAsync();
+
+        if (modelsResult.Success && modelsResult.Data != null)
+        {
+            availableModels = modelsResult.Data;
+            request.ModelName = availableModels.FirstOrDefault() ?? string.Empty;
+        }
+        else
+        {
+            Snackbar.Add(modelsResult.ErrorMessage ?? SnackbarMessages.Research_Models_Get_Failed, Severity.Error);
+        }
+
+        var leaguesResult = await _leagueService.GetAllLeaguesAsync();
+
+        if (leaguesResult.Success && leaguesResult.Data != null)
+        {
+            leagues = leaguesResult.Data;
+
+            if (leagues.Count == 1)
+            {
+                request.LeagueId = leagues[0].Id;
+                await LoadSeasonsAsync();
+            }
+        }
+        else
+        {
+            Snackbar.Add(leaguesResult.ErrorMessage ?? SnackbarMessages.Error_Leagues_Null, Severity.Error);
+        }
+    }
+
+    private async Task OnLeagueChangedAsync(int leagueId)
+    {
+        request.LeagueId = leagueId;
+        request.SeasonId = 0;
+        await LoadSeasonsAsync();
+    }
+
+    private async Task LoadSeasonsAsync()
+    {
+        var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(request.LeagueId));
+
+        if (result.Success && result.Data != null)
+        {
+            seasons = result.Data.OrderByDescending(s => s.Name).ToList();
+        }
+        else
+        {
+            seasons.Clear();
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Seasons_Null, Severity.Error);
+        }
+    }
+
+    private async Task PredictAsync()
+    {
+        isPredicting = true;
+        predictions = [];
+
+        var result = await _researchService.PredictRoundAsync(request);
+
+        isPredicting = false;
+
+        if (result.Success && result.Data != null)
+        {
+            predictions = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Research_Predict_Failed, Severity.Error);
+        }
+    }
+
+    private static bool HasResult(ModelPredictionDTO prediction)
+    {
+        return prediction.ProbabilityOfActualOutcome > 0;
+    }
+
+    private static string Percent(double value) => $"{value * 100:F1}%";
+}

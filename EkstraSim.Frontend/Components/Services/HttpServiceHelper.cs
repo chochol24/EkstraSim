@@ -50,6 +50,58 @@ public class HttpServiceHelper
         }
     }
 
+    public async Task<EkstraSimResult<T>> SendPostEnvelopeAsync<T>(string url, object? request = null)
+    {
+        return await SendWithEnvelopeAsync<T>(HttpMethod.Post, url, request);
+    }
+
+    public async Task<EkstraSimResult<T>> SendPutEnvelopeAsync<T>(string url, object? request = null)
+    {
+        return await SendWithEnvelopeAsync<T>(HttpMethod.Put, url, request);
+    }
+
+    private async Task<EkstraSimResult<T>> SendWithEnvelopeAsync<T>(HttpMethod method, string url, object? request)
+    {
+        try
+        {
+            using var message = new HttpRequestMessage(method, url);
+
+            if (request != null)
+            {
+                message.Content = JsonContent.Create(request);
+            }
+
+            var httpResponse = await _httpClient.SendAsync(message);
+            var content = await httpResponse.Content.ReadAsStringAsync();
+
+            var result = JsonSerializer.Deserialize<EkstraSimResult<T>>(content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (result == null)
+            {
+                return new EkstraSimResult<T>
+                {
+                    Success = false,
+                    Data = default,
+                    ErrorMessage = SnackbarMessages.Error_Deserialize
+                };
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return new EkstraSimResult<T>
+            {
+                Success = false,
+                Data = default,
+                ErrorMessage = ex.Message
+            };
+        }
+    }
+
     public async Task<EkstraSimResult<T>> SendPostAsync<T>(string url, object? request = null)
     {
         try

@@ -1,0 +1,399 @@
+@page "/research/{RunId:int}"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared
+@using EkstraSim.Shared.DTOs
+
+@inject ResearchService _researchService
+@inject ISnackbar Snackbar
+
+@if (isLoading)
+{
+    <div class="loader">
+        <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Large" />
+    </div>
+}
+else if (run == null)
+{
+    <MudAlert Severity="Severity.Error">Nie udało się wczytać badania nr @RunId.</MudAlert>
+}
+else
+{
+    <MudGrid Class="pb-2">
+        <MudItem xs="12">
+            <MudText Typo="Typo.h5">
+                Badanie nr @run.Id — @run.Season?.Name
+                <MudChip T="string" Size="Size.Small" Color="@StatusColour(run.Status)" Class="ml-2">
+                    @StatusLabel(run.Status)
+                </MudChip>
+            </MudText>
+            <MudText Typo="Typo.body2">
+                Trening do kolejki @run.TrainingLastRound, ocenianych kolejek @run.EvaluatedRoundCount,
+                meczów @run.EvaluatedMatchCount. Modele: @run.Models.
+                @if (!string.IsNullOrWhiteSpace(run.Comments))
+                {
+                    <text>Komentarz: @run.Comments</text>
+                }
+            </MudText>
+            @if (PromotedTeams().Any())
+            {
+                <MudText Typo="Typo.body2">
+                    Beniaminki: @string.Join(", ", PromotedTeams().Select(t => t.Name))
+                </MudText>
+            }
+        </MudItem>
+    </MudGrid>
+
+    @if (run.Status == EvaluationRunStatus.Failed)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-3">@run.ErrorMessage</MudAlert>
+    }
+
+    @if (!IsFinished)
+    {
+        <MudAlert Severity="Severity.Info">
+            Obliczenia jeszcze trwają.
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="LoadAllAsync">Odśwież</MudButton>
+        </MudAlert>
+    }
+    else
+    {
+        <MudSelect T="string" Label="Metryka" Value="selectedMetric" ValueChanged="OnMetricChangedAsync"
+                   Dense="true" Class="metric-select">
+            @foreach (var metric in Metrics)
+            {
+                <MudSelectItem T="string" Value="@metric.Key">@metric.Label</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="mt-3">
+            <MudTabPanel Text="Przebieg w sezonie">
+                @if (roundMetrics.Any())
+                {
+                    <MudText Typo="Typo.subtitle1" Class="pt-2">@MetricLabel(selectedMetric) po kolejkach</MudText>
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@BuildMetricSeries()"
+                              XAxisLabels="@ChartRounds.Select(r => r.ToString()).ToArray()"
+                              Width="100%" Height="320px" />
+
+                    <MudText Typo="Typo.subtitle1" Class="pt-4">
+                        Dryf parametrów po kolejkach (pytanie o stabilność)
+                    </MudText>
+                    <MudChart ChartType="ChartType.Line"
+                              ChartSeries="@BuildDriftSeries()"
+                              XAxisLabels="@ChartRounds.Select(r => r.ToString()).ToArray()"
+                              Width="100%" Height="280px" />
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">Brak metryk do wykresu.</MudAlert>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Podsumowanie">
+                @if (comparison != null)
+                {
+                    <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Meczów</th>
+                                <th>RPS</th>
+                                <th>Brier</th>
+                                <th>Log-loss</th>
+                                <th>Trafność 1X2</th>
+                                <th>Dokładny wynik</th>
+                                <th>Wynik w top 3</th>
+                                <th>Śr. P wyniku</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var summary in comparison.Summaries)
+                            {
+                                <tr>
+                                    <td><b>@summary.ModelName</b></td>
+                                    <td>@summary.MatchCount</td>
+                                    <td>@Fixed3(summary.RankedProbabilityScore)</td>
+                                    <td>@Fixed3(summary.Brier)</td>
+                                    <td>@Fixed3(summary.LogLoss)</td>
+                                    <td>@Percent(summary.OutcomeAccuracy)</td>
+                                    <td>@Percent(summary.ExactScoreAccuracy)</td>
+                                    <td>@Percent(summary.ExactScoreTopThreeAccuracy)</td>
+                                    <td>@Percent(summary.MeanProbabilityOfActualScore)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Istotność różnic">
+                @if (comparison?.Pairwise.Any() == true)
+                {
+                    <MudText Typo="Typo.body2" Class="pt-2 pb-2">
+                        Test Wilcoxona dla par na wspólnych meczach, metryka @MetricLabel(comparison.Metric),
+                        poprawka Holma na wielokrotne porównania. Zielony = istotne przy α = 0,05.
+                    </MudText>
+                    <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                        <thead>
+                            <tr>
+                                <th>Para</th>
+                                <th>Par meczów</th>
+                                <th>Średnia 1</th>
+                                <th>Średnia 2</th>
+                                <th>Lepszy</th>
+                                <th>Z</th>
+                                <th>p</th>
+                                <th>p (Holm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pair in comparison.Pairwise)
+                            {
+                                <tr>
+                                    <td>@pair.FirstModel vs @pair.SecondModel</td>
+                                    <td>@pair.PairedMatchCount</td>
+                                    <td>@Fixed3(pair.FirstMean)</td>
+                                    <td>@Fixed3(pair.SecondMean)</td>
+                                    <td>@(pair.BetterModel ?? "—")</td>
+                                    <td>@Fixed3(pair.ZScore)</td>
+                                    <td>@PValueLabel(pair.PValue, pair.IsConclusive)</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@SignificanceColour(pair.IsSignificant)">
+                                            @PValueLabel(pair.AdjustedPValue, pair.IsConclusive)
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">Za mało danych na testy istotności.</MudAlert>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Stabilność">
+                @if (comparison?.Stability.Any() == true)
+                {
+                    <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Stabilny od kolejki</th>
+                                <th>Próg dryfu</th>
+                                <th>Okno</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var stability in comparison.Stability)
+                            {
+                                <tr>
+                                    <td><b>@stability.ModelName</b></td>
+                                    <td>@(stability.StabilisedFromRound?.ToString() ?? "nie osiągnięto")</td>
+                                    <td>@Fixed3(stability.Threshold)</td>
+                                    <td>@stability.Window</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                    <MudText Typo="Typo.caption" Class="pt-2">
+                        Stabilność = pierwsza kolejka, od której do końca sezonu kroczący dryf parametrów
+                        nie przekracza progu.
+                    </MudText>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Beniaminki">
+                @if (comparison?.Promoted.Any() == true)
+                {
+                    <MudText Typo="Typo.body2" Class="pt-2 pb-2">
+                        Test Mann-Whitneya: mecze z udziałem beniaminka vs pozostałe.
+                        Dodatnia różnica przy metryce „im mniej tym lepiej" znaczy, że beniaminki są trudniejsze.
+                    </MudText>
+                    <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Kolejki</th>
+                                <th>Beniaminki (n)</th>
+                                <th>Pozostałe (n)</th>
+                                <th>Różnica</th>
+                                <th>p (Holm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var promoted in comparison.Promoted)
+                            {
+                                <tr>
+                                    <td><b>@promoted.ModelName</b></td>
+                                    <td>@(promoted.FromRound.HasValue ? $"{promoted.FromRound}–{promoted.ToRound}" : "cały zakres")</td>
+                                    <td>@Fixed3(promoted.PromotedMean) (@promoted.PromotedCount)</td>
+                                    <td>@Fixed3(promoted.OtherMean) (@promoted.OtherCount)</td>
+                                    <td>@Fixed3(promoted.Difference)</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@SignificanceColour(promoted.IsSignificant)">
+                                            @PValueLabel(promoted.AdjustedPValue, promoted.IsConclusive)
+                                        </MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        Brak wyznaczonych beniaminków dla tego sezonu.
+                    </MudAlert>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Predykcje">
+                <MudGrid Class="pt-2">
+                    <MudItem xs="4">
+                        <MudSelect T="string" Label="Model" @bind-Value="predictionModelFilter" Clearable="true" Dense="true">
+                            @foreach (var model in ModelNames)
+                            {
+                                <MudSelectItem T="string" Value="@model">@model</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudNumericField T="int?" Label="Kolejka" @bind-Value="predictionRoundFilter" Min="1" Max="60" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="research-submit"
+                                   OnClick="LoadPredictionsAsync" Disabled="isLoadingPredictions">
+                            Pokaż
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                @if (isLoadingPredictions)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Info" Class="mt-2" />
+                }
+                else if (predictions.Any())
+                {
+                    <MudDataGrid T="ModelPredictionDTO" Items="@predictions" RowClick="@SelectPrediction"
+                                 Hover="true" Dense="true" Class="mt-2">
+                        <Columns>
+                            <PropertyColumn Property="x => x.ModelName" Title="Model" />
+                            <PropertyColumn Property="x => x.Round" Title="Kolejka" />
+                            <TemplateColumn Title="Mecz">
+                                <CellTemplate>
+                                    @context.Item.Match?.HomeTeam?.Name — @context.Item.Match?.AwayTeam?.Name
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <TemplateColumn Title="Typ">
+                                <CellTemplate>
+                                    @context.Item.PredictedHomeScore:@context.Item.PredictedAwayScore
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <TemplateColumn Title="Wynik">
+                                <CellTemplate>
+                                    @context.Item.ActualHomeScore:@context.Item.ActualAwayScore
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <TemplateColumn Title="1 / X / 2">
+                                <CellTemplate>
+                                    @Percent(context.Item.HomeWinProbability) /
+                                    @Percent(context.Item.DrawProbability) /
+                                    @Percent(context.Item.AwayWinProbability)
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <TemplateColumn Title="RPS">
+                                <CellTemplate>@Fixed3(context.Item.RankedProbabilityScore)</CellTemplate>
+                            </TemplateColumn>
+                            <TemplateColumn Title="Beniaminek">
+                                <CellTemplate>@(context.Item.InvolvesPromotedTeam ? "tak" : "")</CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                    </MudDataGrid>
+
+                    @if (selectedPrediction != null && selectedMatrix != null)
+                    {
+                        <MudText Typo="Typo.subtitle1" Class="pt-4">
+                            Rozkład wyników — @selectedPrediction.ModelName,
+                            @selectedPrediction.Match?.HomeTeam?.Name — @selectedPrediction.Match?.AwayTeam?.Name
+                            (λ @Fixed3(selectedPrediction.ExpectedHomeGoals) : @Fixed3(selectedPrediction.ExpectedAwayGoals))
+                        </MudText>
+                        <div class="matrix-scroll">
+                            <table class="score-matrix">
+                                <tbody>
+                                    @for (var home = 0; home <= 6; home++)
+                                    {
+                                        <tr>
+                                            @for (var away = 0; away <= 6; away++)
+                                            {
+                                                var probability = selectedMatrix[home, away] * 100;
+                                                var isActual = home == selectedPrediction.ActualHomeScore
+                                                    && away == selectedPrediction.ActualAwayScore;
+                                                <td class="@(isActual ? "actual" : "")"
+                                                    style="background-color: rgba(97, 11, 22, @(Math.Min(1.0, probability / 12).ToString(System.Globalization.CultureInfo.InvariantCulture)));">
+                                                    <b>@home:@away</b>
+                                                    <span>@probability.ToString("F1")%</span>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <MudText Typo="Typo.caption">
+                            Obramowana komórka to faktyczny wynik. Pokazane wyniki do 6:6 — pełna macierz sięga 10:10.
+                        </MudText>
+                    }
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                        Wybierz filtry i kliknij „Pokaż".
+                    </MudAlert>
+                }
+            </MudTabPanel>
+        </MudTabs>
+    }
+}
+
+<style>
+    .loader {
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .metric-select {
+        max-width: 280px;
+    }
+
+    .research-submit {
+        background: #610b16 !important;
+    }
+
+    .matrix-scroll {
+        overflow-x: auto;
+    }
+
+    .score-matrix {
+        border-collapse: collapse;
+    }
+
+        .score-matrix td {
+            border: 1px solid #444;
+            padding: 6px 10px;
+            text-align: center;
+            min-width: 74px;
+        }
+
+            .score-matrix td span {
+                display: block;
+                font-size: 0.75rem;
+            }
+
+            .score-matrix td.actual {
+                outline: 2px solid #00e676;
+                outline-offset: -2px;
+            }
+</style>

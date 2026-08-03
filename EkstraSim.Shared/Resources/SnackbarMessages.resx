@@ -156,6 +156,42 @@
   <data name="League_Averages_Update_Failed" xml:space="preserve">
     <value>Nie udało sie zaktualizować średnich ligowych.</value>
   </data>
+  <data name="Research_Comparison_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać porównania modeli.</value>
+  </data>
+  <data name="Research_Import_Failed" xml:space="preserve">
+    <value>Nie udało się zaimportować pliku CSV.</value>
+  </data>
+  <data name="Research_Import_Succeeded" xml:space="preserve">
+    <value>Import zakończony.</value>
+  </data>
+  <data name="Research_Metrics_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać metryk badania.</value>
+  </data>
+  <data name="Research_Models_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać listy modeli.</value>
+  </data>
+  <data name="Research_Predictions_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać predykcji.</value>
+  </data>
+  <data name="Research_Predict_Failed" xml:space="preserve">
+    <value>Nie udało się wyznaczyć predykcji kolejki.</value>
+  </data>
+  <data name="Research_Run_Created" xml:space="preserve">
+    <value>Badanie uruchomione — obliczenia trwają w tle.</value>
+  </data>
+  <data name="Research_Run_Create_Failed" xml:space="preserve">
+    <value>Nie udało się uruchomić badania.</value>
+  </data>
+  <data name="Research_Run_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać badania.</value>
+  </data>
+  <data name="Research_Runs_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać listy badań.</value>
+  </data>
+  <data name="Research_Structure_Get_Failed" xml:space="preserve">
+    <value>Nie udało się pobrać struktury sezonu.</value>
+  </data>
   <data name="Match_Result_Updated" xml:space="preserve">
     <value>Zaktualizowano wynik spotkania.</value>
   </data>

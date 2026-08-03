@@ -22,9 +22,12 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+var apiBaseAddress = builder.Configuration["ApiBaseAddress"]
+    ?? "https://jw-ekstrasim-api-gaaqaxa6azhjcke3.polandcentral-01.azurewebsites.net";
+
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://jw-ekstrasim-api-gaaqaxa6azhjcke3.polandcentral-01.azurewebsites.net")
+    BaseAddress = new Uri(apiBaseAddress)
 });
 
 builder.Services.AddScoped<HttpServiceHelper>();
@@ -35,6 +38,7 @@ builder.Services.AddScoped<SimulationService>();
 builder.Services.AddScoped<UpdateDatabaseService>();
 builder.Services.AddScoped<MatchService>();
 builder.Services.AddScoped<LeagueService>();
+builder.Services.AddScoped<ResearchService>();
 
 
 var app = builder.Build();

@@ -110,7 +110,60 @@ Do regresji wchodzą wyłącznie mecze badanej ligi; ranking aktualizują wszyst
 
 ## Warstwa badawcza (walk-forward)
 
-*(uzupełniane w trakcie implementacji)*
+### Idea
+
+Trening: historia sprzed badanego sezonu + runda jesienna. Ewaluacja: kolejne kolejki rundy wiosennej, przy czym **po każdej rozegranej kolejce modele dotrenowują się jej wynikami** i dopiero potem przewidują następną.
+
+Czysta pętla siedzi w `EkstraSim.Prediction/Evaluation/WalkForwardEvaluator.cs` (bez EF, testowalna):
+
+```
+model.Train(historia, opcje)
+dla każdej kolejki R rundy wiosennej:
+    predykcje  = mecze(R).Select(model.Predict)      ← model nie zna jeszcze wyników R
+    oceny      = metryki(predykcje, faktyczne wyniki)
+    model.UpdateWithRound(mecze(R))                  ← dopiero teraz wchłania wyniki
+    dryf       = ||parametry_po − parametry_przed||
+```
+
+**Brak wycieku danych z przyszłości jest własnością konstrukcji**, nie sprawdzeniem: model widzi wyniki kolejki R wyłącznie po tym, jak wszystkie predykcje dla R zostały już policzone. Testy `FirstRoundPredictionUsesOnlyTrainingHistory` i `SecondRoundPredictionSeesOnlyTheFirstEvaluatedRound` porównują wynik pętli z modelem trenowanym ręcznie na dokładnie tym zakresie danych.
+
+`BuildHistory` bierze rozegrane mecze z sezonów wcześniejszych w chronologii **oraz** kolejki ≤ odcięcie z sezonu badanego. `BuildEvaluationSet` bierze kolejki > odcięcie, **tylko rozegrane** — dzięki temu trwający sezon (np. 2026/27) ocenia się na tym, co już się odbyło, a nierozegrane kolejki są po prostu pomijane.
+
+### Kolejka odcięcia i beniaminki
+
+- **Odcięcie** domyślnie wykrywane automatycznie (`SeasonCalendar.DetectSplit`): największa przerwa między datami kolejnych kolejek = przerwa zimowa. Można nadpisać ręcznie w żądaniu.
+- **Beniaminki** (`PromotedTeamsService`): drużyny mające mecze w sezonie S i żadnego w S−1. Chronologia sezonów liczona z **najwcześniejszej daty meczu**, nie z `Season.Id` ani nazwy — Id nie gwarantuje kolejności czasowej. Lista jest zapisywana jako snapshot JSON na rekordzie badania, żeby wynik dał się odtworzyć nawet po dodaniu nowych sezonów.
+
+### Encje i przepływ
+
+Migracja `research_evaluation_runs` jest **wyłącznie addytywna** — trzy nowe tabele, zero zmian w istniejących:
+
+| Tabela | Zawartość |
+| --- | --- |
+| `ModelEvaluationRuns` | parametry badania, lista modeli, opcje JSON, snapshot beniaminków, status (`Pending`/`Running`/`Completed`/`Failed`), znaczniki czasu |
+| `ModelPredictions` | jedna predykcja = model × mecz: λ, P(1/X/2), typowany wynik, macierz 11×11 jako JSON, faktyczny wynik i wszystkie metryki per mecz |
+| `ModelRoundMetrics` | agregaty per model × kolejka + `ParameterDrift` (dla pytania nr 2) |
+
+Uruchomienie jest **asynchroniczne**: endpoint tworzy rekord ze statusem `Pending`, zwraca jego Id i oddaje pracę `ResearchRunLauncher` (singleton), który otwiera świeży scope DI — bez tego scoped `DbContext` zniknąłby razem z żądaniem. Frontend odpytuje status. Predykcje zapisywane są partiami po 500 wierszy.
+
+### Endpointy
+
+| Metoda | Trasa (bez prefiksu `/v1`) | Rola |
+| --- | --- | --- |
+| POST | `api/research/import-csv` | import sezonu z CSV; auto-tworzy `Season` i brakujące `Team` (ELO 1300), idempotentny po (kolejka, gospodarz, gość), **uzupełnia wyniki** przy ponownym imporcie trwającego sezonu |
+| GET | `api/research/season-structure/{SeasonId}/{LeagueId}` | liczba drużyn/kolejek, podział jesień-wiosna, beniaminki — zasila domyślne wartości formularza |
+| GET | `api/research/models` | lista dostępnych modeli |
+| POST | `api/research/runs` | start badania |
+| GET | `api/research/runs` | lista badań (filtry: liga, sezon) |
+| GET | `api/research/runs/{RunId}` | status i podsumowanie |
+| GET | `api/research/runs/{RunId}/round-metrics` | metryki per kolejka (dane do wykresów) |
+| GET | `api/research/runs/{RunId}/predictions` | predykcje (filtry: model, kolejka) |
+| GET | `api/research/runs/{RunId}/comparison` | podsumowania, testy istotności, beniaminki, stabilność |
+| PUT | `api/research/predict-round` | predykcja jednej kolejki wybranym modelem, bez zapisu — działa też dla kolejek nierozegranych |
+
+Import CSV czyta plik jawnie jako **UTF-8** (pliki w `Database/CSV/` są w UTF-8; domyślne kodowanie konsoli Windows psuje polskie znaki w nazwach drużyn). Przyjmuje albo ścieżkę serwerową, albo treść pliku w `CsvContent`.
+
+Stary, zepsuty `CSVService` i endpoint `api/importcsv` pozostają nietknięte.
 
 ## Metryki i testy statystyczne
 
@@ -136,6 +189,25 @@ Do regresji wchodzą wyłącznie mecze badanej ligi; ranking aktualizują wszyst
 - **`StabilityAnalysis`** — pytanie nr 2. Średnia krocząca metryki i dryfu parametrów, oraz `StabilisedFromRound`: pierwsza kolejka, **od której do końca** kroczący dryf nie przekracza progu. Świadomie nie jest to „pierwszy spadek poniżej progu" — chwilowe wyciszenie, po którym parametry znów skaczą, nie jest stabilnością.
 
 Ranking z wiązaniami (`Ranking.AverageRanks`) zwraca rangi średnie i sumę `t³−t` potrzebną do korekty wariancji w obu testach.
+
+## Interfejs badawczy
+
+Nowa sekcja w nawigacji, obok istniejących stron symulacji MC (te działają bez zmian):
+
+| Strona | Trasa | Zawartość |
+| --- | --- | --- |
+| `ResearchRunsPage` | `/research` | lista badań ze statusem + formularz nowego badania |
+| `ResearchRunDetailsPage` | `/research/{RunId}` | wykresy, podsumowania, testy istotności, stabilność, beniaminki, predykcje |
+| `ModelRoundPredictionPage` | `/model-prediction` | predykcja jednej kolejki wybranym modelem |
+
+`EvaluationRunForm` po wyborze sezonu odpytuje `season-structure` i pokazuje wykrytą przerwę zimową oraz beniaminków — kolejkę odcięcia można zostawić puste (auto) albo nadpisać. Parametry modeli (mnożniki formy, ξ, ridge, próg i okno stabilności) siedzą w zwiniętym panelu, żeby nie zaśmiecać formularza.
+
+Strona szczegółów ma sześć zakładek: **Przebieg w sezonie** (dwa wykresy `MudChart` — wybrana metryka po kolejkach i dryf parametrów, po jednej serii na model), **Podsumowanie**, **Istotność różnic**, **Stabilność**, **Beniaminki**, **Predykcje** (z filtrem modelu i kolejki oraz rozwijaną macierzą wyników; obramowana komórka = faktyczny wynik). Selektor metryki przełącza jednocześnie wykres i wszystkie testy — backend przelicza je pod wybraną metrykę.
+
+### Dwie poprawki w istniejącym kodzie frontendu
+
+1. **`HttpServiceHelper` nie obsługiwał koperty w POST/PUT.** `SendPostAsync<T>` deserializował ciało odpowiedzi jako `T`, choć backend zwraca `EkstraSimResult<T>`, a `SendPutAsync<T>` w ogóle odrzucał ciało (`Data = default`). Dotąd nie miało to znaczenia, bo istniejące PUT-y są typu „odpal i zapomnij". Dodane `SendPostEnvelopeAsync<T>` / `SendPutEnvelopeAsync<T>` czytają kopertę tak samo jak `SendGetAsync`. Stare metody nietknięte, żeby nie ruszać istniejących wywołań.
+2. **Adres API z konfiguracji.** `EkstraSim.Frontend/Program.cs` czyta klucz `ApiBaseAddress`, z produkcyjnym URL-em Azure jako wartością domyślną. Bez tego front lokalnie zawsze strzelał w chmurę.
 
 ## Dane
 

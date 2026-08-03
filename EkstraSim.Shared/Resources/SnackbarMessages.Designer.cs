@@ -266,5 +266,113 @@ namespace EkstraSim.Shared.Resources {
                 return ResourceManager.GetString("Teams_Get_Failed", resourceCulture);
             }
         }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać porównania modeli..
+        /// </summary>
+        public static string Research_Comparison_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Comparison_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się zaimportować pliku CSV..
+        /// </summary>
+        public static string Research_Import_Failed {
+            get {
+                return ResourceManager.GetString("Research_Import_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Import zakończony..
+        /// </summary>
+        public static string Research_Import_Succeeded {
+            get {
+                return ResourceManager.GetString("Research_Import_Succeeded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać metryk badania..
+        /// </summary>
+        public static string Research_Metrics_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Metrics_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać listy modeli..
+        /// </summary>
+        public static string Research_Models_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Models_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać predykcji..
+        /// </summary>
+        public static string Research_Predictions_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Predictions_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się wyznaczyć predykcji kolejki..
+        /// </summary>
+        public static string Research_Predict_Failed {
+            get {
+                return ResourceManager.GetString("Research_Predict_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Badanie uruchomione — obliczenia trwają w tle..
+        /// </summary>
+        public static string Research_Run_Created {
+            get {
+                return ResourceManager.GetString("Research_Run_Created", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się uruchomić badania..
+        /// </summary>
+        public static string Research_Run_Create_Failed {
+            get {
+                return ResourceManager.GetString("Research_Run_Create_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać badania..
+        /// </summary>
+        public static string Research_Run_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Run_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać listy badań..
+        /// </summary>
+        public static string Research_Runs_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Runs_Get_Failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nie udało się pobrać struktury sezonu..
+        /// </summary>
+        public static string Research_Structure_Get_Failed {
+            get {
+                return ResourceManager.GetString("Research_Structure_Get_Failed", resourceCulture);
+            }
+        }
     }
 }

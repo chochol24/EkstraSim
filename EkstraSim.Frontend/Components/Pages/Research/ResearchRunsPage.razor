@@ -1,0 +1,132 @@
+@page "/research"
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared
+@using EkstraSim.Shared.DTOs
+@using EkstraSim.Shared.Resources
+
+@inject ResearchService _researchService
+@inject NavigationManager _navigationManager
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Class="pb-3">Badania modeli predykcyjnych</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="7">
+        @if (isLoading)
+        {
+            <div class="loader">
+                <MudProgressCircular Indeterminate="true" Color="Color.Info" Size="Size.Large" />
+            </div>
+        }
+        else if (!runs.Any())
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                Brak badań. Uruchom pierwsze przy pomocy formularza.
+            </MudAlert>
+        }
+        else
+        {
+            <MudDataGrid T="ModelEvaluationRunDTO" Items="@runs" RowClick="@OpenRun" Hover="true" Dense="true">
+                <Columns>
+                    <PropertyColumn Property="x => x.Id" Title="Nr" />
+                    <PropertyColumn Property="x => x.Season!.Name" Title="Sezon" />
+                    <PropertyColumn Property="x => x.TrainingLastRound" Title="Trening do kolejki" />
+                    <PropertyColumn Property="x => x.Models" Title="Modele" />
+                    <TemplateColumn Title="Status">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Color="@StatusColour(context.Item.Status)">
+                                @StatusLabel(context.Item.Status)
+                            </MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.EvaluatedMatchCount" Title="Meczów" />
+                    <TemplateColumn Title="Utworzono">
+                        <CellTemplate>
+                            @context.Item.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+
+            @if (runs.Any(r => r.Status is EvaluationRunStatus.Pending or EvaluationRunStatus.Running))
+            {
+                <MudAlert Severity="Severity.Normal" Dense="true" Class="mt-2">
+                    Trwają obliczenia w tle.
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="LoadRunsAsync">Odśwież</MudButton>
+                </MudAlert>
+            }
+        }
+    </MudItem>
+
+    <MudItem xs="12" md="5">
+        <EvaluationRunForm OnRunCreated="@OnRunCreatedAsync" />
+    </MudItem>
+</MudGrid>
+
+<style>
+    .loader {
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    .mud-table th {
+        background-color: #610b16;
+    }
+
+    .mud-table tr:hover {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private List<ModelEvaluationRunDTO> runs = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRunsAsync();
+        isLoading = false;
+    }
+
+    private async Task LoadRunsAsync()
+    {
+        var result = await _researchService.GetRunsAsync();
+
+        if (result.Success && result.Data != null)
+        {
+            runs = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Research_Runs_Get_Failed, Severity.Error);
+        }
+    }
+
+    private async Task OnRunCreatedAsync(ModelEvaluationRunDTO run)
+    {
+        await LoadRunsAsync();
+        StateHasChanged();
+    }
+
+    private void OpenRun(DataGridRowClickEventArgs<ModelEvaluationRunDTO> args)
+    {
+        _navigationManager.NavigateTo($"/research/{args.Item.Id}");
+    }
+
+    private static Color StatusColour(EvaluationRunStatus status) => status switch
+    {
+        EvaluationRunStatus.Completed => Color.Success,
+        EvaluationRunStatus.Running => Color.Info,
+        EvaluationRunStatus.Failed => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string StatusLabel(EvaluationRunStatus status) => status switch
+    {
+        EvaluationRunStatus.Pending => "Oczekuje",
+        EvaluationRunStatus.Running => "Liczy",
+        EvaluationRunStatus.Completed => "Gotowe",
+        _ => "Błąd"
+    };
+}

@@ -1,0 +1,224 @@
+@using EkstraSim.Frontend.Components.Services
+@using EkstraSim.Shared.DTOs
+@using EkstraSim.Shared.Requests
+@using EkstraSim.Shared.Resources
+
+@inject ResearchService _researchService
+@inject LeagueService _leagueService
+@inject SeasonService _seasonService
+@inject ISnackbar Snackbar
+
+<MudPaper Class="research-form" Elevation="2">
+    <MudText Typo="Typo.h6" Class="pb-2">Nowe badanie</MudText>
+
+    <MudSelect T="int" Label="Liga" Value="request.LeagueId" ValueChanged="OnLeagueChangedAsync" Dense="true">
+        @foreach (var league in leagues)
+        {
+            <MudSelectItem Value="league.Id">@league.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSelect T="int" Label="Sezon" Value="request.SeasonId" ValueChanged="OnSeasonChangedAsync" Disabled="!seasons.Any()" Dense="true">
+        @foreach (var season in seasons)
+        {
+            <MudSelectItem Value="season.Id">@season.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    @if (structure != null)
+    {
+        <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2 mb-2">
+            @structure.TeamCount drużyn, @structure.RoundCount kolejek,
+            rozegranych @structure.PlayedMatchCount z @(structure.PlayedMatchCount + structure.UnplayedMatchCount).
+            @if (structure.AutumnLastRound.HasValue)
+            {
+                <text>
+                    Wykryta przerwa zimowa po kolejce @structure.AutumnLastRound
+                    (@Math.Round(structure.WinterBreakDays ?? 0) dni).
+                </text>
+            }
+            @if (structure.PromotedTeams.Any())
+            {
+                <text>Beniaminki: @string.Join(", ", structure.PromotedTeams.Select(t => t.Name)).</text>
+            }
+            else
+            {
+                <text>Beniaminków nie wyznaczono (brak poprzedniego sezonu w bazie).</text>
+            }
+        </MudAlert>
+    }
+
+    <MudNumericField T="int?" Label="Kolejka odcięcia (puste = auto)" @bind-Value="request.TrainingLastRound"
+                     Min="1" Max="60" Immediate="true" Margin="Margin.Dense" />
+
+    <MudSelect T="string" Label="Modele" MultiSelection="true" @bind-SelectedValues="selectedModels" Dense="true">
+        @foreach (var model in availableModels)
+        {
+            <MudSelectItem T="string" Value="@model">@model</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudExpansionPanels Class="mt-2">
+        <MudExpansionPanel Text="Parametry zaawansowane">
+            <MudSwitch T="bool" @bind-Value="request.UseFormFactors" Label="Mnożniki formy (Poisson)" Color="Color.Primary" />
+            <MudNumericField T="double" Label="Wygaszanie czasowe ξ (Dixon-Coles)" @bind-Value="request.TimeDecayXi"
+                             Min="0" Max="0.1" Step="0.0005" Format="F4" Margin="Margin.Dense" />
+            <MudNumericField T="double" Label="Regularyzacja ridge" @bind-Value="request.RidgeLambda"
+                             Min="0" Max="10" Step="0.01" Format="F2" Margin="Margin.Dense" />
+            <MudNumericField T="double" Label="Próg stabilności (dryf)" @bind-Value="request.StabilityThreshold"
+                             Min="0" Max="10" Step="0.01" Format="F2" Margin="Margin.Dense" />
+            <MudNumericField T="int" Label="Okno średniej kroczącej" @bind-Value="request.StabilityWindow"
+                             Min="1" Max="10" Margin="Margin.Dense" />
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+
+    <MudTextField T="string" Label="Komentarz" @bind-Value="request.Comments" Margin="Margin.Dense" Class="mt-2" />
+
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               Class="research-submit mt-3"
+               OnClick="SubmitAsync"
+               Disabled="@(isSubmitting || request.SeasonId == 0 || !selectedModels.Any())">
+        @(isSubmitting ? "Uruchamiam..." : "Uruchom badanie")
+    </MudButton>
+</MudPaper>
+
+<style>
+    .research-form {
+        padding: 16px;
+        max-width: 460px;
+    }
+
+    .research-submit {
+        background: #610b16 !important;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public EventCallback<ModelEvaluationRunDTO> OnRunCreated { get; set; }
+
+    private CreateEvaluationRunRequest request = new();
+    private List<LeagueDTO> leagues = [];
+    private List<SeasonDTO> seasons = [];
+    private List<string> availableModels = [];
+    private IEnumerable<string> selectedModels = [];
+    private SeasonStructureDTO? structure;
+    private bool isSubmitting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadModelsAsync();
+        await LoadLeaguesAsync();
+    }
+
+    private async Task LoadModelsAsync()
+    {
+        var result = await _researchService.GetModelsAsync();
+
+        if (result.Success && result.Data != null)
+        {
+            availableModels = result.Data;
+            selectedModels = result.Data.ToList();
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Research_Models_Get_Failed, Severity.Error);
+        }
+    }
+
+    private async Task LoadLeaguesAsync()
+    {
+        var result = await _leagueService.GetAllLeaguesAsync();
+
+        if (result.Success && result.Data != null)
+        {
+            leagues = result.Data;
+
+            if (leagues.Count == 1)
+            {
+                request.LeagueId = leagues[0].Id;
+                await LoadSeasonsAsync();
+            }
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Leagues_Null, Severity.Error);
+        }
+    }
+
+    private async Task OnLeagueChangedAsync(int leagueId)
+    {
+        request.LeagueId = leagueId;
+        request.SeasonId = 0;
+        structure = null;
+        await LoadSeasonsAsync();
+    }
+
+    private async Task LoadSeasonsAsync()
+    {
+        var result = await _seasonService.GetSeasonsAsync(new SeasonRequest(request.LeagueId));
+
+        if (result.Success && result.Data != null)
+        {
+            seasons = result.Data.OrderByDescending(s => s.Name).ToList();
+        }
+        else
+        {
+            seasons.Clear();
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Error_Seasons_Null, Severity.Error);
+        }
+    }
+
+    private async Task OnSeasonChangedAsync(int seasonId)
+    {
+        request.SeasonId = seasonId;
+        request.TrainingLastRound = null;
+        structure = null;
+
+        if (seasonId == 0)
+        {
+            return;
+        }
+
+        var result = await _researchService.GetSeasonStructureAsync(new SeasonAndLeagueRequest(seasonId, request.LeagueId));
+
+        if (result.Success && result.Data != null)
+        {
+            structure = result.Data;
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Research_Structure_Get_Failed, Severity.Warning);
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        isSubmitting = true;
+        request.Models = selectedModels.ToList();
+
+        var result = await _researchService.CreateRunAsync(request);
+
+        isSubmitting = false;
+
+        if (result.Success && result.Data != null)
+        {
+            Snackbar.Add(SnackbarMessages.Research_Run_Created, Severity.Success);
+
+            if (OnRunCreated.HasDelegate)
+            {
+                await OnRunCreated.InvokeAsync(result.Data);
+            }
+
+            var league = request.LeagueId;
+            var season = request.SeasonId;
+            request = new CreateEvaluationRunRequest { LeagueId = league, SeasonId = season };
+            selectedModels = availableModels.ToList();
+        }
+        else
+        {
+            Snackbar.Add(result.ErrorMessage ?? SnackbarMessages.Research_Run_Create_Failed, Severity.Error);
+        }
+    }
+}
