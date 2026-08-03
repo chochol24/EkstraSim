@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\EkstraSim.Backend.props" />
-</Project>
