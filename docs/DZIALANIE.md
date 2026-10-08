@@ -66,7 +66,7 @@ Parametry: siła ataku αᵢ i obrony βᵢ dla każdej drużyny, przewaga gospo
 λ_gościa     = α_gościa     × β_gospodarza
 ```
 
-Dopasowanie metodą największej wiarygodności (`NelderMeadSimplex` z Math.NET) na logarytmicznej wiarygodności z korektą τ dla czterech niskich wyników (0:0, 0:1, 1:0, 1:1) — to ona odwzorowuje nadwyżkę remisów, której czysty Poisson nie widzi.
+Dopasowanie metodą największej wiarygodności na logarytmicznej wiarygodności z korektą τ dla czterech niskich wyników (0:0, 0:1, 1:0, 1:1) — to ona odwzorowuje nadwyżkę remisów, której czysty Poisson nie widzi. Minimalizacja: L-BFGS z analitycznym gradientem (`LimitedMemoryBfgsMinimizer` z Math.NET) — podsekcja [Minimalizacja](#minimalizacja-l-bfgs-z-gradientem-analitycznym).
 
 Szczegóły implementacyjne:
 
@@ -74,10 +74,84 @@ Szczegóły implementacyjne:
 - **Parametryzacja.** α, β, γ optymalizowane w logarytmach (dodatniość gwarantowana), ρ jako `0.3 · tanh(r)` — trzyma korektę w rozsądnym zakresie bez twardych więzów. Punkty, w których τ ≤ 0 lub λ ≤ 0, dostają karę `1e12`.
 - **Wygaszanie czasowe.** Waga meczu `φ(t) = exp(−ξ · Δdni)` względem najnowszego znanego meczu; ξ z `TrainingOptions.TimeDecayXi` (domyślnie 0.0065 ≈ półokres ~107 dni).
 - **Regularyzacja ridge.** Kara `RidgeLambda · wᵢ · (log²αᵢ + log²βᵢ)`, gdzie `wᵢ = 1/(1 + efektywna liczba meczów drużyny)` (efektywna = suma wag czasowych), domyślnie `RidgeLambda = 0.05`. Ściąga do α = β = 1 tym mocniej, im mniej danych ma drużyna — to obsługuje beniaminków na starcie sezonu. Uwaga: przy normalizacji średniej ataku do 1 poziom goli gościa siedzi w β (typowo ~1,1–1,2), więc **β = 1 nie jest średnią ligową**, tylko obroną lepszą niż przeciętna — dotyczy to zarówno celu ridge, jak i drużyn nieobecnych w treningu.
-- **Punkt startowy** liczony analitycznie ze średnich bramkowych (α ze zdobytych, β ze straconych przeskalowanych do poziomu goli gościa, γ ze stosunku dom/wyjazd, ρ = −0.03). Bez dobrego startu Nelder-Mead nie zbiega sensownie. Wymiar problemu to 2N + 2, gdzie N to **wszystkie drużyny z historii**, nie tylko z badanego sezonu — dla 2024/25 i 2025/26 N = 28, czyli **58 wymiarów**. Logarytmy parametrów są przycinane do ±20.
-- `UpdateWithRound` = pełne ponowne dopasowanie, za każdym razem od analitycznego punktu startowego (nie od poprzedniego optimum).
+- **Punkt startowy** liczony analitycznie ze średnich bramkowych (α ze zdobytych, β ze straconych przeskalowanych do poziomu goli gościa, γ ze stosunku dom/wyjazd, ρ = −0.03) — ten sam co przed zmianą optymalizatora. Wymiar problemu to 2N + 2, gdzie N to **wszystkie drużyny z historii**, nie tylko z badanego sezonu — dla 2024/25 i 2025/26 N = 28, czyli **58 wymiarów**. Logarytmy parametrów są przycinane do ±20.
+- `UpdateWithRound` = pełne ponowne dopasowanie, za każdym razem od analitycznego punktu startowego (nie od poprzedniego optimum) — powód w punkcie „Zimny start" niżej.
 - Drużyny nieobecne w treningu dostają α = β = 1.
-- **Znane ograniczenie — cichy powrót do punktu startowego.** `NelderMeadSimplex(1e-7, 20000)` po przekroczeniu limitu iteracji rzuca `MaximumIterationsException`, a `catch (Exception)` w `Fit` bez śladu podstawia punkt startowy. Pomiar z 2026-10-05 na danych z bazy (te same opcje co w badaniach): **13 z 17** dopasowań w 2024/25 i **7 z 17** w 2025/26 kończy się w punkcie startowym; udane dopasowania potrzebowały 13,7–18,2 tys. iteracji. W tych kolejkach model jest estymatorem momentów, nie MLE. Zysk log-likelihood optimum nad startem jest mały, ale wpływ na wyniki trzeba zmierzyć po naprawie (stan i plan: `STAN_PROJEKTU.md`).
+- **Kolejność meczów** w modelu to `(Date, Id)`. Wcześniej sortowanie było po samej dacie, a `List.Sort` jest niestabilne i zapytanie orkiestratora nie ma `ORDER BY` — kolejność meczów z tego samego dnia zależała od bazy. Suma w funkcji celu jest matematycznie ta sama, ale zaokrąglenia (i ścieżka optymalizatora) już nie; teraz wejście jest deterministyczne.
+- **Historia — cichy powrót do punktu startowego (runy 1–6, wersje algorytmu 1–3).** Do 2026-10 dopasowanie robił `NelderMeadSimplex(1e-7, 20000)`, a `catch (Exception)` w `Fit` po `MaximumIterationsException` bez śladu podstawiał punkt startowy. Pomiar (audyt 2026-10-05, odtworzony testem `RealData` na starym kodzie): **13 z 17** dopasowań w 2024/25 (kolejki 19–25, 27, 29–33) i **7 z 17** w 2025/26 (20, 21, 23, 26, 27, 28, 33) kończyło się w punkcie startowym; udane potrzebowały 13,7–18,2 tys. iteracji. W tych kolejkach model był estymatorem momentów, nie MLE. Tam, gdzie Nelder-Mead „zbiegł", L-BFGS schodzi niżej: trening 2024/25 248,738 → 248,734786, k.34 2024/25 262,182 → 262,173636, k.34 2025/26 269,551 → 269,543276. Prognoza ze spike'u (2026-10-08) dla RPS Dixona-Colesa: 0,2290 → ~0,2287 (2024/25) i 0,2332 → ~0,2326 (2025/26); ρ ma prawdziwą dynamikę (w 2024/25 od −0,10 do +0,05), a fallback trzymał ją na −0,03. Pomiar na nowych runach — `STAN_PROJEKTU.md`.
+
+#### Minimalizacja: L-BFGS z gradientem analitycznym
+
+Funkcja celu `f = −Σₖ wₖ·ℓₖ + P` (ujemna, ważona czasowo log-wiarygodność plus kara ridge) żyje w `DixonColesObjective` razem z punktem startowym i rozpakowaniem parametrów (`Unpack`); `DixonColesModel` tylko ją minimalizuje. Wartość liczy **ten sam kod** co przed zmianą optymalizatora (kara `1e12`, przycięcie ±20, normalizacja ataku) — zmieniła się metoda minimalizacji, nie definicja estymatora. Kotwica: NLL w punkcie startowym treningu 2024/25 = 248,939860312, identycznie jak w starym kodzie.
+
+Wektor parametrów `v = (a₁…a_N, d₁…d_N, g, r)`; `c(x)` to przycięcie do ±20, maska `D(x) = 1` dla `|x| < 20`, inaczej 0 (poza przedziałem funkcja jest płaska).
+
+```
+Aᵢ = e^{c(aᵢ)},  m = średnia(A),  αᵢ = Aᵢ/m,  βᵢ = e^{c(dᵢ)}·m,  γ = e^{c(g)},  ρ = 0,3·tanh r
+
+λ = α_h·β_a·γ = A_h·e^{c(d_a)}·γ        μ = α_a·β_h = A_a·e^{c(d_h)}        (m się skraca)
+```
+
+Dla meczu x:y z wagą w:
+
+```
+s_λ = x − λ + λ·τ_λ/τ        s_μ = y − μ + μ·τ_μ/τ        s_ρ = τ_ρ/τ
+
+∂f/∂a_h, ∂f/∂d_a, ∂f/∂g  −= w·s_λ
+∂f/∂a_a, ∂f/∂d_h         −= w·s_μ
+∂f/∂r                    −= w·s_ρ·0,3·(1 − tanh² r)
+```
+
+| Wynik | τ_λ | τ_μ | τ_ρ |
+| --- | --- | --- | --- |
+| 0:0 | −μρ | −λρ | −λμ |
+| 0:1 | ρ | 0 | λ |
+| 1:0 | 0 | ρ | μ |
+| 1:1 | 0 | 0 | −1 |
+| pozostałe | 0 | 0 | 0 |
+
+Ridge `P = κ·Σᵢ ωᵢ·(log² αᵢ + log² βᵢ)`, gdzie `log αᵢ = c(aᵢ) − ln m`, `log βᵢ = c(dᵢ) + ln m`:
+
+```
+∂P/∂dⱼ = 2κωⱼ·log βⱼ
+∂P/∂aⱼ = 2κωⱼ·log αⱼ + (αⱼ/N)·Σᵢ 2κωᵢ·(log βᵢ − log αᵢ)        (bo Aⱼ/ΣA = αⱼ/N)
+```
+
+Każdy składnik mnożony jest przez maskę swojej współrzędnej. Punkt niedopuszczalny (τ ≤ 0, λ lub μ ≤ 0 albo nieskończone) daje wartość `1e12` i gradient zerowy — line search traktuje to jak nieudany krok i go skraca. Zgodność gradientu z centralnymi różnicami skończonymi sprawdza `DixonColesObjectiveTests` (dane ze wszystkimi czterema niskimi wynikami, ridge > 0, ξ > 0; w punkcie startowym i w punkcie zaburzonym).
+
+**Płaski kierunek.** Średnia ataków `m` skraca się w λ i μ, a kara zależy od `a − ln m` i `d + ln m`, więc f jest **dokładnie stała** wzdłuż kierunku `(a + c, d − c)` (wszystkie ataki w górę, wszystkie obrony w dół o tę samą stałą). Hesjan jest w tym kierunku osobliwy. Nelder-Mead czołgał się po tej dolinie (jeden z powodów 13–18 tys. iteracji). Gradient ma w tym kierunku zerową składową, więc L-BFGS się po nim nie przesuwa, a normalizacja w `Unpack` i tak daje jednoznaczne α i β. Pilnuje tego test `ObjectiveIsFlatAlongTheAttackDefenceShift`.
+
+**Ustawienia.** `LimitedMemoryBfgsMinimizer(gradientTolerance: 1e-9, parameterTolerance: 0, functionProgressTolerance: 0, memory: 10, maximumIterations: 2000)`. Zera wyłączają wyjścia „po stagnacji", więc jedynym regularnym wyjściem jest kryterium gradientowe. Na prawdziwych danych dopasowanie zajmuje 122–196 iteracji i kilkadziesiąt milisekund (Nelder-Mead: 13,7–18,2 tys. iteracji, ~1–2 s), więc limit 2000 daje ~10× zapasu.
+
+**Kryterium akceptacji.** Dopasowanie jest przyjęte, gdy oba warunki są spełnione:
+
+1. `ReasonForExit` ∈ {`AbsoluteGradient`, `RelativeGradient`},
+2. niezależnie policzone (z gradientu analitycznego w punkcie końcowym) `‖∇f(x*)‖∞ ≤ 1e-6 · max(1, |f(x*)|)`.
+
+Drugi warunek jest konieczny, bo `ReasonForExit` z Math.NET 5.0 nie jest wiarygodny — zmierzone na dwa sposoby:
+
+- kryterium `AbsoluteGradient` jest skalowane przez |f|: przy `gradientTolerance = 1e-6` przepuściło ‖∇f‖∞ ≈ 2·10⁻⁴;
+- po wyczerpaniu limitu iteracji minimizer **nie rzuca** `MaximumIterationsException`, tylko zwraca wynik z `ReasonForExit = AbsoluteGradient` i `Iterations` = limit + 1 (limit 1 na danych syntetycznych: „AbsoluteGradient" przy ‖∇f‖∞ = 2,18). Bez niezależnego warunku taki punkt przeszedłby jako optimum.
+
+Przy |f| ≈ 130–270 próg wynosi 1,3–2,7·10⁻⁴; obserwowane na prawdziwych danych ‖∇f‖∞ ≤ 2,4·10⁻⁷.
+
+**Brak zbieżności = głośny błąd.** Każde odrzucone dopasowanie — wyjątek Math.NET (`OptimizationException`, np. line search: „Direction is not a descent direction"), wyjście niegradientowe, niespełniony warunek stacjonarności, wyczerpany limit — kończy się `ModelConvergenceException` z polskim komunikatem, np. `Dixon-Coles: optymalizacja nie zbiegła (trening; 2 iteracji; powód: wyczerpany limit 1 iteracji; wyjście MathNet: AbsoluteGradient; NLL 352.675 → 352.651; ‖∇f‖∞ = 2.18E+000).` Pole `Reason` podaje faktyczną przyczynę odrzucenia, a nie etykietę z Math.NET (patrz wyżej). W kodzie nie ma `catch`, który zwraca punkt startowy. Orkiestrator ustawia wtedy run na `Failed` z tym komunikatem w `ErrorMessage`, a `predict-round` zwraca go w kopercie błędu — run `Completed` gwarantuje MLE we wszystkich kolejkach.
+
+**Raporty dopasowań.** `DixonColesModel.FitReports` — po jednym `DixonColesFitReport` na każde przyjęte dopasowanie: `AfterRound` (`null` dla treningu), `Dimension`, `Iterations`, `ExitReason`, `StartObjective`, `FinalObjective`, `GradientNorm` (‖∇f‖∞). Lista jest czyszczona w `Train`. Raporty nie trafiają do bazy — polityka głośnego błędu i tak gwarantuje zbieżność w runach `Completed`; czyta je test na prawdziwych danych.
+
+**Zimny start.** Każde dopasowanie startuje od analitycznego punktu startowego, nie od poprzedniego optimum. Wynik zależy wtedy tylko od zbioru meczów, a nie od ścieżki dopasowań: `Train` + kolejne `UpdateWithRound` dają te same parametry co jedno `Train` na tym samym zbiorze (tak liczy `predict-round`). Ciepły start by tę zgodność zepsuł, a przy kilkudziesięciu milisekundach na dopasowanie nie jest potrzebny.
+
+**MLE nie zawsze istnieje.** Przy `RidgeLambda = 0` drużyna z jednym meczem 7:0 i zerem straconych goli nie ma skończonego optimum: wiarygodność rośnie monotonicznie, gdy jej obrona β → 0. Nelder-Mead zatrzymywał się „gdzieś" na tej dolinie, a L-BFGS kończy się wyjątkiem z line search. Dlatego test `RidgeShrinksSparseTeamsTowardsLeagueAverage` porównuje `RidgeLambda` 0,05 z 5,0 (zamiast 0 z 5,0) — z ridge > 0 kara kwadratowa w `log β` daje skończone optimum. Domyślne opcje badań mają `RidgeLambda = 0.05`. Inne ustawienia (ridge 0, ξ = 0) mogą trafić na przypadki bez MLE — wtedy run kończy się błędem, nie złą liczbą.
+
+**Weryfikacja na prawdziwych danych.** Test `DixonColesRealDataTests` (`[Trait("Category", "RealData")]`) czyta fixture `EkstraSim.Tests/Data/ekstraklasa-liga1-mecze.csv`, odtwarza przez `WalkForwardEvaluator.Run` sekwencję dopasowań z runów 2024/25 i 2025/26 (odcięcie 18, opcje domyślne: formy włączone, ξ = 0,0065, ridge 0,05) i wymaga:
+
+- dokładnie 17 raportów na sezon (trening + 16 kolejek),
+- w każdym: wyjścia gradientowego, ‖∇f‖∞ w granicy akceptacji i `FinalObjective < StartObjective` (ruch ze startu),
+- kotwicy: NLL(start) treningu 2024/25 = 248,939860312 (±1e-8), NLL końcowe ≤ 248,738 (wynik Neldera-Meada).
+
+Tabelę dopasowań (iteracje, wyjście, NLL start → koniec, ‖∇f‖∞, ρ, γ) wypisuje `dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter "Category=RealData" --logger "console;verbosity=detailed"`; resztę testów uruchamia filtr `"Category!=RealData"`.
+
+Fixture powstaje skryptem `scripts/Export-ResearchFixture.ps1` (domyślnie serwer `.\SQLEXPRESS`, baza `EkstraSimDB`, plik jak wyżej; `-Server`, `-Database`, `-OutPath` do zmiany). Skrypt tylko czyta bazę (`sqlcmd -E`) i eksportuje mecze ligi 1 z sezonów, w których **każdy** mecz jest rozegrany — trwający sezon wypada sam, więc fixture się nie starzeje (dziś 7 sezonów, 2066 meczów). Format: nagłówek `Id;Date;Round;SeasonId;LeagueId;HomeTeamId;AwayTeamId;HomeScore;AwayScore`, wiersze w kolejności Id, data `yyyy-MM-dd`, UTF-8 bez BOM — same identyfikatory i wyniki, bez nazw drużyn. Nic nie jest zapisywane, gdy którykolwiek wiersz się nie parsuje, data ma składnik godzinowy (format by go obciął) albo liczba wierszy różni się od `COUNT(*)` z bazy. Kolejność po Id plus stabilne `OrderBy(Date)` w `BuildHistory` dają deterministyczne wejście do modelu, więc na starym kodzie test odtwarzał pomiar z audytu co do kolejki (punkt „Historia" wyżej).
 
 ### 3. ELO → gole
 
@@ -258,7 +332,7 @@ Zmiana dotyczy wyłącznie dryfu — metryki predykcyjne (RPS, Brier, log-loss, 
 
 - **Elo** zmienia oceny przyrostowo o `K·G·(W−W_e)` przy K=10, więc rusza się najmniej i jego trajektoria jest **płaska** (0,053 → 0,060) — model jest w stanie ustalonym od pierwszej ocenianej kolejki.
 - **Poisson** przelicza średnie kroczące; im więcej meczów w koszyku, tym mniejszy wpływ kolejnego, stąd **łagodny spadek** (0,220 → 0,130).
-- **Dixon-Coles** — dryf jest najwyższy i **oscyluje** (0,455 → 0,235 z garbem 0,449 w kolejce 29), ale to **artefakt**, nie cecha modelu: wzór pokrywa się co do kolejki z sekwencją przełączeń między optimum a analitycznym punktem startowym przy przekroczeniu limitu iteracji (2024/25: trening optimum, 19–25 start, 26 optimum, 27 start, 28 optimum, 29–33 start, 34 optimum — patrz „Znane ograniczenie" w sekcji Dixona-Colesa). Pierwotnie przypisano go pełnemu ponownemu MLE co kolejkę; ta interpretacja była błędna. Do ponownego pomiaru po naprawie optymalizatora.
+- **Dixon-Coles** — dryf jest najwyższy i **oscyluje** (0,455 → 0,235 z garbem 0,449 w kolejce 29), ale to **artefakt**, nie cecha modelu: wzór pokrywa się co do kolejki z sekwencją przełączeń między optimum a analitycznym punktem startowym przy przekroczeniu limitu iteracji (2024/25: trening optimum, 19–25 start, 26 optimum, 27 start, 28 optimum, 29–33 start, 34 optimum — patrz „Historia — cichy powrót do punktu startowego" w sekcji Dixona-Colesa). Pierwotnie przypisano go pełnemu ponownemu MLE co kolejkę; ta interpretacja była błędna. Do ponownego pomiaru po naprawie optymalizatora.
 
 Dwa dalsze ograniczenia, przez które rozrzut nie jest czystym sygnałem:
 

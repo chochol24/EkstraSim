@@ -22,4 +22,8 @@
     <ProjectReference Include="..\EkstraSim.Prediction\EkstraSim.Prediction.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

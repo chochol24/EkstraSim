@@ -5,14 +5,16 @@ namespace EkstraSim.Prediction.Models;
 
 public sealed class DixonColesModel : IPredictionModel
 {
-    private const double MaxRho = 0.3;
-    private const double InfeasiblePenalty = 1e12;
-    private const int MaxIterations = 20000;
-    private const double ConvergenceTolerance = 1e-7;
+    public const int DefaultMaxIterations = 2000;
+    private const double GradientTolerance = 1e-9;
+    private const double StationarityTolerance = 1e-6;
+    private const int LbfgsMemory = 10;
 
+    private readonly int _maxIterations;
     private TrainingOptions _options = new();
     private readonly List<MatchData> _played = [];
     private readonly HashSet<int> _knownMatchIds = [];
+    private readonly List<DixonColesFitReport> _fitReports = [];
 
     private List<int> _teamIds = [];
     private Dictionary<int, int> _teamIndex = [];
@@ -23,13 +25,25 @@ public sealed class DixonColesModel : IPredictionModel
     private DateTime _reference = DateTime.MinValue;
     private int? _lastRound;
 
+    public DixonColesModel() : this(DefaultMaxIterations)
+    {
+    }
+
+    public DixonColesModel(int maxIterations)
+    {
+        _maxIterations = maxIterations;
+    }
+
     public string Name => "DixonColes";
+
+    public IReadOnlyList<DixonColesFitReport> FitReports => _fitReports;
 
     public void Train(IReadOnlyList<MatchData> history, TrainingOptions options)
     {
         _options = options;
         _played.Clear();
         _knownMatchIds.Clear();
+        _fitReports.Clear();
         _lastRound = null;
 
         Absorb(history);
@@ -103,7 +117,11 @@ public sealed class DixonColesModel : IPredictionModel
             _played.Add(match);
         }
 
-        _played.Sort((left, right) => left.Date.CompareTo(right.Date));
+        _played.Sort((left, right) =>
+        {
+            var byDate = left.Date.CompareTo(right.Date);
+            return byDate != 0 ? byDate : left.Id.CompareTo(right.Id);
+        });
     }
 
     private void Fit()
@@ -131,22 +149,60 @@ public sealed class DixonColesModel : IPredictionModel
         var teamCount = _teamIds.Count;
         var weights = _played.Select(TimeWeight).ToArray();
         var ridgeWeights = RidgeWeights(weights, teamCount);
-        var start = InitialGuess(weights, teamCount);
+        var objective = new DixonColesObjective(_played, _teamIndex, weights, ridgeWeights, _options.RidgeLambda);
+        var start = Vector<double>.Build.DenseOfArray(objective.InitialGuess());
+        var startObjective = objective.Value(start);
 
-        var objective = ObjectiveFunction.Value(vector => NegativeLogLikelihood(vector, weights, ridgeWeights, teamCount));
-        var solver = new NelderMeadSimplex(ConvergenceTolerance, MaxIterations);
-
-        Vector<double> solution;
+        MinimizationResult result;
         try
         {
-            solution = solver.FindMinimum(objective, Vector<double>.Build.DenseOfArray(start)).MinimizingPoint;
+            var solver = new LimitedMemoryBfgsMinimizer(GradientTolerance, 0, 0, LbfgsMemory, _maxIterations);
+            result = solver.FindMinimum(ObjectiveFunction.Gradient(objective.ValueAndGradient), start);
         }
-        catch (Exception)
+        catch (OptimizationException ex)
         {
-            solution = Vector<double>.Build.DenseOfArray(start);
+            throw new ModelConvergenceException(
+                new DixonColesFitReport(_lastRound, objective.Dimension, null, ExitCondition.None, startObjective, double.NaN, double.NaN),
+                $"{ex.GetType().Name}: {ex.Message}",
+                ex);
         }
 
-        Unpack(solution, teamCount, out _attack, out _defence, out _homeAdvantage, out _rho);
+        var (finalObjective, gradient) = objective.ValueAndGradient(result.MinimizingPoint);
+        var report = new DixonColesFitReport(
+            _lastRound,
+            objective.Dimension,
+            result.Iterations,
+            result.ReasonForExit,
+            startObjective,
+            finalObjective,
+            gradient.InfinityNorm());
+
+        var rejection = RejectionReason(report);
+        if (rejection != null)
+        {
+            throw new ModelConvergenceException(report, rejection);
+        }
+
+        _fitReports.Add(report);
+        DixonColesObjective.Unpack(result.MinimizingPoint, teamCount, out _attack, out _defence, out _homeAdvantage, out _rho);
+    }
+
+    private string? RejectionReason(DixonColesFitReport report)
+    {
+        var gradientExit = report.ExitReason is ExitCondition.AbsoluteGradient or ExitCondition.RelativeGradient;
+        var stationary = report.GradientNorm <= StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective));
+
+        if (gradientExit && stationary)
+        {
+            return null;
+        }
+
+        if (report.Iterations >= _maxIterations)
+        {
+            return $"wyczerpany limit {_maxIterations} iteracji";
+        }
+
+        return gradientExit ? "niespełniony warunek stacjonarności" : $"wyjście {report.ExitReason}";
     }
 
     private double TimeWeight(MatchData match)
@@ -166,140 +222,6 @@ public sealed class DixonColesModel : IPredictionModel
         }
 
         return effective.Select(count => 1.0 / (1.0 + count)).ToArray();
-    }
-
-    private double[] InitialGuess(double[] weights, int teamCount)
-    {
-        var scored = new double[teamCount];
-        var conceded = new double[teamCount];
-        var appearances = new double[teamCount];
-        double homeGoals = 0, awayGoals = 0, totalWeight = 0;
-
-        for (var i = 0; i < _played.Count; i++)
-        {
-            var match = _played[i];
-            var weight = weights[i];
-            var home = _teamIndex[match.HomeTeamId];
-            var away = _teamIndex[match.AwayTeamId];
-
-            scored[home] += weight * match.HomeScore!.Value;
-            conceded[home] += weight * match.AwayScore!.Value;
-            scored[away] += weight * match.AwayScore!.Value;
-            conceded[away] += weight * match.HomeScore!.Value;
-            appearances[home] += weight;
-            appearances[away] += weight;
-
-            homeGoals += weight * match.HomeScore!.Value;
-            awayGoals += weight * match.AwayScore!.Value;
-            totalWeight += weight;
-        }
-
-        var overallHome = totalWeight > 0 ? homeGoals / totalWeight : 1.5;
-        var overallAway = totalWeight > 0 ? awayGoals / totalWeight : 1.15;
-        var overallRate = Math.Max(0.1, (overallHome + overallAway) / 2);
-
-        var start = new double[2 * teamCount + 2];
-
-        for (var i = 0; i < teamCount; i++)
-        {
-            var games = appearances[i] > 0 ? appearances[i] : 1;
-            var scoredRate = scored[i] / games;
-            var concededRate = conceded[i] / games;
-
-            start[i] = Math.Log(Math.Max(0.2, scoredRate / overallRate));
-            start[teamCount + i] = Math.Log(Math.Max(0.2, concededRate / overallRate * Math.Max(0.1, overallAway)));
-        }
-
-        start[2 * teamCount] = Math.Log(Math.Max(0.5, overallHome / Math.Max(0.1, overallAway)));
-        start[2 * teamCount + 1] = Atanh(-0.03 / MaxRho);
-
-        return start;
-    }
-
-    private double NegativeLogLikelihood(Vector<double> vector, double[] weights, double[] ridgeWeights, int teamCount)
-    {
-        Unpack(vector, teamCount, out var attack, out var defence, out var homeAdvantage, out var rho);
-
-        double logLikelihood = 0;
-
-        for (var i = 0; i < _played.Count; i++)
-        {
-            var match = _played[i];
-            var home = _teamIndex[match.HomeTeamId];
-            var away = _teamIndex[match.AwayTeamId];
-
-            var lambda = attack[home] * defence[away] * homeAdvantage;
-            var mu = attack[away] * defence[home];
-
-            if (!double.IsFinite(lambda) || !double.IsFinite(mu) || lambda <= 0 || mu <= 0)
-            {
-                return InfeasiblePenalty;
-            }
-
-            var homeScore = match.HomeScore!.Value;
-            var awayScore = match.AwayScore!.Value;
-            var tau = ScoreGrid.LowScoreCorrection(homeScore, awayScore, lambda, mu, rho);
-
-            if (tau <= 0 || !double.IsFinite(tau))
-            {
-                return InfeasiblePenalty;
-            }
-
-            logLikelihood += weights[i] * (
-                Math.Log(tau)
-                + homeScore * Math.Log(lambda) - lambda
-                + awayScore * Math.Log(mu) - mu);
-        }
-
-        if (!double.IsFinite(logLikelihood))
-        {
-            return InfeasiblePenalty;
-        }
-
-        double penalty = 0;
-        for (var i = 0; i < teamCount; i++)
-        {
-            var logAttack = Math.Log(attack[i]);
-            var logDefence = Math.Log(defence[i]);
-            penalty += _options.RidgeLambda * ridgeWeights[i] * (logAttack * logAttack + logDefence * logDefence);
-        }
-
-        return -logLikelihood + penalty;
-    }
-
-    private static void Unpack(Vector<double> vector, int teamCount, out double[] attack, out double[] defence, out double homeAdvantage, out double rho)
-    {
-        attack = new double[teamCount];
-        defence = new double[teamCount];
-        double attackSum = 0;
-
-        for (var i = 0; i < teamCount; i++)
-        {
-            attack[i] = Math.Exp(Clamp(vector[i]));
-            defence[i] = Math.Exp(Clamp(vector[teamCount + i]));
-            attackSum += attack[i];
-        }
-
-        var meanAttack = attackSum / teamCount;
-        if (meanAttack > 0)
-        {
-            for (var i = 0; i < teamCount; i++)
-            {
-                attack[i] /= meanAttack;
-                defence[i] *= meanAttack;
-            }
-        }
-
-        homeAdvantage = Math.Exp(Clamp(vector[2 * teamCount]));
-        rho = MaxRho * Math.Tanh(vector[2 * teamCount + 1]);
-    }
-
-    private static double Clamp(double value) => Math.Max(-20, Math.Min(20, value));
-
-    private static double Atanh(double value)
-    {
-        var safe = Math.Max(-0.999999, Math.Min(0.999999, value));
-        return 0.5 * Math.Log((1 + safe) / (1 - safe));
     }
 
     private double AttackOf(int teamId) => _teamIndex.TryGetValue(teamId, out var index) ? _attack[index] : 1.0;
