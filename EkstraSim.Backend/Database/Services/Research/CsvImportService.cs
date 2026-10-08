@@ -1,4 +1,5 @@
 using EkstraSim.Backend.Database.Entities;
+using EkstraSim.Shared;
 using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
 using EkstraSim.Shared.Resources;
@@ -58,8 +59,8 @@ public class CsvImportService
 
             foreach (var row in rows)
             {
-                var homeTeam = teamsByName[Normalise(row.HomeTeamName)];
-                var awayTeam = teamsByName[Normalise(row.AwayTeamName)];
+                var homeTeam = teamsByName[Normalise(Canonicalise(row.HomeTeamName))];
+                var awayTeam = teamsByName[Normalise(Canonicalise(row.AwayTeamName))];
                 var key = MatchKey(row.Round, homeTeam.Id, awayTeam.Id);
 
                 if (matchLookup.TryGetValue(key, out var existing))
@@ -139,6 +140,7 @@ public class CsvImportService
 
         var namesInFile = rows
             .SelectMany(r => new[] { r.HomeTeamName, r.AwayTeamName })
+            .Select(Canonicalise)
             .GroupBy(Normalise)
             .Select(g => g.First())
             .ToList();
@@ -156,6 +158,9 @@ public class CsvImportService
             context.Teams.Add(team);
             teamsByName[Normalise(name)] = team;
             result.TeamsCreated.Add(name);
+            result.Warnings.Add(
+                $"Utworzono nową drużynę '{name}' z ELO {NewTeamElo}. Sprawdź, czy to faktyczny beniaminek, " +
+                "a nie rozjazd nazwy względem bazy — w razie rozjazdu dodaj alias w TeamNameAliases.");
             created = true;
         }
 
@@ -286,7 +291,9 @@ public class CsvImportService
 
     private static string MatchKey(int? round, int homeTeamId, int awayTeamId) => $"{round}|{homeTeamId}|{awayTeamId}";
 
-    private static string Normalise(string name) => name.Trim().ToLowerInvariant();
+    private static string Normalise(string name) => TeamNameAliases.Normalise(name);
+
+    private static string Canonicalise(string name) => TeamNameAliases.Canonicalise(name);
 
     private static EkstraSimResult<CsvImportResultDTO> Failure(string message) => new()
     {
