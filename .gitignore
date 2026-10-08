@@ -39,3 +39,10 @@ yarn-error.log*
 *.dbmdl
 *.bak
 *.backup
+*.orig
+
+# Pliki baz danych - nigdy w repo. Zywa baza stoi poza projektem,
+# a trackowana atrapa raz juz nadpisala prawdziwe pliki.
+*.mdf
+*.ldf
+*.ndf
