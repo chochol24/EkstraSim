@@ -66,7 +66,7 @@ public static class WalkForwardEvaluator
                 ModelName = model.Name,
                 Predictions = predictions,
                 Evaluations = evaluations,
-                ParameterDrift = ModelSnapshot.Distance(previousSnapshot, currentSnapshot)
+                ParameterDrift = ModelSnapshot.NormalisedDistance(previousSnapshot, currentSnapshot)
             });
 
             previousSnapshot = currentSnapshot;
