@@ -12,6 +12,10 @@ public partial class ResearchRunDetailsPage
     [Parameter]
     public int RunId { get; set; }
 
+    private const double ChartScale = 1000;
+    private const string ChartAxisFormat = "0,.000";
+    private const int ChartTargetLines = 6;
+
     private static readonly (string Key, string Label)[] Metrics =
     [
         ("RankedProbability", "RPS"),
@@ -147,7 +151,7 @@ public partial class ResearchRunDetailsPage
                     .Select(round =>
                     {
                         var metric = group.FirstOrDefault(m => m.Round == round);
-                        return metric == null ? 0 : MetricValue(metric, selectedMetric);
+                        return metric == null ? 0 : MetricValue(metric, selectedMetric) * ChartScale;
                     })
                     .ToArray()
             })
@@ -165,10 +169,34 @@ public partial class ResearchRunDetailsPage
             {
                 Name = group.Key,
                 Data = rounds
-                    .Select(round => group.FirstOrDefault(m => m.Round == round)?.ParameterDrift ?? 0)
+                    .Select(round => (group.FirstOrDefault(m => m.Round == round)?.ParameterDrift ?? 0) * ChartScale)
                     .ToArray()
             })
             .ToList();
+    }
+
+    private static ChartOptions ChartOptionsFor(List<ChartSeries> series)
+    {
+        var values = series.SelectMany(s => s.Data).ToList();
+        var range = values.Count > 0 ? values.Max() - values.Min() : 0;
+
+        return new ChartOptions
+        {
+            YAxisTicks = NiceStep(range / ChartTargetLines),
+            YAxisFormat = ChartAxisFormat
+        };
+    }
+
+    private static int NiceStep(double rawStep)
+    {
+        if (rawStep <= 1)
+        {
+            return 1;
+        }
+
+        var magnitude = Math.Pow(10, Math.Floor(Math.Log10(rawStep)));
+        var factor = new[] { 1, 2, 5, 10 }.First(f => f * magnitude >= rawStep);
+        return (int)(factor * magnitude);
     }
 
     private static double MetricValue(ModelRoundMetricDTO metric, string key) => key switch

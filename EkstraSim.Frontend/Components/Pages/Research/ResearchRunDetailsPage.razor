@@ -70,9 +70,13 @@ else
             <MudTabPanel Text="Przebieg w sezonie">
                 @if (roundMetrics.Any())
                 {
+                    var metricSeries = BuildMetricSeries();
+                    var driftSeries = BuildDriftSeries();
+
                     <MudText Typo="Typo.subtitle1" Class="pt-2">@MetricLabel(selectedMetric) po kolejkach</MudText>
                     <MudChart ChartType="ChartType.Line"
-                              ChartSeries="@BuildMetricSeries()"
+                              ChartSeries="@metricSeries"
+                              ChartOptions="@ChartOptionsFor(metricSeries)"
                               XAxisLabels="@ChartRounds.Select(r => r.ToString()).ToArray()"
                               Width="100%" Height="320px" />
 
@@ -80,7 +84,8 @@ else
                         Dryf parametrów po kolejkach (pytanie o stabilność)
                     </MudText>
                     <MudChart ChartType="ChartType.Line"
-                              ChartSeries="@BuildDriftSeries()"
+                              ChartSeries="@driftSeries"
+                              ChartOptions="@ChartOptionsFor(driftSeries)"
                               XAxisLabels="@ChartRounds.Select(r => r.ToString()).ToArray()"
                               Width="100%" Height="280px" />
                 }
