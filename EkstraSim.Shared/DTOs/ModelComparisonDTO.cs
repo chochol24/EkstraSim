@@ -69,7 +69,16 @@ public class StabilityDTO
 {
     public string ModelName { get; set; } = string.Empty;
     public int? StabilisedFromRound { get; set; }
+    public double Tolerance { get; set; }
+    public double DriftLevel { get; set; }
     public double Threshold { get; set; }
+    public double MeanDrift { get; set; }
+
+    public double TrendRho { get; set; }
+    public double TrendPValue { get; set; }
+    public double TrendAdjustedPValue { get; set; }
+    public bool TrendIsConclusive { get; set; }
+
     public int Window { get; set; }
 
     public List<int> Rounds { get; set; } = [];

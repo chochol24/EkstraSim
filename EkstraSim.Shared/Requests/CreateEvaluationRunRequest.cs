@@ -20,7 +20,7 @@ public class CreateEvaluationRunRequest
     public double TimeDecayXi { get; set; } = 0.0065;
     public double RidgeLambda { get; set; } = 0.05;
 
-    public double StabilityThreshold { get; set; } = 0.05;
+    public double StabilityTolerance { get; set; } = 0.25;
     public int StabilityWindow { get; set; } = 3;
 
     public string? Comments { get; set; }

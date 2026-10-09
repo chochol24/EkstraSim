@@ -65,8 +65,8 @@
                              Min="0" Max="0.1" Step="0.0005" Format="F4" Margin="Margin.Dense" />
             <MudNumericField T="double" Label="Regularyzacja ridge" @bind-Value="request.RidgeLambda"
                              Min="0" Max="10" Step="0.01" Format="F2" Margin="Margin.Dense" />
-            <MudNumericField T="double" Label="Próg stabilności (dryf)" @bind-Value="request.StabilityThreshold"
-                             Min="0" Max="10" Step="0.01" Format="F2" Margin="Margin.Dense" />
+            <MudNumericField T="double" Label="Tolerancja stabilności δ" @bind-Value="request.StabilityTolerance"
+                             Min="0" Max="5" Step="0.05" Format="F2" Margin="Margin.Dense" />
             <MudNumericField T="int" Label="Okno średniej kroczącej" @bind-Value="request.StabilityWindow"
                              Min="1" Max="10" Margin="Margin.Dense" />
         </MudExpansionPanel>

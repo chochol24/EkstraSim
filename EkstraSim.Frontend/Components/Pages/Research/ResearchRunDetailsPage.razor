@@ -186,8 +186,13 @@ else
                         <thead>
                             <tr>
                                 <th>Model</th>
-                                <th>Stabilny od kolejki</th>
-                                <th>Próg dryfu</th>
+                                <th>Osiada od kolejki</th>
+                                <th>Poziom dryfu L</th>
+                                <th>Próg (1+δ)·L</th>
+                                <th>Średni dryf</th>
+                                <th>Trend ρ</th>
+                                <th>p</th>
+                                <th>p (Holm)</th>
                                 <th>Okno</th>
                             </tr>
                         </thead>
@@ -197,15 +202,28 @@ else
                                 <tr>
                                     <td><b>@stability.ModelName</b></td>
                                     <td>@(stability.StabilisedFromRound?.ToString() ?? "nie osiągnięto")</td>
+                                    <td>@Fixed3(stability.DriftLevel)</td>
                                     <td>@Fixed3(stability.Threshold)</td>
+                                    <td>@Fixed3(stability.MeanDrift)</td>
+                                    <td>@(stability.TrendIsConclusive ? Fixed3(stability.TrendRho) : "—")</td>
+                                    <td>@PValueLabel(stability.TrendPValue, stability.TrendIsConclusive)</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Color="@SignificanceColour(stability.TrendIsConclusive && stability.TrendAdjustedPValue < 0.05)">
+                                            @PValueLabel(stability.TrendAdjustedPValue, stability.TrendIsConclusive)
+                                        </MudChip>
+                                    </td>
                                     <td>@stability.Window</td>
                                 </tr>
                             }
                         </tbody>
                     </MudSimpleTable>
                     <MudText Typo="Typo.caption" Class="pt-2">
-                        Stabilność = pierwsza kolejka, od której do końca sezonu kroczący dryf parametrów
-                        nie przekracza progu.
+                        Poziom dryfu L = średni dryf parametrów z ostatniej 1/3 ocenianych kolejek (nie mniej niż okno).
+                        Próg = (1+δ)·L przy δ = @(comparison.Stability[0].Tolerance.ToString("F2")).
+                        Osiada od kolejki = pierwsza kolejka, od której do końca sezonu krocząca średnia dryfu nie przekracza progu.
+                        Trend = korelacja Spearmana dryfu z numerem kolejki (ρ &lt; 0: dryf maleje), p po poprawce Holma między modelami;
+                        zielony = istotny przy α = 0,05.
+                        Osiadanie czytaj razem z trendem: istotny trend dodatni znaczy, że dryf rośnie, więc „osiadanie” nie oznacza wtedy stabilności.
                     </MudText>
                 }
             </MudTabPanel>

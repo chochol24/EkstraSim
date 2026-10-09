@@ -1,3 +1,4 @@
+using System.Globalization;
 using EkstraSim.Backend.Database;
 using EkstraSim.Backend.Database.Entities;
 using EkstraSim.Backend.Database.Services;
@@ -64,6 +65,14 @@ app.UseFastEndpoints(c =>
 	c.Versioning.Prefix = "v";
 	c.Versioning.DefaultVersion = 1;
 	c.Versioning.PrependToRoute = true;
+	c.Binding.ValueParserFor<double>(ParseInvariantDouble);
+	c.Binding.ValueParserFor<double?>(ParseInvariantDouble);
 });
 
 app.Run();
+
+static ParseResult ParseInvariantDouble(object? input)
+{
+	var success = double.TryParse(input?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value);
+	return new ParseResult(success, value);
+}

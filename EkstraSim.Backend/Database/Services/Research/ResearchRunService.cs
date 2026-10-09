@@ -219,10 +219,20 @@ public class ResearchRunService
         }
     }
 
-    public async Task<EkstraSimResult<ModelComparisonDTO>> GetComparisonAsync(int runId, string? metricName)
+    public async Task<EkstraSimResult<ModelComparisonDTO>> GetComparisonAsync(
+        int runId,
+        string? metricName,
+        double? tolerance,
+        int? fromRound,
+        int? toRound)
     {
         try
         {
+            if (fromRound > toRound)
+            {
+                return Failure<ModelComparisonDTO>($"Kolejka początkowa ({fromRound}) jest większa niż końcowa ({toRound}).");
+            }
+
             await using var context = await _dbFactory.CreateDbContextAsync();
 
             var run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId);
@@ -275,6 +285,22 @@ public class ResearchRunService
                 ? new CreateEvaluationRunRequest()
                 : JsonConvert.DeserializeObject<CreateEvaluationRunRequest>(run.OptionsJson) ?? new CreateEvaluationRunRequest();
 
+            var stabilityTolerance = tolerance ?? options.StabilityTolerance;
+            if (!double.IsFinite(stabilityTolerance) || stabilityTolerance < 0)
+            {
+                return Failure<ModelComparisonDTO>("Tolerancja stabilności δ musi być liczbą nieujemną.");
+            }
+
+            var stabilityMetrics = roundMetrics
+                .Where(m => (!fromRound.HasValue || m.Round >= fromRound.Value) && (!toRound.HasValue || m.Round <= toRound.Value))
+                .ToList();
+
+            if ((fromRound.HasValue || toRound.HasValue) && stabilityMetrics.Count == 0)
+            {
+                return Failure<ModelComparisonDTO>(
+                    $"Badanie nie ma ocenianych kolejek w zakresie {fromRound?.ToString() ?? "początek"}–{toRound?.ToString() ?? "koniec"}.");
+            }
+
             var comparison = new ModelComparisonDTO
             {
                 RunId = runId,
@@ -285,7 +311,7 @@ public class ResearchRunService
                     .ToList(),
                 Pairwise = ModelComparison.Pairwise(evaluationsByModel, metric).Select(ToPairwiseDto).ToList(),
                 Promoted = BuildPromotedComparisons(evaluationsByModel, metric, roundMetrics),
-                Stability = BuildStability(roundMetrics, metric, options)
+                Stability = BuildStability(stabilityMetrics, metric, stabilityTolerance, options.StabilityWindow)
             };
 
             return new EkstraSimResult<ModelComparisonDTO>
@@ -341,9 +367,10 @@ public class ResearchRunService
     private static List<StabilityDTO> BuildStability(
         List<ModelRoundMetric> roundMetrics,
         MetricKind metric,
-        CreateEvaluationRunRequest options)
+        double tolerance,
+        int window)
     {
-        return roundMetrics
+        var results = roundMetrics
             .GroupBy(m => m.ModelName)
             .OrderBy(g => g.Key, StringComparer.Ordinal)
             .Select(group =>
@@ -353,18 +380,30 @@ public class ResearchRunService
                     .Select(m => new RoundObservation(m.Round, MetricValueOf(m, metric), m.ParameterDrift))
                     .ToList();
 
-                var result = StabilityAnalysis.Detect(group.Key, observations, options.StabilityThreshold, options.StabilityWindow);
+                return StabilityAnalysis.Detect(group.Key, observations, tolerance, window);
+            })
+            .ToList();
 
-                return new StabilityDTO
-                {
-                    ModelName = result.ModelName,
-                    StabilisedFromRound = result.StabilisedFromRound,
-                    Threshold = result.Threshold,
-                    Window = result.Window,
-                    Rounds = result.Rounds.ToList(),
-                    RollingMetric = result.RollingMetric.ToList(),
-                    RollingDrift = result.RollingDrift.ToList()
-                };
+        var adjustedTrendPValues = HolmCorrection.Adjust(
+            results.Select(r => r.Trend.IsConclusive ? r.Trend.PValue : 1.0).ToList());
+
+        return results
+            .Select((result, index) => new StabilityDTO
+            {
+                ModelName = result.ModelName,
+                StabilisedFromRound = result.StabilisedFromRound,
+                Tolerance = result.Tolerance,
+                DriftLevel = result.DriftLevel,
+                Threshold = result.Threshold,
+                MeanDrift = result.MeanDrift,
+                TrendRho = result.Trend.Statistic,
+                TrendPValue = result.Trend.PValue,
+                TrendAdjustedPValue = adjustedTrendPValues[index],
+                TrendIsConclusive = result.Trend.IsConclusive,
+                Window = result.Window,
+                Rounds = result.Rounds.ToList(),
+                RollingMetric = result.RollingMetric.ToList(),
+                RollingDrift = result.RollingDrift.ToList()
             })
             .ToList();
     }

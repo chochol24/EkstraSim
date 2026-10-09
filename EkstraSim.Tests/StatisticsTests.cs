@@ -152,47 +152,155 @@ public class StatisticsTests
     }
 
     [Fact]
-    public void StabilityDetectsFirstRoundOfLastingCalm()
+    public void StabilitySettlesWhereRollingDriftStaysWithinTheRelativeThreshold()
     {
         List<RoundObservation> observations =
         [
             new(20, 0.25, 1.0),
             new(21, 0.24, 0.8),
             new(22, 0.23, 0.5),
-            new(23, 0.23, 0.05),
-            new(24, 0.22, 0.04),
-            new(25, 0.22, 0.03)
+            new(23, 0.23, 0.3),
+            new(24, 0.22, 0.12),
+            new(25, 0.22, 0.10),
+            new(26, 0.21, 0.11),
+            new(27, 0.21, 0.10),
+            new(28, 0.20, 0.09)
         ];
 
-        var result = StabilityAnalysis.Detect("Poisson", observations, threshold: 0.2, window: 2);
+        var result = StabilityAnalysis.Detect("Poisson", observations, tolerance: 0.25, window: 1);
 
-        Assert.Equal(24, result.StabilisedFromRound);
         Assert.Equal("Poisson", result.ModelName);
+        Assert.Equal(0.10, result.DriftLevel, precision: 12);
+        Assert.Equal(0.125, result.Threshold, precision: 12);
+        Assert.Equal(0.25, result.Tolerance);
+        Assert.Equal(3.12 / 9, result.MeanDrift, precision: 12);
+        Assert.Equal(24, result.StabilisedFromRound);
+    }
+
+    [Theory]
+    [InlineData(0.2)]
+    [InlineData(0.0)]
+    public void FlatDriftSettlesFromTheFirstRound(double drift)
+    {
+        var observations = Enumerable.Range(20, 8).Select(round => new RoundObservation(round, 0.2, drift)).ToList();
+
+        var result = StabilityAnalysis.Detect("Elo", observations, StabilityAnalysis.DefaultTolerance);
+
+        Assert.Equal(20, result.StabilisedFromRound);
+        Assert.Equal(drift, result.DriftLevel, precision: 12);
+        Assert.False(result.Trend.IsConclusive);
     }
 
     [Fact]
-    public void StabilityIgnoresEarlyCalmFollowedByDrift()
+    public void StabilityIgnoresEarlyCalmFollowedByAJump()
     {
-        List<RoundObservation> observations =
-        [
-            new(20, 0.25, 0.01),
-            new(21, 0.24, 0.01),
-            new(22, 0.23, 5.0),
-            new(23, 0.23, 5.0)
-        ];
+        double[] drifts = [0.1, 0.1, 0.1, 0.9, 0.1, 0.1, 0.1, 0.1, 0.1];
+        var observations = drifts.Select((drift, i) => new RoundObservation(20 + i, 0.2, drift)).ToList();
 
-        var result = StabilityAnalysis.Detect("Elo", observations, threshold: 0.2, window: 1);
+        var result = StabilityAnalysis.Detect("Elo", observations, tolerance: 0.25, window: 1);
 
-        Assert.Null(result.StabilisedFromRound);
+        Assert.Equal(24, result.StabilisedFromRound);
+    }
+
+    [Theory]
+    [InlineData(12, 3, 4)]
+    [InlineData(6, 3, 3)]
+    [InlineData(31, 3, 11)]
+    [InlineData(16, 5, 6)]
+    [InlineData(16, 8, 8)]
+    [InlineData(2, 3, 2)]
+    public void DriftLevelAveragesTheLastThirdButNoFewerRoundsThanTheWindow(int count, int window, int expectedRounds)
+    {
+        var observations = Enumerable.Range(1, count).Select(i => new RoundObservation(i, 0.2, i)).ToList();
+
+        var result = StabilityAnalysis.Detect("Poisson", observations, StabilityAnalysis.DefaultTolerance, window);
+
+        var expectedLevel = Enumerable.Range(count - expectedRounds + 1, expectedRounds).Average();
+        Assert.Equal(expectedLevel, result.DriftLevel, precision: 12);
+        Assert.Equal((1 + StabilityAnalysis.DefaultTolerance) * expectedLevel, result.Threshold, precision: 12);
+    }
+
+    [Fact]
+    public void StabilityReportsTheDriftTrend()
+    {
+        var observations = Enumerable.Range(20, 10).Select(round => new RoundObservation(round, 0.2, 1.0 / round)).ToList();
+
+        var result = StabilityAnalysis.Detect("Poisson", observations, StabilityAnalysis.DefaultTolerance);
+
+        Assert.True(result.Trend.IsConclusive);
+        Assert.Equal(-1.0, result.Trend.Statistic, precision: 12);
+        Assert.True(result.Trend.PValue < 0.001);
+        Assert.Equal(10, result.Trend.SampleSize);
     }
 
     [Fact]
     public void StabilityHandlesNoObservations()
     {
-        var result = StabilityAnalysis.Detect("DixonColes", [], threshold: 0.1);
+        var result = StabilityAnalysis.Detect("DixonColes", [], tolerance: 0.25);
 
         Assert.Null(result.StabilisedFromRound);
         Assert.Empty(result.Rounds);
+        Assert.False(result.Trend.IsConclusive);
+    }
+
+    [Fact]
+    public void SpearmanIsOneForIncreasingAndMinusOneForDecreasingSeries()
+    {
+        var rounds = Enumerable.Range(19, 16).Select(r => (double)r).ToList();
+        var increasing = rounds.Select(r => r * r).ToList();
+        var decreasing = rounds.Select(r => 1.0 / r).ToList();
+
+        var up = SpearmanTrendTest.Test(rounds, increasing);
+        var down = SpearmanTrendTest.Test(rounds, decreasing);
+
+        Assert.Equal("Spearman", up.Name);
+        Assert.True(up.IsConclusive);
+        Assert.Equal(1.0, up.Statistic, precision: 12);
+        Assert.Equal(-1.0, down.Statistic, precision: 12);
+        Assert.True(up.ZScore > 0 && down.ZScore < 0);
+        Assert.True(up.PValue < 0.001 && down.PValue < 0.001);
+        Assert.Equal(16, up.SampleSize);
+    }
+
+    [Fact]
+    public void SpearmanMatchesMathNetWithTies()
+    {
+        double[] rounds = [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+        double[] drift = [0.30, 0.25, 0.25, 0.40, 0.20, 0.20, 0.20, 0.15, 0.30, 0.10, 0.12, 0.10];
+
+        var result = SpearmanTrendTest.Test(rounds, drift);
+        var expected = MathNet.Numerics.Statistics.Correlation.Spearman(rounds, drift);
+
+        Assert.True(result.IsConclusive);
+        Assert.Equal(expected, result.Statistic, precision: 12);
+
+        var degreesOfFreedom = rounds.Length - 2;
+        var t = expected * Math.Sqrt(degreesOfFreedom / (1 - expected * expected));
+        Assert.Equal(t, result.ZScore, precision: 10);
+        Assert.Equal(
+            2 * (1 - MathNet.Numerics.Distributions.StudentT.CDF(0, 1, degreesOfFreedom, Math.Abs(t))),
+            result.PValue,
+            precision: 12);
+    }
+
+    [Fact]
+    public void SpearmanIsInconclusiveBelowSixObservations()
+    {
+        var result = SpearmanTrendTest.Test([1, 2, 3, 4, 5], [0.5, 0.4, 0.3, 0.2, 0.1]);
+
+        Assert.False(result.IsConclusive);
+        Assert.Equal(1.0, result.PValue);
+        Assert.Equal(5, result.SampleSize);
+    }
+
+    [Fact]
+    public void SpearmanIsInconclusiveForAConstantSeries()
+    {
+        double[] rounds = [19, 20, 21, 22, 23, 24, 25, 26];
+        double[] constant = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2];
+
+        Assert.False(SpearmanTrendTest.Test(rounds, constant).IsConclusive);
+        Assert.False(SpearmanTrendTest.Test(constant, rounds).IsConclusive);
     }
 
     [Fact]
