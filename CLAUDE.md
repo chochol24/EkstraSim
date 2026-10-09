@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **No code comments** beyond the kind already present in the codebase (short, single-line, sparse — e.g. `//current season strengths`). Do not add XML doc comments, explanatory blocks, or narrated steps.
 - **All "how it works" documentation goes to [docs/DZIALANIE.md](docs/DZIALANIE.md)** (in Polish) — model math, research pipeline, data flow, design decisions. Update it whenever behavior is added or changed instead of commenting code.
-- **No git operations** — the user manages branches and commits themselves. Never commit, push, or stage anything here.
-- **`bin/` and `obj/` are tracked** in this repo despite being in `.gitignore` (committed before the ignore rule). A build dirties ~55 of them, so `git status` is always noisy — that noise is not your change.
+- **No commits without the user's explicit consent** — the user manages branches and commits themselves. Never commit, push, or stage anything unless the user has explicitly approved that specific operation in the conversation; an approval does not carry over to later operations.
+- **`bin/` and `obj/` are not tracked** (removed from the index in commit `40b2416`), so a build does not dirty `git status`. Database files (`*.mdf`, `*.ldf`) are gitignored too.
 
 ## Solution layout
 
@@ -19,7 +19,7 @@ Five projects (`EkstraSim.sln` at the repo root), `net9.0` throughout, file-scop
 | `EkstraSim.Frontend` | Blazor **Server** app (interactive server render mode) with MudBlazor. Talks to the backend over HTTP only. UI is in Polish. |
 | `EkstraSim.Shared` | DTOs, request records, the `EkstraSimResult<T>` envelope, `Constants`, and the `SnackbarMessages` resx. Referenced by everything. |
 | `EkstraSim.Prediction` | Pure computational core for the master's thesis: prediction models, metrics, statistics. **No EF, no HTTP** — depends only on `Shared` + MathNet.Numerics. |
-| `EkstraSim.Tests` | xUnit tests for `EkstraSim.Prediction`. |
+| `EkstraSim.Tests` | xUnit tests for `EkstraSim.Prediction` (and `EkstraSim.Shared`, referenced transitively). Backend and frontend have no tests. |
 
 ## Commands
 
@@ -43,7 +43,7 @@ dotnet run --project EkstraSim.Backend --launch-profile https
 dotnet run --project EkstraSim.Frontend --launch-profile https
 ```
 
-Local ports: backend `https://localhost:7050` / `http://localhost:5274`, frontend `https://localhost:7079` / `http://localhost:5285`. Swagger UI is served at the backend root in all environments.
+Local ports: backend `https://localhost:7050` / `http://localhost:5274`, frontend `https://localhost:7079` / `http://localhost:5285`. Swagger UI is at `/swagger/index.html` (not the root) in all environments, but `/swagger/v1/swagger.json` currently returns 500 (`GET /v1/api/research/runs` is registered twice in the generator) — call endpoints with `curl` instead.
 
 EF Core migrations (run from `EkstraSim.Backend`):
 
@@ -51,7 +51,7 @@ EF Core migrations (run from `EkstraSim.Backend`):
 dotnet ef migrations add <Name>
 ```
 
-Connection string key is `ConnectionStrings:DefaultConnection`. `appsettings.Development.json` is gitignored; `appsettings.json` is not — never put a real connection string in it. **Do not run `dotnet ef database update`** without being asked; applying migrations is the user's call.
+Connection string key is `ConnectionStrings:DefaultConnection`. The backend's `appsettings.Development.json` is gitignored and untracked — the local connection string lives there; `appsettings.json` is tracked — never put a real connection string in it. (The frontend's `appsettings.Development.json` is still tracked.) **Do not run `dotnet ef database update`** without being asked; applying migrations is the user's call.
 
 ## Backend architecture
 
@@ -99,7 +99,7 @@ Models never touch EF or `SimulatingService` — the orchestrator hands them `Ma
 
 - Pages live in `Components/Pages/<Area>/`, with markup in `.razor` and logic in a partial `.razor.cs` for the larger ones. Services are injected with `@inject` in the markup and used from the code-behind.
 - Every backend call goes through a thin service in `Components/Services/` wrapping `HttpServiceHelper`, which deserialises into `EkstraSimResult<T>` and converts exceptions into a failed result. Pages surface `result.ErrorMessage` through MudBlazor `ISnackbar`, falling back to `SnackbarMessages.Error_Base`.
-- **The API base address is hardcoded to the Azure production URL in [EkstraSim.Frontend/Program.cs:27](EkstraSim.Frontend/Program.cs:27).** Change it there to point at a local backend.
+- **The API base address comes from the `ApiBaseAddress` configuration key, falling back to the Azure production URL** ([EkstraSim.Frontend/Program.cs:25-26](EkstraSim.Frontend/Program.cs:25)). The key is not set in any config file, so a local frontend talks to production by default — run it with `-- --ApiBaseAddress=https://localhost:7050` (or the `ApiBaseAddress` environment variable) instead of editing tracked files.
 - Keep user-facing strings (and `SnackbarMessages.resx` entries) in Polish.
 
 ## Deployment
