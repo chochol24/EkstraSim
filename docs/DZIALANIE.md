@@ -149,7 +149,7 @@ Przy |f| ≈ 130–270 próg wynosi 1,3–2,7·10⁻⁴; obserwowane na prawdziw
 
 **Weryfikacja na prawdziwych danych.** Test `DixonColesRealDataTests` (`[Trait("Category", "RealData")]`) czyta fixture `EkstraSim.Tests/Data/ekstraklasa-liga1-mecze.csv`, odtwarza przez `WalkForwardEvaluator.Run` sekwencję dopasowań z runów 2024/25 i 2025/26 (odcięcie 18, opcje domyślne: formy włączone, ξ = 0,0065, ridge 0,05) i wymaga:
 
-- dokładnie 17 raportów na sezon (trening + 16 kolejek),
+- dokładnie 17 raportów na sezon (trening + 16 kolejek; modele tymczasowe filtra daty to osobne instancje i nie wchodzą do tej sekwencji),
 - w każdym: wyjścia gradientowego, ‖∇f‖∞ w granicy akceptacji i `FinalObjective < StartObjective` (ruch ze startu),
 - kotwicy: NLL(start) treningu 2024/25 = 248,939860312 (±1e-8), NLL końcowe ≤ 248,738 (wynik Neldera-Meada).
 
@@ -199,16 +199,58 @@ Czysta pętla siedzi w `EkstraSim.Prediction/Evaluation/WalkForwardEvaluator.cs`
 
 ```
 model.Train(historia, opcje)
+wchłonięte = rozegrane mecze historii
 dla każdej kolejki R rundy wiosennej:
-    predykcje  = mecze(R).Select(model.Predict)      ← model nie zna jeszcze wyników R
+    dla każdego meczu m z R (po Id):
+        ukryte = wchłonięte z Date >= m.Date
+        jeśli ukryte puste:   predykcja = model.Predict(m)        ← model nie zna jeszcze wyników R
+        w przeciwnym razie:   predykcja = tymczasowy.Predict(m)   ← świeży model po Train(wchłonięte \ ukryte)
     oceny      = metryki(predykcje, faktyczne wyniki)
     model.UpdateWithRound(mecze(R))                  ← dopiero teraz wchłania wyniki
+    wchłonięte += mecze(R)
     dryf       = NormalisedDistance(parametry_przed, parametry_po)   ← patrz „Metryka dryfu parametrów"
 ```
 
-**Brak wycieku danych z przyszłości jest własnością konstrukcji** — ale **po numerze kolejki, nie po dacie**: model widzi wyniki kolejki R wyłącznie po tym, jak wszystkie predykcje dla R zostały już policzone. Kolejki są przetwarzane w kolejności numerów, a historia to kolejki ≤ odcięcie, więc **mecz przełożony** (np. z kolejki 16 rozegrany w marcu) trafia do treningu albo jest wchłaniany razem ze swoją kolejką, choć odbył się po meczach, które model jeszcze przewiduje. Pomiar w bazie: 2024/25 — żadnego takiego meczu; 2025/26 — 2 mecze w treningu (wpływ na 63 ze 144 predykcji) i 3 w pętli (45 predykcji). Jedynie mnożniki formy Poissona filtrują po dacie. Wariant w pełni czasowy wymagałby historii ograniczonej do `Date < mecz.Date` dla każdego przewidywanego meczu.
+**Brak danych z przyszłości — po kolejce i po dacie (od wersji 5).** Predykcja meczu m powstaje ze stanu modelu, który zna wyłącznie mecze spełniające jednocześnie dwa warunki: (a) są w treningu albo w kolejkach ocenionych przed kolejką m, (b) mają datę wcześniejszą niż `m.Date`. Warunek (a) daje sama kolejność pętli: model widzi wyniki kolejki R dopiero po policzeniu wszystkich jej predykcji. Warunek (b) jest potrzebny przez **mecze przełożone**. Kolejki idą w kolejności numerów, a historia to kolejki ≤ odcięcie, więc np. mecz z kolejki 16 rozegrany w marcu trafia do treningu, choć odbył się po meczach, które model jeszcze przewiduje. Do wersji 4 włącznie gwarancja działała tylko po numerze kolejki; po dacie filtrowały jedynie mnożniki formy Poissona.
 
-Testy `FirstRoundPredictionUsesOnlyTrainingHistory` i `SecondRoundPredictionSeesOnlyTheFirstEvaluatedRound` porównują wynik pętli z modelem trenowanym ręcznie na dokładnie tym zakresie danych — ale ich fixture powtarza w każdej kolejce identyczne wyniki, więc wchłonięcie kolejki niczego w modelu nie zmienia. **Nie wykryłyby wycieku** (pętla wchłaniająca wyniki przed predykcją też by przeszła); dotyczą tylko Poissona.
+Filtr daty działa tylko tam, gdzie jest potrzebny:
+
+- **Warunek ukrycia.** Mecz a jest ukryty przed meczem m, gdy `a.Date >= m.Date`, czyli mecze z tego samego dnia też są ukryte (ostrożnie). Daty w bazie nie mają godzin, a w danych nie ma przypadku, w którym ukryty byłby wyłącznie mecz z tego samego dnia.
+- **Model tymczasowy.** Gdy zbiór ukrytych jest niepusty, predykcję liczy świeża instancja modelu (`createModel`, domyślnie `PredictionModelFactory.Create(model.Name)`) po `Train(wchłonięte \ ukryte)`. W obrębie kolejki jest keszowana po posortowanych Id ukrytych, więc mecze z tym samym zbiorem ukrytych dzielą jedno dopasowanie. Id meczów przewidzianych stanem zawężonym trafiają do `RoundEvaluation.DateFilteredMatchIds`, a orkiestrator loguje ich liczbę na model. W bazie nie ma flagi „zawężone po dacie".
+- **Dlaczego to poprawne.** Wszystkie trzy modele są wsadowe: stan to czysta funkcja zbioru wchłoniętych meczów. Poisson przelicza agregaty, Elo odtwarza replay od zera, a Dixon-Coles dopasowuje od analitycznego startu (zimny start). `Train(podzbiór)` daje więc dokładnie stan „gdyby znano tylko ten podzbiór", taki sam jak po `Train` i kolejnych `UpdateWithRound` na tych samych meczach.
+- **Ścieżka bazowa nietknięta.** Model bazowy przechodzi przez te same wywołania co w wersji 4 (`Train(historia)`, potem `Predict` i `UpdateWithRound` w kolejności Id), a model tymczasowy to osobna instancja, która go nie modyfikuje. Predykcje bez meczów ukrytych są więc bitowo identyczne z wersją 4, a filtr nie zmienia dryfu (liczonego ze snapshotów modelu bazowego). Porównanie predykcji z runami wersji 4 pokazuje wyłącznie skutek filtra. Dryf wersji 5 różni się od wersji 4 tylko przez zawężenie do drużyn aktywnych („Metryka dryfu parametrów"). Sprawdzone na fixture z prawdziwymi danymi dla każdego modelu: 2024/25 — 144 ze 144 predykcji identycznych bitowo; 2025/26 — 72 identyczne i 72 zmienione (dokładnie zawężone). Sam filtr daty nie zmienił dryfu w żadnej z 16 kolejek. Runy potwierdzają to samo: run 9 względem runu 7 — 432 z 432 predykcji identycznych bitowo (łącznie z macierzami wyników); run 10 względem runu 8 — różnice dokładnie w 216 wierszach (72 mecze × 3 modele), a zbiór meczów z różnicą równa się zbiorowi wyznaczonemu niezależnie z dat w tabeli `Matches`.
+- **Wchłonięte = historia + ocenione już kolejki.** Mecz z późniejszej kolejki rozegrany wcześniej nie jest wchłaniany przed swoją kolejką. To ostrożne (model wie mniej, niż mógłby), ale nie wnosi danych z przyszłości. Pętla zostaje po kolejkach: pełny walk-forward po dniach, w którym mecz widzi wcześniejsze mecze tej samej kolejki, nie jest celem.
+- **Błąd dopasowania.** Dopasowanie modelu tymczasowego może rzucić tak samo jak dopasowanie bazowe (Dixon-Coles: `ModelConvergenceException`). Run kończy się wtedy `Failed`, jak przy błędzie modelu bazowego. Na danych 2025/26 wszystkie 9 dopasowań tymczasowych jest zbieżnych.
+
+Pomiar na fixture z prawdziwymi danymi i w runach 9–10 (odcięcie 18; log orkiestratora podaje te same liczby):
+
+| Sezon | Mecze rozegrane po przewidywanych | Zawężone predykcje (na model) | Modele tymczasowe (na model) |
+| --- | --- | --- | --- |
+| 2024/25 | brak | 0 ze 144 | 0 |
+| 2025/26 | 2 w treningu (z kolejek 4 i 16, rozegrane w lutym i marcu) i 3 w pętli (z kolejki 19 wchłonięty przed kolejkami 20–23, dwa z kolejki 31 wchłonięte przed kolejką 32) | 72 ze 144, w kolejkach 19–25 i 32 | 9 |
+
+Mecze z treningu dotykają 63 predykcji, mecze z pętli 45; zbiory się pokrywają, razem 72.
+
+W runach diagnostycznych z odcięciem po kolejce 3 (runy 11–12, tylko do pytania nr 2) zawężonych jest 135 (2024/25) i 205 (2025/26) z 279 predykcji na model, bo do zbioru ewaluacyjnego wchodzą wtedy także jesienne mecze przełożone.
+
+**Skutek dla wyników (2025/26, run 8 → run 10).** Filtr minimalnie poprawił metryki probabilistyczne wszystkich modeli:
+
+- RPS: Poisson 0,2605 → 0,2604, Dixon-Coles 0,2326 → 0,2324, Elo 0,2170 → 0,2169; Brier i log-loss też zmieniają się o najwyżej 0,0003,
+- trafność 1X2 bez zmian, top-1 i top-3 różnią się o najwyżej jeden mecz na model,
+- p po Holmie z testu Wilcoxona (RPS): Dixon-Coles–Elo 0,0030 → 0,0035, Dixon-Coles–Poisson 0,0144 → 0,0129, Elo–Poisson 0,0028 → 0,0027.
+
+Wszystkie trzy pary są nadal istotne, a ranking Elo < Dixon-Coles < Poisson i wnioski z pytania nr 1 się nie zmieniają. W 2024/25 predykcje, a więc i wszystkie testy, są identyczne z wersją 4.
+
+**Testy.** `WalkForwardVisibilityTests` porównuje każdą predykcję pętli z modelem referencyjnym (`WalkForwardReference`), trenowanym od zera na dokładnie widocznym zbiorze, z tolerancją 1e-9. Obejmuje Poissona, Dixona-Colesa i Elo. Fixture ma 6 drużyn, pełny dwurundowy sezon poprzedni (30 meczów, żeby Elo miało ≥ 20 próbek do regresji) i sezon docelowy ze zmiennymi wynikami, z odcięciem po kolejce 4. Wariant „przełożony" przesuwa mecz z kolejki 2 za kolejkę 6 i mecz z kolejki 7 za kolejkę 8, co daje 9 dotkniętych predykcji w kolejkach 5, 6 i 8.
+
+Asercje mocy (`FixtureDetectsAbsorbingARoundBeforePredicting`, `FixtureDetectsMatchesPlayedAfterThePredictedOne`) sprawdzają, że dołożenie kolejki R albo meczu rozegranego później zmienia predykcję o więcej niż 1e-6. Bez nich zgodność z referencją niczego by nie dowodziła. Poprzednie testy pętli miały fixture z identycznymi wynikami w każdej kolejce, więc nie wykryłyby wchłaniania przed predykcją, i dotyczyły tylko Poissona.
+
+`WalkForwardRealDataTests` (`Category=RealData`) robi to samo na fixture z prawdziwymi danymi:
+- niezależnie wyznacza zawężenia (0 i 72, w kolejkach 19–25 i 32),
+- sprawdza zgodność każdej predykcji z referencją i równość `DateFilteredMatchIds` z tym zbiorem,
+- sprawdza, że liczba utworzonych modeli tymczasowych równa się liczbie różnych zbiorów ukrytych w kolejkach (0 i 9).
+
+Na kodzie wersji 4 testy „po dacie" były czerwone (wszystkie trzy modele, sezon 2025/26), a testy „po kolejce" i asercje mocy zielone.
 
 `BuildHistory` bierze rozegrane mecze z sezonów wcześniejszych w chronologii **oraz** kolejki ≤ odcięcie z sezonu badanego. `BuildEvaluationSet` bierze kolejki > odcięcie, **tylko rozegrane** — dzięki temu trwający sezon (np. 2026/27) ocenia się na tym, co już się odbyło, a nierozegrane kolejki są po prostu pomijane.
 
@@ -239,7 +281,7 @@ Run zapisuje, **który kod go policzył** i **z jakimi opcjami faktycznie**, że
 
 - **`AlgorithmVersion`** — numer z `ResearchAlgorithm.Version` (`EkstraSim.Prediction/Evaluation`, jedyne źródło). Orkiestrator ustawia go razem ze statusem `Running`, więc to wersja kodu, który run **wykonał**, a nie tego, który utworzył rekord `Pending`.
 - **`EffectiveOptionsJson`** — zserializowane (Newtonsoft) `TrainingOptions` z `BuildOptions`, czyli opcje faktycznie przekazane modelom: łącznie z wartościami domyślnymi spoza żądania (`MaxGoals`, wagi horyzontów Poissona, parametry Elo) i `SeasonChronology`. Ustawiane przed liczeniem predykcji i zapisywane z końcowym statusem (także `Failed`, jeśli błąd wystąpił po zbudowaniu opcji).
-- **`OptionsJson` vs `EffectiveOptionsJson`.** `OptionsJson` to żądanie w postaci, w jakiej przyszło (`CreateEvaluationRunRequest`) — zawiera też `StabilityThreshold`/`StabilityWindow`, które czyta dopiero endpoint porównania przy każdym odczycie, a nie run. `EffectiveOptionsJson` to to, co dostały modele. Pierwsze odpowiada na pytanie „o co poproszono", drugie — „co policzono".
+- **`OptionsJson` vs `EffectiveOptionsJson`.** `OptionsJson` to żądanie w postaci, w jakiej przyszło (`CreateEvaluationRunRequest`) — zawiera też `StabilityTolerance`/`StabilityWindow`, które czyta dopiero endpoint porównania przy każdym odczycie, a nie run. Starsze runy mają w `OptionsJson` dawne pole `StabilityThreshold` (próg absolutny): Newtonsoft pomija nieznane pola, więc deserializują się bez błędu i dostają domyślne δ = 0,25. `EffectiveOptionsJson` to to, co dostały modele. Pierwsze odpowiada na pytanie „o co poproszono", drugie — „co policzono".
 - `NULL` w obu kolumnach znaczy „nieznane / sprzed wersjonowania". UI pokazuje wtedy „—": kolumna „Wersja" na `/research` i „Wersja algorytmu: N" w nagłówku `/research/{RunId}`.
 
 | Wersja | Runy | Co się zmieniło |
@@ -247,9 +289,10 @@ Run zapisuje, **który kod go policzył** i **z jakimi opcjami faktycznie**, że
 | 1 | 1–2 | dryf jako surowa norma L2 |
 | 2 | 3–4 | dryf znormalizowany jednym, globalnym σ |
 | 3 | 5–6 | dryf znormalizowany per rodzina parametrów |
-| 4 | od 7 | Dixon-Coles: L-BFGS z gradientem analitycznym i głośnym błędem zamiast cichego powrotu do punktu startowego |
+| 4 | 7–8 | Dixon-Coles: L-BFGS z gradientem analitycznym i głośnym błędem zamiast cichego powrotu do punktu startowego |
+| 5 | 9–12 (11–12: odcięcie po kolejce 3, tylko pytanie nr 2) | filtr daty w walk-forward (mecze przełożone); dryf liczony tylko po drużynach aktywnych w badanym sezonie |
 
-Predykcje w wersjach 1–3 są w obrębie sezonu identyczne (zmieniała się tylko metryka dryfu); Dixon-Coles ma w nich cichy powrót do punktu startowego (sekcja Dixona-Colesa, „Historia").
+Predykcje w wersjach 1–3 są w obrębie sezonu identyczne (zmieniała się tylko metryka dryfu); Dixon-Coles ma w nich cichy powrót do punktu startowego (sekcja Dixona-Colesa, „Historia"). Wersja 5 zmienia predykcje wyłącznie tam, gdzie działa filtr daty (2025/26: 72 mecze na model), a pozostałe są bitowo identyczne z wersją 4 (sekcja „Idea" wyżej). Zmienia też dryf każdego modelu przez zawężenie do drużyn aktywnych (sekcja „Metryka dryfu parametrów").
 
 **Reguła podbijania:** `ResearchAlgorithm.Version` rośnie przy każdej zmianie kodu, która zmienia predykcje lub dryf któregokolwiek modelu. Zmiany samej prezentacji (UI, endpointy odczytu, testy statystyczne liczone przy odczycie) wersji nie zmieniają.
 
@@ -279,8 +322,10 @@ COMMIT;
 | GET | `api/research/runs/{RunId}` | status i podsumowanie |
 | GET | `api/research/runs/{RunId}/round-metrics` | metryki per kolejka (dane do wykresów) |
 | GET | `api/research/runs/{RunId}/predictions` | predykcje (filtry: model, kolejka) |
-| GET | `api/research/runs/{RunId}/comparison` | podsumowania, testy istotności, beniaminki, stabilność |
+| GET | `api/research/runs/{RunId}/comparison` | podsumowania, testy istotności, beniaminki, stabilność. Parametry zapytania: `metric` (domyślnie `RankedProbability`), `tolerance` — δ analizy stabilności zamiast wartości z `OptionsJson` runu (ujemne → błąd), `fromRound` i `toRound` — zakres kolejek **tylko dla analizy stabilności** (brakująca granica = bez ograniczenia; `fromRound > toRound` albo zakres bez ocenianych kolejek → błąd). Podsumowania, pary i beniaminki liczone są zawsze na całym runie |
 | PUT | `api/research/predict-round` | predykcja jednej kolejki wybranym modelem, bez zapisu — działa też dla kolejek nierozegranych. Domyślne odcięcie = `Round − 1`; **odcięcie ≥ `Round` nie jest odrzucane** (wyciek wprost). Jedno `Train` zamiast `Train` + `UpdateWithRound`, więc wynik nie odtwarza predykcji z runu; mecze nierozegrane mają w polach wyniku i metryk 0, nie `null` |
+
+**Liczby w parametrach zapytania i trasy** (np. `tolerance=0.5`) parsowane są z kropką dziesiętną niezależnie od kultury serwera. `Program.cs` rejestruje w FastEndpoints parser `double` i `double?` z `CultureInfo.InvariantCulture`. Domyślny parser FastEndpoints używa kultury bieżącej, więc na polskim Windowsie przyjmował `0,5`, a odrzucał `0.5` (HTTP 400) — to samo zapytanie zachowywałoby się inaczej lokalnie i na serwerze. Ciała JSON (System.Text.Json) to nie dotyczy.
 
 Import CSV czyta plik jawnie jako **UTF-8** (pliki w `Database/CSV/` są w UTF-8; domyślne kodowanie konsoli Windows psuje polskie znaki w nazwach drużyn). Przyjmuje albo ścieżkę serwerową, albo treść pliku w `CsvContent`.
 
@@ -330,13 +375,28 @@ Stary, zepsuty `CSVService` i endpoint `api/importcsv` pozostają nietknięte.
 - **Holm-Bonferroni** (`HolmCorrection`) — poprawka na wielokrotne porównania (3 pary modeli, a przy podziale na okna kolejek więcej). Bez niej przy kilkunastu testach fałszywe „istotności" pojawiają się same. Testy nierozstrzygające wchodzą z p = 1 i zwiększają liczbę porównań m, co czyni korektę bardziej konserwatywną. Okna beniaminków to kolejne porcje po 5 ocenianych kolejek — dla kolejek 19–34 ostatnie okno ma tylko kolejkę 34.
 - `BetterModel` w porównaniu par wybierany jest po **średniej** metryki, a Wilcoxon testuje położenie rang — przy skośnych rozkładach kierunki mogą się różnić. Metryki trafności (1X2, top-1, top-3) nie są `MetricKind`, więc nie podlegają testom istotności.
 - **`ModelComparison`** — składa całość: `Pairwise` (każda para modeli na wspólnym podzbiorze meczów) i `PromotedVersusRest` (beniaminki vs reszta, opcjonalnie w oknach kolejek, żeby zobaczyć *kiedy* różnica zanika).
-- **`StabilityAnalysis`** — pytanie nr 2. Średnia krocząca metryki i dryfu parametrów, oraz `StabilisedFromRound`: pierwsza kolejka, **od której do końca** kroczący dryf nie przekracza progu. Świadomie nie jest to „pierwszy spadek poniżej progu" — chwilowe wyciszenie, po którym parametry znów skaczą, nie jest stabilnością. Ograniczenie tej konstrukcji przy wspólnym progu — patrz niżej.
+- **`StabilityAnalysis`** — pytanie nr 2. Dla każdego modelu liczy średnią kroczącą metryki i dryfu parametrów (okno `StabilityWindow`, domyślnie 3) oraz:
+  - **poziom dryfu L** (`DriftLevel`) — średni surowy dryf z ostatnich k kolejek, k = min(n, max(okno, ⌈n/3⌉)); dla 16 kolejek wiosny k = 6, dla 31 kolejek (odcięcie po 3.) k = 11,
+  - **średni dryf** (`MeanDrift`) ze wszystkich kolejek,
+  - **próg względny** `Threshold` = (1+δ)·L, gdzie δ to tolerancja (`StabilityAnalysis.DefaultTolerance` = 0,25),
+  - **`StabilisedFromRound`** — pierwsza kolejka, **od której do końca** krocząca średnia dryfu nie przekracza progu. Świadomie nie jest to „pierwszy spadek poniżej progu" — chwilowe wyciszenie, po którym parametry znów skaczą, nie jest stabilnością,
+  - **trend** (`Trend`) — test Spearmana dryfu surowego względem numeru kolejki.
+
+  Od zmiany kryterium próg jest względny wobec własnego poziomu modelu, a nie wspólny i absolutny — powód w „Konsekwencja dla pytania badawczego nr 2". Całość liczy się przy odczycie, więc działa też dla starych runów i nie zmienia wersji algorytmu.
+- **Spearman** (`SpearmanTrendTest`) — test trendu dla pytania nr 2: ρ to korelacja Pearsona na rangach średnich (`Ranking.AverageRanks`, zgodna z `MathNet.Numerics.Statistics.Correlation.Spearman` także przy wiązaniach). Statystyka t = ρ·√((n−2)/(1−ρ²)) (mianownik podłogowany na 1e-12, żeby przy |ρ| = 1 nie było nieskończoności), p dwustronne z rozkładu t-Studenta o n−2 stopniach swobody. Poniżej 6 obserwacji albo przy zerowej wariancji rang (np. stały dryf) wynik jest nierozstrzygający (p = 1). p trendu poprawiane jest Holmem między modelami runu; nierozstrzygające wchodzą z p = 1.
 
 ## Metryka dryfu parametrów
 
 `ModelSnapshot.NormalisedDistance()` liczy dryf jako **średniokwadratową zmianę parametrów wyrażoną w jednostkach ich własnego rozrzutu**, osobno w każdej rodzinie parametrów: dla rodziny f — `r_f = RMS(zmian) / σ_f`, gdzie σ_f to odchylenie standardowe (populacyjne) wartości rodziny w **poprzednim** snapshocie. Wyniki rodzin składa jako ważony RMS: `√(Σ n_f·r_f² / Σ n_f)`, gdzie n_f to liczba parametrów rodziny.
 
 Rodzina to klucz z usuniętymi segmentami liczbowymi: `rating_5` → `rating`, `team_5_home_scored` → `team_home_scored`. Brane są tylko rodziny liczące **więcej niż jeden** parametr — czyli rodziny „per drużyna". Gdy takich nie ma, wszystkie klucze traktowane są jako jedna grupa.
+
+**Tylko drużyny aktywne (od wersji 5).** Snapshot modelu zawiera wszystkie drużyny, które pojawiły się w historii (28), ale dryf liczony jest dopiero po zawężeniu do drużyn grających w badanym sezonie (18):
+
+- **Zbiór aktywnych** `WalkForwardEvaluator` wyznacza raz na run: drużyny z meczów sezonu zbioru ewaluacyjnego, obecnych w historii (runda jesienna) albo w zbiorze ewaluacyjnym.
+- **`ModelSnapshot.RestrictToTeams`** zostawia klucze bez segmentu liczbowego (skalary) i klucze, których wszystkie segmenty liczbowe są Id drużyn aktywnych. To ta sama reguła segmentów co przy rodzinach.
+- **Liczba parametrów po zawężeniu:** Poisson 76 (4 + 4·18), Dixon-Coles 38 (2 + 2·18), Elo 22 (4 + 18).
+- **Snapshot modelu zostaje pełny** — zawężenie dzieje się tylko przy liczeniu `ParameterDrift`, a `NormalisedDistance` i `Distance` się nie zmieniły.
 
 ### Dlaczego nie surowa norma L2
 
@@ -346,7 +406,7 @@ Poprzednia miara (`Distance()`, sama norma L2 po różnicach) była **nieporówn
 2. **Skale wewnątrz modelu.** Snapshot Elo miesza 28 ocen (wszystkie drużyny z historii, ~1300) z 4 współczynnikami regresji (~0,3). W normie L2 współczynniki były niewidoczne, a przy normalizacji globalnym σ było odwrotnie — te 4 wartości leżące ~1000 poniżej średniej zawyżały σ i **zaniżały dryf Elo ~5×**.
 3. **Liczba parametrów.** Suma kwadratów rośnie z liczbą parametrów, więc Poisson (116 = 4 + 4·28) miał z definicji większy dryf niż Elo (32 = 4 + 28); Dixon-Coles ma 58 (2 + 2·28).
 
-Snapshoty zawierają **wszystkie drużyny, które pojawiły się w historii** (28), a nie tylko 18 z badanego sezonu — liczby w tej sekcji to uwzględniają.
+Liczby w punktach 1–3 dotyczą pełnych snapshotów (28 drużyn), na których dryf liczono do wersji 4.
 
 Normalizacja w obrębie rodzin usuwa wszystkie trzy: dzielenie przez rozrzut rodziny znosi skalę i przesunięcie, uśrednianie znosi liczebność, a rozbicie na rodziny nie pozwala jednej skali zdominować drugiej. Rodziny jednoelementowe (średnie ligowe, `home_advantage`, ρ, współczynniki regresji) są pomijane, gdy istnieją rodziny per-drużyna — ich liczba i charakter różnią się między modelami, więc włączanie ich czyniłoby porównanie arbitralnym. Dodatkowo chroni to ρ, którego wartość ~−0,03 przy normalizacji własną wielkością generowałaby pozorne skoki.
 
@@ -363,23 +423,50 @@ Rozrzut średniego dryfu między modelami na sezonie 2024/2025:
 | surowa norma L2 | 40,6× |
 | normalizacja globalnym σ | 27,7× |
 | normalizacja w obrębie rodzin | 4,7× |
-| **ta sama metryka, Dixon-Coles z L-BFGS (wersja algorytmu 4)** | **3,4×** (2025/26: 3,2×) |
+| ta sama metryka, Dixon-Coles z L-BFGS (wersja algorytmu 4) | 3,4× (2025/26: 3,2×) |
+| **dryf tylko po drużynach aktywnych (wersja algorytmu 5)** | **3,3×** (2025/26: 2,8×) |
 
-Zmiana metryki dotyczy wyłącznie dryfu — metryki predykcyjne (RPS, Brier, log-loss, trafności) są po niej **bitowo identyczne**, co potwierdzono porównaniem badań na tych samych danych. Ostatni wiersz to ta sama metryka po naprawie optymalizatora Dixona-Colesa (runy 7–8): zmienił się wyłącznie dryf DC.
+Zmiana metryki dotyczy wyłącznie dryfu — metryki predykcyjne (RPS, Brier, log-loss, trafności) są po niej **bitowo identyczne**, co potwierdzono porównaniem badań na tych samych danych. Wiersz wersji 4 to ta sama metryka po naprawie optymalizatora Dixona-Colesa (runy 7–8): zmienił się wyłącznie dryf DC. Ostatni wiersz to runy 9–10: zawężenie do 18 drużyn aktywnych (filtr daty wersji 5 dryfu nie zmienia) — patrz „Nieaktywne drużyny — hipoteza obalona".
 
 ### Pozostały rozrzut — częściowo sygnał, częściowo artefakt
 
-Średni dryf (średnia z kroczącej średniej okna 3; 2024/25 → 2025/26, runy 7–8): Elo 0,065 → 0,072, Poisson 0,178 → 0,173, Dixon-Coles 0,223 → 0,232 (w runach 5–6, przed naprawą optymalizatora: 0,308 → 0,350). Powtarzalność między sezonami jest wysoka. Uporządkowanie wynika z mechaniki aktualizacji:
+Średni dryf (średnia z kroczącej średniej okna 3; 2024/25 → 2025/26):
 
-- **Elo** zmienia oceny przyrostowo o `K·G·(W−W_e)` przy K=10, więc rusza się najmniej i jego trajektoria jest **płaska** (0,053 → 0,060) — model jest w stanie ustalonym od pierwszej ocenianej kolejki.
-- **Poisson** przelicza średnie kroczące; im więcej meczów w koszyku, tym mniejszy wpływ kolejnego, stąd **łagodny spadek** (0,220 → 0,130).
-- **Dixon-Coles** — dryf jest najwyższy, ale **bez oscylacji**: w 2024/25 łagodnie spada (0,260 → 0,178, z lekkim wzrostem w kolejkach 30–32), w 2025/26 jest płaski (0,217–0,244). Każda kolejka to pełne MLE od zimnego startu, a wygaszanie czasowe przesuwa przy tym wagi wszystkich meczów (punkt odniesienia to najnowszy mecz). Prawdopodobny mechanizm wysokiego, niewygasającego poziomu: drużyny bez nowych meczów — w tym 10 nieaktywnych w badanym sezonie — tracą wagę względem kary ridge i co kolejkę przesuwają się w stronę α = β = 1. Do sprawdzenia dryfem liczonym tylko po drużynach aktywnych.
+| Model | Wersja 5 (runy 9–10) | Wersja 4 (runy 7–8, 28 drużyn) | Wersja 3 (runy 5–6) |
+| --- | --- | --- | --- |
+| Elo | 0,086 → 0,104 | 0,065 → 0,072 | jak w wersji 4 |
+| Poisson | 0,178 → 0,174 | 0,178 → 0,173 | jak w wersji 4 |
+| Dixon-Coles | 0,282 → 0,293 | 0,223 → 0,232 | 0,308 → 0,350 (przed naprawą optymalizatora) |
+
+Powtarzalność między sezonami jest wysoka, a uporządkowanie modeli jest to samo we wszystkich wersjach. Wynika ono z mechaniki aktualizacji. Trajektorie niżej to średnia krocząca okna 3 z wersji 5: wiosna z runów 9–10, jesień (od kolejki 4) z runów diagnostycznych 11–12.
+
+- **Elo** zmienia oceny przyrostowo o `K·G·(W−W_e)` przy K=10, więc rusza się najmniej, a jego trajektoria jest **płaska** od pierwszej ocenianej kolejki: jesienią 0,078–0,121, wiosną 0,071–0,097 (2024/25) i 0,093–0,109 (2025/26; w pierwszej kolejce wiosny 0,135). Model jest w stanie ustalonym od początku.
+- **Poisson** przelicza średnie kroczące; im więcej meczów w koszyku, tym mniejszy wpływ kolejnego. Stąd **wyraźne wygaszanie jesienią** (kolejki 4 → 18: 0,489 → 0,212 i 0,509 → 0,240), a wiosną już tylko łagodny spadek (0,220 → 0,131 w 2024/25) albo płaski przebieg (0,161–0,187 w 2025/26).
+- **Dixon-Coles** — dryf jest najwyższy, ale **bez oscylacji**. Jesienią opada słabiej niż Poisson: 2024/25 0,358 → 0,213 z garbem 0,460 w kolejce 13, 2025/26 0,333 → 0,284 z minimum 0,234 w kolejce 13. Wiosną w 2024/25 łagodnie spada (0,342 → 0,217, z ponownym wzrostem do 0,326 w kolejkach 30–32), a w 2025/26 trzyma się w przedziale 0,258–0,326 bez trendu. Każda kolejka to pełne MLE od zimnego startu, a wygaszanie czasowe przesuwa przy tym wagi wszystkich meczów (punkt odniesienia to najnowszy mecz). Hipoteza, że wysoki, niewygasający poziom napędzają drużyny bez nowych meczów (w tym 10 nieaktywnych w badanym sezonie), które co kolejkę przesuwają się w stronę α = β = 1, nie potwierdziła się — patrz „Nieaktywne drużyny — hipoteza obalona".
 - **Historia (wersje 1–3, runy 1–6).** Dryf DC **oscylował** (0,455 → 0,235 z garbem 0,449 w kolejce 29). Był to **artefakt**: wzór pokrywał się co do kolejki z przełączaniem między optimum a analitycznym punktem startowym przy przekroczeniu limitu iteracji (2024/25: trening optimum, 19–25 start, 26 optimum, 27 start, 28 optimum, 29–33 start, 34 optimum — patrz „Historia — cichy powrót do punktu startowego" w sekcji Dixona-Colesa). Pierwotnie przypisano go pełnemu ponownemu MLE co kolejkę; ta interpretacja była błędna. Po naprawie oscylacja zniknęła, a średni dryf DC spadł o ~30% (0,308 → 0,223 i 0,350 → 0,232).
 
-Dwa dalsze ograniczenia, przez które rozrzut nie jest czystym sygnałem:
+Ograniczenie, przez które rozrzut nie jest czystym sygnałem — **ślepe pola**: rodziny jednoelementowe wypadają, więc dryf nie widzi γ i ρ Dixona-Colesa ani czterech współczynników regresji Elo (etap 2). Snapshot Poissona wystawia tylko horyzont bieżącego sezonu — dryf nie widzi horyzontów poprzedniego i historycznego, wspólnej średniej ligowej ani mnożników formy. Zostaje to opisanym ograniczeniem, bo rodziny jednoelementowe różnią się liczbą i charakterem między modelami.
 
-- **Nieaktywne drużyny.** 10 z 28 drużyn w snapshocie nie gra w badanym sezonie: w Elo mają zamrożone oceny (zerowe zmiany rozcieńczają RMS, a mimo to wchodzą do σ), w Poissonie trzymają wartości awaryjne ze średnich ligowych (obniżają σ rodziny), w Dixonie-Colesie są słabo zidentyfikowane i przeoptymalizowywane co kolejkę. Każdy model traktuje je inaczej, więc zaburzają porównanie między modelami. Kierunek naprawy: liczyć dryf tylko po drużynach aktywnych w badanym sezonie.
-- **Ślepe pola.** Rodziny jednoelementowe wypadają, więc dryf nie widzi γ i ρ Dixona-Colesa ani czterech współczynników regresji Elo (etap 2). Snapshot Poissona wystawia tylko horyzont bieżącego sezonu — dryf nie widzi horyzontów poprzedniego i historycznego, wspólnej średniej ligowej ani mnożników formy.
+### Nieaktywne drużyny — hipoteza obalona
+
+10 z 28 drużyn w snapshocie nie gra w badanym sezonie, a każdy model traktuje je inaczej:
+
+- Elo zamraża ich oceny — zerowe zmiany rozcieńczają RMS, a mimo to wchodzą do σ.
+- Poisson trzyma dla nich wartości awaryjne ze średnich ligowych.
+- Dixon-Coles dopasowuje je co kolejkę, choć nie mają nowych meczów, więc są słabo zidentyfikowane.
+
+Hipoteza brzmiała: przeoptymalizowywane nieaktywne drużyny zawyżają dryf Dixona-Colesa i część rozrzutu między modelami jest ich artefaktem. Pomiar mówi coś przeciwnego. Poniżej średnia z kroczącej średniej dryfu (okno 3), 28 → 18 drużyn, czyli runy 7–8 (wersja 4) → 9–10 (wersja 5). Predykcje 2024/25 są w obu wersjach identyczne, a w 2025/26 filtr daty dryfu nie zmienia, więc różnica to wyłącznie zawężenie. Te same liczby dało wcześniej przeliczenie na fixture z prawdziwymi danymi.
+
+| Model | 2024/25 | 2025/26 |
+| --- | --- | --- |
+| Poisson | 0,178 → 0,178 | 0,173 → 0,174 |
+| Dixon-Coles | 0,223 → 0,282 | 0,232 → 0,293 |
+| Elo | 0,065 → 0,086 | 0,072 → 0,104 |
+| rozrzut | 3,4× → 3,3× | 3,2× → 2,8× |
+
+Nieaktywne drużyny ruszały się mniej niż aktywne, więc dryf **rozcieńczały**, a nie zawyżały. Po zawężeniu dryf Dixona-Colesa rośnie o ~26%, Elo o 32–44%, a Poissona praktycznie się nie zmienia. Rozrzut między modelami spada tylko nieznacznie, więc wysoki poziom Dixona-Colesa i rozrzut wynikają głównie z mechaniki aktualizacji (punkty wyżej), a nie z nieaktywnych drużyn.
+
+Od wersji 5 dryf liczony jest tylko po drużynach aktywnych jako **poprawna definicja** „ruchu parametrów modelu w badanym sezonie", a nie jako poprawka rozrzutu. Testy: `RestrictToTeams` zachowuje skalary i drużyny aktywne we wszystkich trzech formatach kluczy, zmiana parametrów wyłącznie nieaktywnej drużyny nie zmienia dryfu (`ModelSnapshotDriftTests`). Pętla na fixture z drużyną obecną tylko w sezonie poprzednim daje dryf równy ręcznemu `NormalisedDistance` na zawężonych snapshotach, różny od dryfu po pełnych (`WalkForwardEvaluatorTests`).
 
 ### Konsekwencja dla pytania badawczego nr 2
 
@@ -392,7 +479,52 @@ Przy **wspólnym progu absolutnym** `StabilisedFromRound` nie odpowiada na pytan
 | 0,20 | od 19 | od 20 | od 34 | nigdy |
 | 0,25 | od 19 | od 19 | od 33 | od 32 |
 
-W 2025/26 Dixon-Coles (wersja 4) daje „nigdy" przy 0,05–0,20 i „od 19" przy 0,25 — jego płaski poziom ~0,23 leży między tymi progami. Wynik każdego modelu zależy więc głównie od tego, czy próg leży nad, czy pod jego własnym poziomem dryfu: poniżej — „nigdy", powyżej — „od razu", a próg przecinający łagodny spadek daje kolejkę z końca rundy (Dixon-Coles 2024/25: 33–34). „Kolejka stabilizacji" Dixona-Colesa skacze przez to między 19 a 34 zależnie od sezonu i progu. Domyślne 0,05 jest nieosiągalne dla każdego modelu. Wniosek, który dane rzeczywiście uzasadniają, to **różnica w charakterze aktualizacji parametrów** (Elo płaski na niskim poziomie, Poisson łagodnie opadający, Dixon-Coles płaski lub łagodnie opadający na najwyższym poziomie), a nie jedna liczba „kolejka stabilizacji". Alternatywa, gdyby pojedyncza liczba była potrzebna: próg relatywny względem własnego poziomu dryfu modelu.
+W 2025/26 Dixon-Coles (wersja 4) daje „nigdy" przy 0,05–0,20 i „od 19" przy 0,25 — jego płaski poziom ~0,23 leży między tymi progami. Wynik każdego modelu zależy więc głównie od tego, czy próg leży nad, czy pod jego własnym poziomem dryfu: poniżej — „nigdy", powyżej — „od razu", a próg przecinający łagodny spadek daje kolejkę z końca rundy (Dixon-Coles 2024/25: 33–34). „Kolejka stabilizacji" Dixona-Colesa skacze przez to między 19 a 34 zależnie od sezonu i progu. Ówczesne domyślne 0,05 było nieosiągalne dla każdego modelu. Wniosek, który dane rzeczywiście uzasadniają, to **różnica w charakterze aktualizacji parametrów** (Elo płaski na niskim poziomie, Poisson łagodnie opadający, Dixon-Coles płaski lub łagodnie opadający na najwyższym poziomie), a nie jedna liczba „kolejka stabilizacji". Tabela wyżej zostaje jako historia: liczby dotyczą wersji 3–4 i progu absolutnego.
+
+**Obecne kryterium: poziom, trend i osiadanie względne.** Pytanie „kiedy model się stabilizuje" rozbite jest na trzy liczby, liczone osobno dla każdego modelu:
+
+1. **Poziom dryfu L** — jak dużo parametry ruszają się w stanie ustalonym (średni dryf z ostatniej 1/3 kolejek). To cecha mechaniki aktualizacji, a nie moment stabilizacji, więc porównuje się go między modelami osobno.
+2. **Trend** — czy dryf w ogóle maleje: test Spearmana dryfu względem numeru kolejki, z poprawką Holma między modelami. ρ < 0 przy istotnym p = wygaszanie.
+3. **Osiadanie względne** — pierwsza kolejka, od której krocząca średnia dryfu do końca nie przekracza (1+δ)·L, czyli „od kiedy model jest blisko własnego poziomu końcowego". Domyślnie δ = 0,25; wrażliwość sprawdza się parametrem `?tolerance=` (np. 0,10 i 0,50).
+
+Próg względny usuwa zlepienie poziomu z momentem wygaszenia: każdy model jest mierzony swoją miarą, więc „nigdy" przy niskim progu i „od razu" przy wysokim przestają zależeć od tego, gdzie leży wspólna liczba.
+
+**Osiadanie wymaga trendu.** Kryterium względne zawsze coś zwróci: płaski ciąg „osiada" od pierwszej kolejki, a ciąg łagodnie rosnący zwykle też, bo L jest wtedy wysokie. Liczba z osiadania znaczy „stabilizację" dopiero przy ujemnym (albo nieistotnym) trendzie. Przy istotnym trendzie dodatnim dryf rośnie i osiadanie nie oznacza stabilności. Dlatego tabela „Stabilność" pokazuje obie wielkości obok siebie.
+
+**Runy diagnostyczne z wczesnym odcięciem.** Na samej rundzie wiosennej (kolejki 19–34) dryf wszystkich modeli jest już w okolicy poziomu końcowego, więc osiadanie daje 19–20 dla każdego modelu i nic nie rozróżnia. Wygaszanie widać dopiero, gdy ewaluacja zaczyna się wcześnie: runy z ręcznym odcięciem po kolejce 3 obejmują kolejki 4–34, a parametry `?fromRound=` i `?toRound=` endpointu porównania pozwalają policzyć trend osobno dla jesieni (4–18) i wiosny (19–34). Takie runy służą **wyłącznie pytaniu nr 2**. Do porównania trafności modeli (pytanie nr 1) obowiązują runy z odcięciem na przerwie zimowej, bo trening na trzech kolejkach to inny problem predykcyjny.
+
+#### Wyniki (wersja 5)
+
+Runy diagnostyczne 11 (2024/25) i 12 (2025/26), kolejki 4–34. L, średni dryf i trend przy δ = 0,25; osiadanie dla trzech wartości δ:
+
+| Model | Sezon | L | Średni dryf | Trend ρ | p (Holm) | Osiada od: δ = 0,10 / 0,25 / 0,50 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Poisson | 2024/25 | 0,163 | 0,259 | −0,874 | < 0,0001 | 33 / 20 / 16 |
+| Dixon-Coles | 2024/25 | 0,264 | 0,306 | −0,536 | 0,0037 | 33 / 16 / 14 |
+| Elo | 2024/25 | 0,084 | 0,088 | −0,200 | 0,28 | 24 / 14 / 4 |
+| Poisson | 2025/26 | 0,172 | 0,243 | −0,847 | < 0,0001 | 20 / 20 / 18 |
+| Dixon-Coles | 2025/26 | 0,304 | 0,295 | −0,015 | 1,0 | 7 / 6 / 4 |
+| Elo | 2025/26 | 0,100 | 0,098 | +0,104 | 1,0 | 20 / 4 / 4 |
+
+Trend osobno dla jesieni i wiosny (`?toRound=18` i `?fromRound=19`), ρ i p po Holmie między modelami:
+
+| Model | Jesień 4–18: 2024/25 | Jesień: 2025/26 | Wiosna 19–34: 2024/25 | Wiosna: 2025/26 |
+| --- | --- | --- | --- | --- |
+| Poisson | −0,807 (0,0008) | −0,821 (0,0005) | −0,494 (0,16) | −0,147 (1,0) |
+| Dixon-Coles | −0,525 (0,089; surowe p 0,045) | −0,407 (0,26) | −0,424 (0,20) | +0,156 (1,0) |
+| Elo | −0,236 (0,40) | +0,246 (0,38) | −0,171 (0,53) | −0,229 (1,0) |
+
+Dryf w kolejkach 19–34 jest w runach 11–12 bitowo równy dryfowi runów 9–10: ten sam zbiór wchłoniętych meczów daje ten sam stan modelu bazowego, niezależnie od tego, czy kolejki 4–18 weszły treningiem, czy pętlą. Trend wiosny jest więc trendem obowiązujących runów 9–10. Na samej wiośnie (runy 9–10) osiadanie przy δ = 0,25 wypada w kolejce 19 albo 20 dla każdego modelu.
+
+Odpowiedź na pytanie nr 2:
+
+- **Poisson** — parametry wyraźnie wygasają w rundzie jesiennej (istotny trend w obu sezonach, także po Holmie) i osiadają pod koniec rundy jesiennej albo na przełomie rund: kolejka 20 przy δ = 0,25, 16–18 przy δ = 0,50. Wiosną dryf jest już na poziomie końcowym.
+- **Dixon-Coles** osiada wcześniej i zależnie od sezonu. W 2024/25 od kolejki 16, przy istotnym spadku na całym zakresie 4–34. W 2025/26 od kolejki 6, bez żadnego trendu, czyli dryf od początku jest blisko swojego (najwyższego) poziomu. Jesienny spadek jest słabszy niż u Poissona i po Holmie nieistotny.
+- **Elo** jest w stanie ustalonym od pierwszej ocenianej kolejki: nie ma trendu w żadnym zakresie, a kolejki osiadania (14 i 4) wyznaczają lokalne wahania rzędu progu, a nie wygaszanie.
+- **Wiosną żaden model nie ma istotnego trendu** (najniższe p po Holmie 0,16). Runy z odcięciem na przerwie zimowej nie odpowiadają więc na pytanie nr 2 — do tego służą runy diagnostyczne.
+- **Wrażliwość na δ.** Przy δ = 0,10 próg mieści się w wahaniach stanu ustalonego, bo wiosną krocząca średnia dryfu odchyla się od L nawet o 8–38%, zależnie od modelu i sezonu (runy 9–10). Osiadanie ucieka wtedy na koniec sezonu (kolejka 33) albo zależy od pojedynczych garbów. Przy δ = 0,25 i 0,50 kolejność jest w obu sezonach ta sama: Elo ≤ Dixon-Coles ≤ Poisson.
+
+Liczby z obu tabel zwraca endpoint porównania (`GET …/runs/{RunId}/comparison` z `tolerance`, `fromRound`, `toRound`), więc da się je odtworzyć z bazy.
 
 Ranking z wiązaniami (`Ranking.AverageRanks`) zwraca rangi średnie i sumę `t³−t` potrzebną do korekty wariancji w obu testach.
 
@@ -406,9 +538,11 @@ Nowa sekcja w nawigacji, obok istniejących stron symulacji MC (te działają be
 | `ResearchRunDetailsPage` | `/research/{RunId}` | wykresy, podsumowania, testy istotności, stabilność, beniaminki, predykcje |
 | `ModelRoundPredictionPage` | `/model-prediction` | predykcja jednej kolejki wybranym modelem |
 
-`EvaluationRunForm` po wyborze sezonu odpytuje `season-structure` i pokazuje wykrytą przerwę zimową oraz beniaminków — kolejkę odcięcia można zostawić puste (auto) albo nadpisać. Parametry modeli (mnożniki formy, ξ, ridge, próg i okno stabilności) siedzą w zwiniętym panelu, żeby nie zaśmiecać formularza.
+`EvaluationRunForm` po wyborze sezonu odpytuje `season-structure` i pokazuje wykrytą przerwę zimową oraz beniaminków — kolejkę odcięcia można zostawić puste (auto) albo nadpisać. Parametry modeli (mnożniki formy, ξ, ridge, tolerancja δ i okno stabilności) siedzą w zwiniętym panelu, żeby nie zaśmiecać formularza.
 
 Strona szczegółów ma sześć zakładek: **Przebieg w sezonie** (dwa wykresy `MudChart` — wybrana metryka po kolejkach i dryf parametrów, po jednej serii na model), **Podsumowanie**, **Istotność różnic**, **Stabilność**, **Beniaminki**, **Predykcje** (z filtrem modelu i kolejki; kliknięcie wiersza pokazuje pod tabelą macierz wyników 0–6 × 0–6, obramowana komórka = faktyczny wynik). Selektor metryki przełącza wykres (przeliczany po stronie przeglądarki z metryk per kolejka) i testy istotności par oraz beniaminków (przeliczane przez backend); zakładki „Podsumowanie" i „Stabilność" od metryki nie zależą — werdykt stabilności liczony jest wyłącznie z dryfu. Selektor i zakładki pojawiają się dopiero dla runu `Completed`.
+
+Zakładka **Stabilność** ma tabelę: Model | Osiada od kolejki | Poziom dryfu L | Próg (1+δ)·L | Średni dryf | Trend ρ | p | p (Holm) | Okno. Brak osiadania pokazuje „nie osiągnięto", a trend nierozstrzygający — „—". p po Holmie jest zielone przy α = 0,05. Podpis pod tabelą definiuje L, próg (z faktycznym δ) i osiadanie oraz przypomina, że osiadanie czyta się razem z trendem. Strona używa δ i okna z `OptionsJson` runu; inne δ i zakres kolejek są dostępne przez parametry endpointu porównania.
 
 **Oś Y wykresów.** `MudChart` (MudBlazor 8.2) ma krok osi Y jako liczbę całkowitą (`ChartOptions.YAxisTicks`, domyślnie 20), a oś biegnie od `floor(min/krok)·krok` do `ceil(max/krok)·krok`. Bez ustawień oś miała więc zakres 0–20, a metryki i dryf (wartości 0,05–1,2) leżały płasko przy zerze — kształtu dryfu nie dało się odczytać. Dlatego oba wykresy dostają serie przemnożone przez 1000, krok osi dobierany z zakresu danych („ładny" krok 1/2/5·10ᵏ, ok. 6 linii siatki) i format etykiet `0,.000`, który dzieli wartość z powrotem przez 1000 (specyfikator skalowania .NET). Na osi widać więc oryginalne jednostki z trzema miejscami po przecinku; wykres liniowy w tej wersji nie pokazuje wartości punktów, więc przeskalowane liczby nigdzie się nie wyświetlają.
 
