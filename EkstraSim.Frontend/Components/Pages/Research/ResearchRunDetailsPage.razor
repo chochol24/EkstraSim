@@ -29,6 +29,7 @@ else
             <MudText Typo="Typo.body2">
                 Trening do kolejki @run.TrainingLastRound, ocenianych kolejek @run.EvaluatedRoundCount,
                 meczów @run.EvaluatedMatchCount. Modele: @run.Models.
+                Wersja algorytmu: @(run.AlgorithmVersion?.ToString() ?? "—").
                 @if (!string.IsNullOrWhiteSpace(run.Comments))
                 {
                     <text>Komentarz: @run.Comments</text>

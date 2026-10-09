@@ -38,6 +38,7 @@ public class ResearchOrchestrationService
 
         run.Status = EvaluationRunStatus.Running;
         run.StartedAt = DateTime.UtcNow;
+        run.AlgorithmVersion = ResearchAlgorithm.Version;
         await context.SaveChangesAsync(ct);
 
         try
@@ -79,6 +80,7 @@ public class ResearchOrchestrationService
 
         var promotedTeamIds = ReadPromotedTeamIds(run.PromotedTeamsJson);
         var options = BuildOptions(run, chronology);
+        run.EffectiveOptionsJson = JsonConvert.SerializeObject(options);
         var modelNames = SplitModels(run.Models);
 
         var matchesById = evaluationSet.ToDictionary(m => m.Id);

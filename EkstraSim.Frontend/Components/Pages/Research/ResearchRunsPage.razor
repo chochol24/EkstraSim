@@ -39,6 +39,11 @@
                             </MudChip>
                         </CellTemplate>
                     </TemplateColumn>
+                    <TemplateColumn Title="Wersja">
+                        <CellTemplate>
+                            @(context.Item.AlgorithmVersion?.ToString() ?? "—")
+                        </CellTemplate>
+                    </TemplateColumn>
                     <PropertyColumn Property="x => x.EvaluatedMatchCount" Title="Meczów" />
                     <TemplateColumn Title="Utworzono">
                         <CellTemplate>

@@ -219,13 +219,37 @@ Migracja `research_evaluation_runs` jest **wyłącznie addytywna** — trzy nowe
 
 | Tabela | Zawartość |
 | --- | --- |
-| `ModelEvaluationRuns` | parametry badania, lista modeli, opcje JSON, snapshot beniaminków, status (`Pending`/`Running`/`Completed`/`Failed`), znaczniki czasu |
+| `ModelEvaluationRuns` | parametry badania, lista modeli, opcje JSON (z żądania i efektywne), wersja algorytmu, snapshot beniaminków, status (`Pending`/`Running`/`Completed`/`Failed`), znaczniki czasu |
 | `ModelPredictions` | jedna predykcja = model × mecz: λ, P(1/X/2), typowany wynik, macierz 11×11 jako JSON, faktyczny wynik i wszystkie metryki per mecz |
 | `ModelRoundMetrics` | agregaty per model × kolejka + `ParameterDrift` (dla pytania nr 2) |
 
 Uruchomienie jest **asynchroniczne**: endpoint tworzy rekord ze statusem `Pending`, zwraca jego Id i oddaje pracę `ResearchRunLauncher` (singleton), który w `Task.Run` (fire-and-forget, bez anulowania) otwiera świeży scope DI — bez tego scoped orkiestrator zniknąłby razem z zakresem żądania. Frontend **nie odpytuje statusu automatycznie** — strony pokazują przycisk „Odśwież", dopóki run nie jest `Completed`. Predykcje zapisywane są partiami po 500 wierszy, każda partia w osobnej transakcji.
 
-Znane słabości tego przepływu: status `Running` jest zapisywany poza `try`, a `catch` ponawia zapis na tym samym kontekście, więc błąd zapisu (np. duplikat nazwy modelu `["Poisson","poisson"]` naruszający unikalny indeks) zostawia run w `Running` na zawsze, z wyjątkiem tylko w logu. Nie ma odzyskiwania po restarcie. Endpointy wyników nie sprawdzają statusu, więc częściowo zapisany run jest widoczny przez API. Run zapisuje opcje z żądania i snapshot beniaminków, ale **nie wersję algorytmu** — zmiany kodu (jak zmiana formuły dryfu) są w danych niewidoczne.
+Znane słabości tego przepływu: status `Running` jest zapisywany poza `try`, a `catch` ponawia zapis na tym samym kontekście, więc błąd zapisu (np. duplikat nazwy modelu `["Poisson","poisson"]` naruszający unikalny indeks) zostawia run w `Running` na zawsze, z wyjątkiem tylko w logu. Nie ma odzyskiwania po restarcie. Endpointy wyników nie sprawdzają statusu, więc częściowo zapisany run jest widoczny przez API.
+
+Druga migracja badawcza, `research_run_algorithm_version`, też jest addytywna: dwie nullowalne kolumny w `ModelEvaluationRuns` (`AlgorithmVersion`, `EffectiveOptionsJson`), bez wpływu na istniejące wiersze — opis w [Wersjonowanie badań](#wersjonowanie-badań).
+
+### Wersjonowanie badań
+
+Run zapisuje, **który kod go policzył** i **z jakimi opcjami faktycznie**, żeby zmiany algorytmu (jak zmiana formuły dryfu czy optymalizatora Dixona-Colesa) były widoczne w danych, a nie tylko w ręcznym komentarzu.
+
+- **`AlgorithmVersion`** — numer z `ResearchAlgorithm.Version` (`EkstraSim.Prediction/Evaluation`, jedyne źródło). Orkiestrator ustawia go razem ze statusem `Running`, więc to wersja kodu, który run **wykonał**, a nie tego, który utworzył rekord `Pending`.
+- **`EffectiveOptionsJson`** — zserializowane (Newtonsoft) `TrainingOptions` z `BuildOptions`, czyli opcje faktycznie przekazane modelom: łącznie z wartościami domyślnymi spoza żądania (`MaxGoals`, wagi horyzontów Poissona, parametry Elo) i `SeasonChronology`. Ustawiane przed liczeniem predykcji i zapisywane z końcowym statusem (także `Failed`, jeśli błąd wystąpił po zbudowaniu opcji).
+- **`OptionsJson` vs `EffectiveOptionsJson`.** `OptionsJson` to żądanie w postaci, w jakiej przyszło (`CreateEvaluationRunRequest`) — zawiera też `StabilityThreshold`/`StabilityWindow`, które czyta dopiero endpoint porównania przy każdym odczycie, a nie run. `EffectiveOptionsJson` to to, co dostały modele. Pierwsze odpowiada na pytanie „o co poproszono", drugie — „co policzono".
+- `NULL` w obu kolumnach znaczy „nieznane / sprzed wersjonowania". UI pokazuje wtedy „—": kolumna „Wersja" na `/research` i „Wersja algorytmu: N" w nagłówku `/research/{RunId}`.
+
+| Wersja | Runy | Co się zmieniło |
+| --- | --- | --- |
+| 1 | 1–2 | dryf jako surowa norma L2 |
+| 2 | 3–4 | dryf znormalizowany jednym, globalnym σ |
+| 3 | 5–6 | dryf znormalizowany per rodzina parametrów |
+| 4 | od 7 | Dixon-Coles: L-BFGS z gradientem analitycznym i głośnym błędem zamiast cichego powrotu do punktu startowego |
+
+Predykcje w wersjach 1–3 są w obrębie sezonu identyczne (zmieniała się tylko metryka dryfu); Dixon-Coles ma w nich cichy powrót do punktu startowego (sekcja Dixona-Colesa, „Historia").
+
+**Reguła podbijania:** `ResearchAlgorithm.Version` rośnie przy każdej zmianie kodu, która zmienia predykcje lub dryf któregokolwiek modelu. Zmiany samej prezentacji (UI, endpointy odczytu, testy statystyczne liczone przy odczycie) wersji nie zmieniają.
+
+**Runy sprzed wersjonowania (1–6)** dostają wersje historyczne 1–3 jednorazowym backfillem SQL (transakcja z kontrolą liczby wierszy). `EffectiveOptionsJson` zostaje dla nich `NULL` — nie odtwarzamy opcji z domysłu; ich żądania są w `OptionsJson`.
 
 ### Endpointy
 

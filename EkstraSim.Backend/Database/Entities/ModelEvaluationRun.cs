@@ -14,6 +14,8 @@ public class ModelEvaluationRun
     public int TrainingLastRound { get; set; }
     public string Models { get; set; } = string.Empty;
     public string? OptionsJson { get; set; }
+    public string? EffectiveOptionsJson { get; set; }
+    public int? AlgorithmVersion { get; set; }
     public string? PromotedTeamsJson { get; set; }
     public string? Comments { get; set; }
 
