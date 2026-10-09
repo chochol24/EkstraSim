@@ -123,25 +123,29 @@ Każdy składnik mnożony jest przez maskę swojej współrzędnej. Punkt niedop
 
 **Ustawienia.** `LimitedMemoryBfgsMinimizer(gradientTolerance: 1e-9, parameterTolerance: 0, functionProgressTolerance: 0, memory: 10, maximumIterations: 2000)`. Zera wyłączają wyjścia „po stagnacji", więc jedynym regularnym wyjściem jest kryterium gradientowe. Na prawdziwych danych dopasowanie zajmuje 122–196 iteracji i kilkadziesiąt milisekund (Nelder-Mead: 13,7–18,2 tys. iteracji, ~1–2 s), więc limit 2000 daje ~10× zapasu.
 
-**Kryterium akceptacji.** Dopasowanie jest przyjęte, gdy oba warunki są spełnione:
+**Kryterium akceptacji.** Dopasowanie jest przyjęte, gdy spełnione są wszystkie cztery warunki:
 
-1. `ReasonForExit` ∈ {`AbsoluteGradient`, `RelativeGradient`},
-2. niezależnie policzone (z gradientu analitycznego w punkcie końcowym) `‖∇f(x*)‖∞ ≤ 1e-6 · max(1, |f(x*)|)`.
+1. punkt końcowy jest dopuszczalny: `f(x*) < 1e12` (nie jest karą za τ ≤ 0 albo λ, μ ≤ 0),
+2. żaden parametr logarytmiczny (`a`, `d`, `g`) nie leży na przycięciu `|v| ≥ 20`,
+3. `ReasonForExit` ∈ {`AbsoluteGradient`, `RelativeGradient`},
+4. niezależnie policzone (z gradientu analitycznego w punkcie końcowym) `‖∇f(x*)‖∞ ≤ 1e-6 · max(1, |f(x*)|)`.
 
-Drugi warunek jest konieczny, bo `ReasonForExit` z Math.NET 5.0 nie jest wiarygodny — zmierzone na dwa sposoby:
+Warunki 1–2 są potrzebne, bo w obu sytuacjach gradient jest **zerowy z konstrukcji**, więc warunek 4 przechodzi trywialnie. Punkt niedopuszczalny dostaje karę `1e12` i gradient 0 — jeśli niedopuszczalny jest już **analityczny start**, Math.NET kończy w iteracji 0 z wyjściem gradientowym (przykład: 5× 30:0 i 1× 0:1 tych samych drużyn → λ_start ≈ 98, τ(0:1) = 1 − 0,03·98 < 0). Za przycięciem maska zeruje gradient współrzędnej, więc „rozwiązanie" z parametrem uciekającym do nieskończoności (MLE nie istnieje) wyglądało jak punkt stacjonarny. Oba przypadki znalazł przegląd implementacji (sondy, 2026-10-09): przed poprawką były po cichu przyjmowane — ta sama klasa błędu co dawny powrót do punktu startowego. Na prawdziwych danych nie występują (34/34 dopasowań: `f` ≈ 130–270, parametry logarytmiczne rzędu ±1).
+
+Warunek 4 jest konieczny, bo `ReasonForExit` z Math.NET 5.0 nie jest wiarygodny — zmierzone na dwa sposoby:
 
 - kryterium `AbsoluteGradient` jest skalowane przez |f|: przy `gradientTolerance = 1e-6` przepuściło ‖∇f‖∞ ≈ 2·10⁻⁴;
 - po wyczerpaniu limitu iteracji minimizer **nie rzuca** `MaximumIterationsException`, tylko zwraca wynik z `ReasonForExit = AbsoluteGradient` i `Iterations` = limit + 1 (limit 1 na danych syntetycznych: „AbsoluteGradient" przy ‖∇f‖∞ = 2,18). Bez niezależnego warunku taki punkt przeszedłby jako optimum.
 
 Przy |f| ≈ 130–270 próg wynosi 1,3–2,7·10⁻⁴; obserwowane na prawdziwych danych ‖∇f‖∞ ≤ 2,4·10⁻⁷.
 
-**Brak zbieżności = głośny błąd.** Każde odrzucone dopasowanie — wyjątek Math.NET (`OptimizationException`, np. line search: „Direction is not a descent direction"), wyjście niegradientowe, niespełniony warunek stacjonarności, wyczerpany limit — kończy się `ModelConvergenceException` z polskim komunikatem, np. `Dixon-Coles: optymalizacja nie zbiegła (trening; 2 iteracji; powód: wyczerpany limit 1 iteracji; wyjście MathNet: AbsoluteGradient; NLL 352.675 → 352.651; ‖∇f‖∞ = 2.18E+000).` Pole `Reason` podaje faktyczną przyczynę odrzucenia, a nie etykietę z Math.NET (patrz wyżej). W kodzie nie ma `catch`, który zwraca punkt startowy. Orkiestrator ustawia wtedy run na `Failed` z tym komunikatem w `ErrorMessage`, a `predict-round` zwraca go w kopercie błędu — run `Completed` gwarantuje MLE we wszystkich kolejkach.
+**Brak zbieżności = głośny błąd.** Każde odrzucone dopasowanie — wyjątek Math.NET (`OptimizationException`, np. line search: „Direction is not a descent direction"), punkt niedopuszczalny, parametr na granicy przycięcia, wyjście niegradientowe, niespełniony warunek stacjonarności, wyczerpany limit — kończy się `ModelConvergenceException` z polskim komunikatem, np. `Dixon-Coles: optymalizacja nie zbiegła (trening; 2 iteracji; powód: wyczerpany limit 1 iteracji; wyjście MathNet: AbsoluteGradient; NLL 352.675 → 352.651; ‖∇f‖∞ = 2.18E+000).` Pole `Reason` podaje faktyczną przyczynę odrzucenia, a nie etykietę z Math.NET (patrz wyżej). W kodzie nie ma `catch`, który zwraca punkt startowy. Po wyjątku model zachowuje poprzednie dopasowanie w spójnej postaci — indeks drużyn i parametry przypisywane są razem dopiero po akceptacji (test `FailedUpdateKeepsThePreviousFitConsistent`); mecze z odrzuconej kolejki zostają jednak wchłonięte. Orkiestrator ustawia wtedy run na `Failed` z tym komunikatem w `ErrorMessage`, a `predict-round` zwraca go w kopercie błędu — run `Completed` gwarantuje MLE we wszystkich kolejkach.
 
 **Raporty dopasowań.** `DixonColesModel.FitReports` — po jednym `DixonColesFitReport` na każde przyjęte dopasowanie: `AfterRound` (`null` dla treningu), `Dimension`, `Iterations`, `ExitReason`, `StartObjective`, `FinalObjective`, `GradientNorm` (‖∇f‖∞). Lista jest czyszczona w `Train`. Raporty nie trafiają do bazy — polityka głośnego błędu i tak gwarantuje zbieżność w runach `Completed`; czyta je test na prawdziwych danych.
 
 **Zimny start.** Każde dopasowanie startuje od analitycznego punktu startowego, nie od poprzedniego optimum. Wynik zależy wtedy tylko od zbioru meczów, a nie od ścieżki dopasowań: `Train` + kolejne `UpdateWithRound` dają te same parametry co jedno `Train` na tym samym zbiorze (tak liczy `predict-round`). Ciepły start by tę zgodność zepsuł, a przy kilkudziesięciu milisekundach na dopasowanie nie jest potrzebny.
 
-**MLE nie zawsze istnieje.** Przy `RidgeLambda = 0` drużyna z jednym meczem 7:0 i zerem straconych goli nie ma skończonego optimum: wiarygodność rośnie monotonicznie, gdy jej obrona β → 0. Nelder-Mead zatrzymywał się „gdzieś" na tej dolinie, a L-BFGS kończy się wyjątkiem z line search. Dlatego test `RidgeShrinksSparseTeamsTowardsLeagueAverage` porównuje `RidgeLambda` 0,05 z 5,0 (zamiast 0 z 5,0) — z ridge > 0 kara kwadratowa w `log β` daje skończone optimum. Domyślne opcje badań mają `RidgeLambda = 0.05`. Inne ustawienia (ridge 0, ξ = 0) mogą trafić na przypadki bez MLE — wtedy run kończy się błędem, nie złą liczbą.
+**MLE nie zawsze istnieje.** Przy `RidgeLambda = 0` drużyna z jednym meczem 7:0 i zerem straconych goli nie ma skończonego optimum: wiarygodność rośnie monotonicznie, gdy jej obrona β → 0. Nelder-Mead zatrzymywał się „gdzieś" na tej dolinie, a L-BFGS kończy się wyjątkiem z line search. Podobnie drużyna, która nigdy nie strzela gola: przy ridge 0 jej atak α → 0 i parametr dochodzi do przycięcia ±20 — warunek 2 kryterium akceptacji odrzuca takie dopasowanie (test `ParameterDrivenToTheClampBoundaryThrows`; przy ridge 0,05 ta sama drużyna ma |log α| ≈ 5 i dopasowanie jest poprawne). Dlatego test `RidgeShrinksSparseTeamsTowardsLeagueAverage` porównuje `RidgeLambda` 0,05 z 5,0 (zamiast 0 z 5,0) — z ridge > 0 kara kwadratowa w `log β` daje skończone optimum. Domyślne opcje badań mają `RidgeLambda = 0.05`. Inne ustawienia (ridge 0, ξ = 0) mogą trafić na przypadki bez MLE — wtedy run kończy się błędem, nie złą liczbą (test `InfeasibleStartingPointThrowsInsteadOfFallingBack` pilnuje też niedopuszczalnego startu).
 
 **Weryfikacja na prawdziwych danych.** Test `DixonColesRealDataTests` (`[Trait("Category", "RealData")]`) czyta fixture `EkstraSim.Tests/Data/ekstraklasa-liga1-mecze.csv`, odtwarza przez `WalkForwardEvaluator.Run` sekwencję dopasowań z runów 2024/25 i 2025/26 (odcięcie 18, opcje domyślne: formy włączone, ξ = 0,0065, ridge 0,05) i wymaga:
 
@@ -151,7 +155,7 @@ Przy |f| ≈ 130–270 próg wynosi 1,3–2,7·10⁻⁴; obserwowane na prawdziw
 
 Tabelę dopasowań (iteracje, wyjście, NLL start → koniec, ‖∇f‖∞, ρ, γ) wypisuje `dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter "Category=RealData" --logger "console;verbosity=detailed"`; resztę testów uruchamia filtr `"Category!=RealData"`.
 
-Fixture powstaje skryptem `scripts/Export-ResearchFixture.ps1` (domyślnie serwer `.\SQLEXPRESS`, baza `EkstraSimDB`, plik jak wyżej; `-Server`, `-Database`, `-OutPath` do zmiany). Skrypt tylko czyta bazę (`sqlcmd -E`) i eksportuje mecze ligi 1 z sezonów, w których **każdy** mecz jest rozegrany — trwający sezon wypada sam, więc fixture się nie starzeje (dziś 7 sezonów, 2066 meczów). Format: nagłówek `Id;Date;Round;SeasonId;LeagueId;HomeTeamId;AwayTeamId;HomeScore;AwayScore`, wiersze w kolejności Id, data `yyyy-MM-dd`, UTF-8 bez BOM — same identyfikatory i wyniki, bez nazw drużyn. Nic nie jest zapisywane, gdy którykolwiek wiersz się nie parsuje, data ma składnik godzinowy (format by go obciął) albo liczba wierszy różni się od `COUNT(*)` z bazy. Kolejność po Id plus stabilne `OrderBy(Date)` w `BuildHistory` dają deterministyczne wejście do modelu, więc na starym kodzie test odtwarzał pomiar z audytu co do kolejki (punkt „Historia" wyżej).
+Fixture powstaje skryptem `scripts/Export-ResearchFixture.ps1` (domyślnie serwer `.\SQLEXPRESS`, baza `EkstraSimDB`, plik jak wyżej — ścieżka domyślna liczona od korzenia repo, więc skrypt działa z dowolnego katalogu; `-Server`, `-Database`, `-OutPath` do zmiany, jawna względna `-OutPath` liczy się od bieżącego katalogu). Skrypt tylko czyta bazę (`sqlcmd -E`) i eksportuje mecze ligi 1 z sezonów, w których **każdy** mecz jest rozegrany — trwający sezon wypada sam, więc fixture się nie starzeje (dziś 7 sezonów, 2066 meczów). Format: nagłówek `Id;Date;Round;SeasonId;LeagueId;HomeTeamId;AwayTeamId;HomeScore;AwayScore`, wiersze w kolejności Id, data `yyyy-MM-dd`, UTF-8 bez BOM — same identyfikatory i wyniki, bez nazw drużyn. Nic nie jest zapisywane, gdy którykolwiek wiersz się nie parsuje, data ma składnik godzinowy (format by go obciął) albo liczba wierszy różni się od `COUNT(*)` z bazy. Kolejność po Id plus stabilne `OrderBy(Date)` w `BuildHistory` dają deterministyczne wejście do modelu, więc na starym kodzie test odtwarzał pomiar z audytu co do kolejki (punkt „Historia" wyżej).
 
 ### 3. ELO → gole
 
@@ -249,7 +253,19 @@ Predykcje w wersjach 1–3 są w obrębie sezonu identyczne (zmieniała się tyl
 
 **Reguła podbijania:** `ResearchAlgorithm.Version` rośnie przy każdej zmianie kodu, która zmienia predykcje lub dryf któregokolwiek modelu. Zmiany samej prezentacji (UI, endpointy odczytu, testy statystyczne liczone przy odczycie) wersji nie zmieniają.
 
-**Runy sprzed wersjonowania (1–6)** dostają wersje historyczne 1–3 jednorazowym backfillem SQL (transakcja z kontrolą liczby wierszy). `EffectiveOptionsJson` zostaje dla nich `NULL` — nie odtwarzamy opcji z domysłu; ich żądania są w `OptionsJson`.
+**Runy sprzed wersjonowania (1–6)** dostają wersje historyczne 1–3 jednorazowym backfillem SQL (transakcja z kontrolą liczby wierszy). `EffectiveOptionsJson` zostaje dla nich `NULL` — nie odtwarzamy opcji z domysłu; ich żądania są w `OptionsJson`. Na lokalnej bazie wykonany 2026-10-09; na każdej innej bazie z runami 1–6 (`sqlcmd … -I -b`):
+
+```sql
+SET XACT_ABORT ON;
+BEGIN TRAN;
+UPDATE ModelEvaluationRuns
+SET AlgorithmVersion = CASE WHEN Id IN (1,2) THEN 1 WHEN Id IN (3,4) THEN 2 ELSE 3 END
+WHERE Id BETWEEN 1 AND 6 AND AlgorithmVersion IS NULL;
+IF @@ROWCOUNT <> 6 BEGIN ROLLBACK; THROW 50000, 'Backfill: oczekiwano 6 wierszy', 1; END
+COMMIT;
+```
+
+**Kolejność wdrożenia.** Backend od wersji 4 czyta kolumny `AlgorithmVersion` i `EffectiveOptionsJson`, więc migrację `research_run_algorithm_version` trzeba zaaplikować **przed** uruchomieniem nowego backendu na danej bazie — inaczej każdy endpoint `research/runs` kończy się `Invalid column name`. Wycofanie: `dotnet ef database update 20260803092357_research_evaluation_runs` usuwa tylko te dwie kolumny.
 
 ### Endpointy
 

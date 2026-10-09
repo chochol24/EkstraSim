@@ -10,7 +10,6 @@ public class DixonColesModelTests
     private static readonly double[] TrueAttack = [1.4, 1.2, 1.0, 0.9, 0.8, 0.7];
     private static readonly double[] TrueDefence = [0.75, 0.9, 1.05, 1.15, 1.25, 1.2];
     private const double TrueHomeAdvantage = 1.3;
-    private const double StationarityTolerance = 1e-6;
 
     internal static List<MatchData> SyntheticSeason(int repetitions, int seed)
     {
@@ -93,7 +92,7 @@ public class DixonColesModelTests
     private static void AssertAccepted(DixonColesFitReport report)
     {
         Assert.True(report.ExitReason is ExitCondition.AbsoluteGradient or ExitCondition.RelativeGradient, $"wyjście: {report.ExitReason}");
-        Assert.True(report.GradientNorm <= StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective)), $"‖∇f‖∞ = {report.GradientNorm}");
+        Assert.True(report.GradientNorm <= DixonColesModel.StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective)), $"‖∇f‖∞ = {report.GradientNorm}");
         Assert.True(report.FinalObjective < report.StartObjective, $"NLL {report.StartObjective} → {report.FinalObjective}");
     }
 
@@ -309,6 +308,69 @@ public class DixonColesModelTests
         Assert.Equal("wyczerpany limit 1 iteracji", exception.Reason);
         Assert.Null(exception.Report.AfterRound);
         Assert.Empty(model.FitReports);
+    }
+
+    [Fact]
+    public void InfeasibleStartingPointThrowsInsteadOfFallingBack()
+    {
+        var history = Enumerable.Range(1, 5)
+            .Select(round => TestLeague.Played(round, round, homeTeamId: 100, awayTeamId: 200, homeScore: 30, awayScore: 0))
+            .Append(TestLeague.Played(6, round: 6, homeTeamId: 100, awayTeamId: 200, homeScore: 0, awayScore: 1))
+            .ToList();
+
+        var model = new DixonColesModel();
+
+        var exception = Assert.Throws<ModelConvergenceException>(() => model.Train(history, RidgeOptions(0.05)));
+
+        Assert.Equal(DixonColesObjective.InfeasiblePenalty, exception.Report.StartObjective);
+        Assert.StartsWith("punkt niedopuszczalny", exception.Reason);
+        Assert.Empty(model.FitReports);
+    }
+
+    [Fact]
+    public void ParameterDrivenToTheClampBoundaryThrows()
+    {
+        var history = new List<MatchData>();
+        var id = 1;
+
+        for (var repetition = 0; repetition < 6; repetition++)
+        {
+            history.Add(TestLeague.Played(id, id++, homeTeamId: 100, awayTeamId: 200, homeScore: 2, awayScore: 2));
+            history.Add(TestLeague.Played(id, id++, homeTeamId: 200, awayTeamId: 100, homeScore: 1, awayScore: 3));
+            history.Add(TestLeague.Played(id, id++, homeTeamId: 300, awayTeamId: 100, homeScore: 0, awayScore: 2));
+            history.Add(TestLeague.Played(id, id++, homeTeamId: 100, awayTeamId: 300, homeScore: 2, awayScore: 0));
+        }
+
+        var unregularised = new DixonColesModel();
+        var exception = Assert.Throws<ModelConvergenceException>(() => unregularised.Train(history, RidgeOptions(0)));
+        Assert.StartsWith("parametr na granicy przycięcia", exception.Reason);
+
+        var regularised = new DixonColesModel();
+        regularised.Train(history, RidgeOptions(0.05));
+        AssertAccepted(Assert.Single(regularised.FitReports));
+    }
+
+    [Fact]
+    public void FailedUpdateKeepsThePreviousFitConsistent()
+    {
+        var model = new DixonColesModel();
+        model.Train(SyntheticSeason(repetitions: 6, seed: 2718), RidgeOptions(0));
+        var before = model.GetParametersSnapshot();
+
+        var round = Enumerable.Range(0, 6)
+            .SelectMany(i => new[]
+            {
+                TestLeague.Played(9700 + 2 * i, round: 600, homeTeamId: 900, awayTeamId: 100, homeScore: 0, awayScore: 3),
+                TestLeague.Played(9701 + 2 * i, round: 600, homeTeamId: 200, awayTeamId: 900, homeScore: 2, awayScore: 0)
+            })
+            .ToList();
+
+        Assert.Throws<ModelConvergenceException>(() => model.UpdateWithRound(round));
+
+        Assert.Equal(0, ModelSnapshot.Distance(before, model.GetParametersSnapshot()), precision: 12);
+        Assert.Single(model.FitReports);
+        var prediction = model.Predict(TestLeague.Fixture(9800, round: 601, homeTeamId: 100, awayTeamId: 900));
+        Assert.Equal(1.0, ScoreGrid.Sum(prediction.ScoreProbabilities), precision: 10);
     }
 
     [Fact]

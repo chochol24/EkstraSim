@@ -100,6 +100,35 @@ public class DixonColesObjectiveTests
     }
 
     [Fact]
+    public void ClampedCoordinateHasZeroGradientAndIsDetected()
+    {
+        var objective = BuildObjective(LowScoringSeason());
+        var start = Vector<double>.Build.DenseOfArray(objective.InitialGuess());
+        var point = start.Clone();
+        point[0] = -25;
+
+        Assert.False(objective.HasClampedParameter(start));
+        Assert.True(objective.HasClampedParameter(point));
+        Assert.True(objective.Value(point) < DixonColesObjective.InfeasiblePenalty);
+        Assert.Equal(0, objective.ValueAndGradient(point).Gradient[0]);
+        Assert.True(MaxRelativeGradientError(objective, point) <= 1e-5);
+    }
+
+    [Fact]
+    public void InfeasiblePointReturnsThePenaltyAndAZeroGradient()
+    {
+        var objective = BuildObjective(LowScoringSeason());
+        var point = Vector<double>.Build.DenseOfArray(objective.InitialGuess());
+        point[objective.Dimension - 2] = 5;
+
+        var (value, gradient) = objective.ValueAndGradient(point);
+
+        Assert.Equal(DixonColesObjective.InfeasiblePenalty, objective.Value(point));
+        Assert.Equal(DixonColesObjective.InfeasiblePenalty, value);
+        Assert.Equal(0, gradient.InfinityNorm());
+    }
+
+    [Fact]
     public void ObjectiveIsFlatAlongTheAttackDefenceShift()
     {
         var objective = BuildObjective(LowScoringSeason());

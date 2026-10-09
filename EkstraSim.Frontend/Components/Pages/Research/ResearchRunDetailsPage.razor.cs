@@ -189,7 +189,7 @@ public partial class ResearchRunDetailsPage
 
     private static int NiceStep(double rawStep)
     {
-        if (rawStep <= 1)
+        if (!double.IsFinite(rawStep) || rawStep <= 1)
         {
             return 1;
         }

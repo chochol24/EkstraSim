@@ -89,6 +89,19 @@ public sealed class DixonColesObjective
         return (value, Vector<double>.Build.DenseOfArray(gradient));
     }
 
+    public bool HasClampedParameter(Vector<double> vector)
+    {
+        for (var i = 0; i <= 2 * _teamCount; i++)
+        {
+            if (Inside(vector[i]) == 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static void Unpack(Vector<double> vector, int teamCount, out double[] attack, out double[] defence, out double homeAdvantage, out double rho)
     {
         attack = new double[teamCount];

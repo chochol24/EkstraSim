@@ -6,8 +6,8 @@ namespace EkstraSim.Prediction.Models;
 public sealed class DixonColesModel : IPredictionModel
 {
     public const int DefaultMaxIterations = 2000;
+    public const double StationarityTolerance = 1e-6;
     private const double GradientTolerance = 1e-9;
-    private const double StationarityTolerance = 1e-6;
     private const int LbfgsMemory = 10;
 
     private readonly int _maxIterations;
@@ -22,7 +22,6 @@ public sealed class DixonColesModel : IPredictionModel
     private double[] _defence = [];
     private double _homeAdvantage = 1.35;
     private double _rho;
-    private DateTime _reference = DateTime.MinValue;
     private int? _lastRound;
 
     public DixonColesModel() : this(DefaultMaxIterations)
@@ -135,21 +134,21 @@ public sealed class DixonColesModel : IPredictionModel
             return;
         }
 
-        _reference = _played[^1].Date;
+        var reference = _played[^1].Date;
 
-        _teamIds = _played
+        var teamIds = _played
             .SelectMany(m => new[] { m.HomeTeamId, m.AwayTeamId })
             .Distinct()
             .OrderBy(id => id)
             .ToList();
-        _teamIndex = _teamIds
+        var teamIndex = teamIds
             .Select((id, index) => (id, index))
             .ToDictionary(pair => pair.id, pair => pair.index);
 
-        var teamCount = _teamIds.Count;
-        var weights = _played.Select(TimeWeight).ToArray();
-        var ridgeWeights = RidgeWeights(weights, teamCount);
-        var objective = new DixonColesObjective(_played, _teamIndex, weights, ridgeWeights, _options.RidgeLambda);
+        var teamCount = teamIds.Count;
+        var weights = _played.Select(match => TimeWeight(match, reference)).ToArray();
+        var ridgeWeights = RidgeWeights(weights, teamIndex);
+        var objective = new DixonColesObjective(_played, teamIndex, weights, ridgeWeights, _options.RidgeLambda);
         var start = Vector<double>.Build.DenseOfArray(objective.InitialGuess());
         var startObjective = objective.Value(start);
 
@@ -177,18 +176,30 @@ public sealed class DixonColesModel : IPredictionModel
             finalObjective,
             gradient.InfinityNorm());
 
-        var rejection = RejectionReason(report);
+        var rejection = RejectionReason(report, objective.HasClampedParameter(result.MinimizingPoint));
         if (rejection != null)
         {
             throw new ModelConvergenceException(report, rejection);
         }
 
         _fitReports.Add(report);
+        _teamIds = teamIds;
+        _teamIndex = teamIndex;
         DixonColesObjective.Unpack(result.MinimizingPoint, teamCount, out _attack, out _defence, out _homeAdvantage, out _rho);
     }
 
-    private string? RejectionReason(DixonColesFitReport report)
+    private string? RejectionReason(DixonColesFitReport report, bool hasClampedParameter)
     {
+        if (report.FinalObjective >= DixonColesObjective.InfeasiblePenalty)
+        {
+            return "punkt niedopuszczalny (τ ≤ 0 albo λ, μ ≤ 0)";
+        }
+
+        if (hasClampedParameter)
+        {
+            return "parametr na granicy przycięcia ±20 (MLE nie istnieje)";
+        }
+
         var gradientExit = report.ExitReason is ExitCondition.AbsoluteGradient or ExitCondition.RelativeGradient;
         var stationary = report.GradientNorm <= StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective));
 
@@ -205,20 +216,20 @@ public sealed class DixonColesModel : IPredictionModel
         return gradientExit ? "niespełniony warunek stacjonarności" : $"wyjście {report.ExitReason}";
     }
 
-    private double TimeWeight(MatchData match)
+    private double TimeWeight(MatchData match, DateTime reference)
     {
-        var days = (_reference - match.Date).TotalDays;
+        var days = (reference - match.Date).TotalDays;
         return Math.Exp(-_options.TimeDecayXi * Math.Max(0, days));
     }
 
-    private double[] RidgeWeights(double[] weights, int teamCount)
+    private double[] RidgeWeights(double[] weights, IReadOnlyDictionary<int, int> teamIndex)
     {
-        var effective = new double[teamCount];
+        var effective = new double[teamIndex.Count];
 
         for (var i = 0; i < _played.Count; i++)
         {
-            effective[_teamIndex[_played[i].HomeTeamId]] += weights[i];
-            effective[_teamIndex[_played[i].AwayTeamId]] += weights[i];
+            effective[teamIndex[_played[i].HomeTeamId]] += weights[i];
+            effective[teamIndex[_played[i].AwayTeamId]] += weights[i];
         }
 
         return effective.Select(count => 1.0 / (1.0 + count)).ToArray();

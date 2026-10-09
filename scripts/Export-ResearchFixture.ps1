@@ -1,10 +1,14 @@
 param(
     [string]$Server = '.\SQLEXPRESS',
     [string]$Database = 'EkstraSimDB',
-    [string]$OutPath = 'EkstraSim.Tests/Data/ekstraklasa-liga1-mecze.csv'
+    [string]$OutPath
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($OutPath)) {
+    $OutPath = Join-Path $PSScriptRoot '..\EkstraSim.Tests\Data\ekstraklasa-liga1-mecze.csv'
+}
 
 $filter = @'
 FROM Matches m
@@ -95,7 +99,7 @@ if ($problems.Count -gt 0) {
     throw "Eksport przerwany - $($problems.Count) problemow, plik nie zapisany."
 }
 
-$target = [System.IO.Path]::GetFullPath((Join-Path (Get-Location) $OutPath))
+$target = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine((Get-Location).Path, $OutPath))
 $directory = Split-Path $target -Parent
 if (-not (Test-Path $directory)) {
     New-Item -ItemType Directory -Path $directory | Out-Null

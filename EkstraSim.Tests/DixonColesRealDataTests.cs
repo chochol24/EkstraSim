@@ -9,7 +9,6 @@ namespace EkstraSim.Tests;
 public class DixonColesRealDataTests
 {
     private const int ExpectedFitCount = 17;
-    private const double StationarityTolerance = 1e-6;
     private const double AuditStartObjective = 248.939860312;
     private const double NelderMeadTrainingObjective = 248.738;
 
@@ -83,7 +82,7 @@ public class DixonColesRealDataTests
             problems.Add($"wyjście {report.ExitReason}");
         }
 
-        if (!(report.GradientNorm <= StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective))))
+        if (!(report.GradientNorm <= DixonColesModel.StationarityTolerance * Math.Max(1, Math.Abs(report.FinalObjective))))
         {
             problems.Add(string.Format(CultureInfo.InvariantCulture, "‖∇f‖∞ = {0:E2}", report.GradientNorm));
         }
