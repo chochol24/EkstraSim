@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace EkstraSim.Prediction.Models;
 
 public sealed class ModelSnapshot
@@ -7,6 +9,18 @@ public sealed class ModelSnapshot
     public string ModelName { get; init; } = string.Empty;
     public int? AfterRound { get; set; }
     public IReadOnlyDictionary<string, double> Parameters { get; init; } = new Dictionary<string, double>();
+
+    public ModelSnapshot RestrictToTeams(IReadOnlySet<int> teamIds)
+    {
+        return new ModelSnapshot
+        {
+            ModelName = ModelName,
+            AfterRound = AfterRound,
+            Parameters = Parameters
+                .Where(parameter => BelongsToTeams(parameter.Key, teamIds))
+                .ToDictionary(parameter => parameter.Key, parameter => parameter.Value)
+        };
+    }
 
     public static double Distance(ModelSnapshot? previous, ModelSnapshot? current)
     {
@@ -79,10 +93,21 @@ public sealed class ModelSnapshot
     {
         var segments = key
             .Split('_')
-            .Where(segment => segment.Length > 0 && !segment.All(char.IsDigit));
+            .Where(segment => segment.Length > 0 && !IsTeamSegment(segment));
 
         return string.Join('_', segments);
     }
+
+    private static bool BelongsToTeams(string key, IReadOnlySet<int> teamIds)
+    {
+        return key
+            .Split('_')
+            .Where(IsTeamSegment)
+            .All(segment => int.TryParse(segment, NumberStyles.None, CultureInfo.InvariantCulture, out var teamId)
+                && teamIds.Contains(teamId));
+    }
+
+    private static bool IsTeamSegment(string segment) => segment.Length > 0 && segment.All(char.IsDigit);
 
     private static double Spread(ModelSnapshot snapshot, List<string> keys)
     {

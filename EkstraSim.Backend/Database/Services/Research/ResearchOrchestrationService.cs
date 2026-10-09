@@ -92,6 +92,10 @@ public class ResearchOrchestrationService
             var model = PredictionModelFactory.Create(modelName);
             var rounds = WalkForwardEvaluator.Run(model, history, evaluationSet, options, promotedTeamIds);
 
+            _logger.LogInformation(
+                "Badanie {RunId}, model {ModelName}: {DateFilteredCount} predykcji zawezonych po dacie.",
+                run.Id, model.Name, rounds.Sum(r => r.DateFilteredMatchIds.Count));
+
             foreach (var round in rounds)
             {
                 for (var i = 0; i < round.Evaluations.Count; i++)

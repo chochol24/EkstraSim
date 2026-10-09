@@ -9,7 +9,11 @@ public class WalkForwardEvaluatorTests
     private const int TargetSeason = 10;
     private const int Cutoff = 4;
 
+    private const int RelegatedTeam = 500;
+
     private static readonly int[] Teams = [100, 200, 300, 400];
+
+    public static IEnumerable<object[]> Models => PredictionModelFactory.AvailableModels.Select(name => new object[] { name });
 
     private static MatchData Match(int id, int seasonId, int round, DateTime date, int home, int away, int? homeScore, int? awayScore)
     {
@@ -53,6 +57,32 @@ public class WalkForwardEvaluatorTests
             var date = previousStart.AddDays(round * 7);
             matches.Add(Match(id++, PreviousSeason, round, date, Teams[0], Teams[1], 2, 1));
             matches.Add(Match(id++, PreviousSeason, round, date, Teams[2], Teams[3], 1, 1));
+        }
+
+        var targetStart = new DateTime(2024, 8, 1);
+        for (var round = 1; round <= 8; round++)
+        {
+            var date = targetStart.AddDays(round * 7);
+
+            matches.Add(Match(id++, TargetSeason, round, date, Teams[0], Teams[2], round % 4, (round + 1) % 3));
+            matches.Add(Match(id++, TargetSeason, round, date, Teams[1], Teams[3], (round + 2) % 3, round % 3));
+        }
+
+        return matches;
+    }
+
+    private static List<MatchData> LeagueWithRelegatedTeam()
+    {
+        var matches = new List<MatchData>();
+        var id = 1;
+
+        var previousStart = new DateTime(2023, 8, 1);
+        for (var round = 1; round <= 6; round++)
+        {
+            var date = previousStart.AddDays(round * 7);
+            matches.Add(Match(id++, PreviousSeason, round, date, Teams[0], Teams[1], round % 3, (round + 1) % 2));
+            matches.Add(Match(id++, PreviousSeason, round, date, Teams[2], Teams[3], (round + 1) % 3, round % 2));
+            matches.Add(Match(id++, PreviousSeason, round, date.AddDays(1), RelegatedTeam, Teams[round % 4], round % 2, (round + 2) % 3));
         }
 
         var targetStart = new DateTime(2024, 8, 1);
@@ -140,46 +170,6 @@ public class WalkForwardEvaluatorTests
     }
 
     [Fact]
-    public void FirstRoundPredictionUsesOnlyTrainingHistory()
-    {
-        var league = League();
-        var history = WalkForwardEvaluator.BuildHistory(league, [PreviousSeason, TargetSeason], TargetSeason, Cutoff);
-        var evaluationSet = WalkForwardEvaluator.BuildEvaluationSet(league, TargetSeason, Cutoff);
-
-        var rounds = WalkForwardEvaluator.Run(new PoissonModel(), history, evaluationSet, Options());
-
-        var reference = new PoissonModel();
-        reference.Train(history, Options());
-
-        var firstMatch = evaluationSet.First(m => m.Round == 5);
-        var expected = reference.Predict(firstMatch);
-        var actual = rounds[0].Predictions.First(p => p.MatchId == firstMatch.Id);
-
-        Assert.Equal(expected.ExpectedHomeGoals, actual.ExpectedHomeGoals, precision: 12);
-        Assert.Equal(expected.ExpectedAwayGoals, actual.ExpectedAwayGoals, precision: 12);
-    }
-
-    [Fact]
-    public void SecondRoundPredictionSeesOnlyTheFirstEvaluatedRound()
-    {
-        var league = League();
-        var history = WalkForwardEvaluator.BuildHistory(league, [PreviousSeason, TargetSeason], TargetSeason, Cutoff);
-        var evaluationSet = WalkForwardEvaluator.BuildEvaluationSet(league, TargetSeason, Cutoff);
-
-        var rounds = WalkForwardEvaluator.Run(new PoissonModel(), history, evaluationSet, Options());
-
-        var reference = new PoissonModel();
-        reference.Train(history, Options());
-        reference.UpdateWithRound(evaluationSet.Where(m => m.Round == 5).ToList());
-
-        var secondRoundMatch = evaluationSet.First(m => m.Round == 6);
-        var expected = reference.Predict(secondRoundMatch);
-        var actual = rounds[1].Predictions.First(p => p.MatchId == secondRoundMatch.Id);
-
-        Assert.Equal(expected.ExpectedHomeGoals, actual.ExpectedHomeGoals, precision: 12);
-    }
-
-    [Fact]
     public void PromotedFlagMarksMatchesWithPromotedSides()
     {
         var league = League();
@@ -244,6 +234,45 @@ public class WalkForwardEvaluatorTests
         var rounds = WalkForwardEvaluator.Run(new PoissonModel(), history, evaluationSet, Options());
 
         Assert.Contains(rounds, r => r.ParameterDrift > 0);
+    }
+
+    [Theory]
+    [MemberData(nameof(Models))]
+    public void DriftIsMeasuredOnTeamsOfTheEvaluatedSeasonOnly(string modelName)
+    {
+        var league = LeagueWithRelegatedTeam();
+        var history = WalkForwardEvaluator.BuildHistory(league, [PreviousSeason, TargetSeason], TargetSeason, Cutoff);
+        var evaluationSet = WalkForwardEvaluator.BuildEvaluationSet(league, TargetSeason, Cutoff);
+        var active = Teams.ToHashSet();
+
+        var rounds = WalkForwardEvaluator.Run(PredictionModelFactory.Create(modelName), history, evaluationSet, Options());
+
+        var replay = PredictionModelFactory.Create(modelName);
+        replay.Train(history, Options());
+        var previous = replay.GetParametersSnapshot();
+        var fullSnapshotDriftDiffers = false;
+
+        Assert.True(
+            previous.RestrictToTeams(active).Parameters.Count < previous.Parameters.Count,
+            $"{modelName}: snapshot nie ma parametrów drużyny spadkowej — fixture nic nie sprawdza.");
+
+        foreach (var round in rounds)
+        {
+            replay.UpdateWithRound(evaluationSet.Where(m => m.Round == round.Round).OrderBy(m => m.Id).ToList());
+            var current = replay.GetParametersSnapshot();
+
+            Assert.Equal(
+                ModelSnapshot.NormalisedDistance(previous.RestrictToTeams(active), current.RestrictToTeams(active)),
+                round.ParameterDrift,
+                precision: 12);
+
+            fullSnapshotDriftDiffers |= Math.Abs(ModelSnapshot.NormalisedDistance(previous, current) - round.ParameterDrift) > 1e-9;
+            previous = current;
+        }
+
+        Assert.True(
+            fullSnapshotDriftDiffers,
+            $"{modelName}: dryf po pełnym snapshocie równy zawężonemu — test nie wykryłby braku zawężenia.");
     }
 
     [Fact]

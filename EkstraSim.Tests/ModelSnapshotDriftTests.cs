@@ -288,4 +288,60 @@ public class ModelSnapshotDriftTests
         Assert.True(
             ModelSnapshot.NormalisedDistance(before, small) < ModelSnapshot.NormalisedDistance(before, large));
     }
+
+    [Fact]
+    public void RestrictToTeamsKeepsScalarsAndActiveTeamsOfEveryModel()
+    {
+        var snapshot = new ModelSnapshot
+        {
+            ModelName = "test",
+            AfterRound = 21,
+            Parameters = new Dictionary<string, double>
+            {
+                ["league_home_scored"] = 1.45,
+                ["team_1_home_scored"] = 1.4,
+                ["team_7_home_scored"] = 1.1,
+                ["home_advantage"] = 1.32,
+                ["rho"] = -0.03,
+                ["attack_1"] = 1.1,
+                ["defence_7"] = 0.9,
+                ["home_goals_intercept"] = 0.34,
+                ["rating_1"] = 1320.0,
+                ["rating_7"] = 1280.0,
+                ["pair_1_7"] = 0.5
+            }
+        };
+
+        var restricted = snapshot.RestrictToTeams(new HashSet<int> { 1 });
+
+        Assert.Equal("test", restricted.ModelName);
+        Assert.Equal(21, restricted.AfterRound);
+        Assert.Equal(
+            ["attack_1", "home_advantage", "home_goals_intercept", "league_home_scored", "rating_1", "rho", "team_1_home_scored"],
+            restricted.Parameters.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(1320.0, restricted.Parameters["rating_1"]);
+        Assert.Contains("pair_1_7", snapshot.RestrictToTeams(new HashSet<int> { 1, 7 }).Parameters.Keys);
+        Assert.Equal(11, snapshot.Parameters.Count);
+    }
+
+    [Fact]
+    public void MovingOnlyAnInactiveTeamDoesNotChangeTheRestrictedDrift()
+    {
+        var active = new HashSet<int> { 1, 2, 3 };
+        var before = Snapshot(("rating_1", 1300.0), ("rating_2", 1450.0), ("rating_3", 1150.0), ("rating_9", 1250.0), ("home_goals_slope", 0.6));
+        var after = Snapshot(("rating_1", 1315.0), ("rating_2", 1435.0), ("rating_3", 1160.0), ("rating_9", 1250.0), ("home_goals_slope", 0.6));
+        var afterInactiveMoved = Snapshot(("rating_1", 1315.0), ("rating_2", 1435.0), ("rating_3", 1160.0), ("rating_9", 1400.0), ("home_goals_slope", 0.6));
+
+        var drift = ModelSnapshot.NormalisedDistance(before.RestrictToTeams(active), after.RestrictToTeams(active));
+
+        Assert.True(drift > 0);
+        Assert.Equal(
+            drift,
+            ModelSnapshot.NormalisedDistance(before.RestrictToTeams(active), afterInactiveMoved.RestrictToTeams(active)),
+            precision: 12);
+        Assert.NotEqual(
+            ModelSnapshot.NormalisedDistance(before, after),
+            ModelSnapshot.NormalisedDistance(before, afterInactiveMoved),
+            precision: 6);
+    }
 }
