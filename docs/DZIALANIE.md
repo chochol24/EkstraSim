@@ -78,7 +78,7 @@ Szczegóły implementacyjne:
 - `UpdateWithRound` = pełne ponowne dopasowanie, za każdym razem od analitycznego punktu startowego (nie od poprzedniego optimum) — powód w punkcie „Zimny start" niżej.
 - Drużyny nieobecne w treningu dostają α = β = 1.
 - **Kolejność meczów** w modelu to `(Date, Id)`. Wcześniej sortowanie było po samej dacie, a `List.Sort` jest niestabilne i zapytanie orkiestratora nie ma `ORDER BY` — kolejność meczów z tego samego dnia zależała od bazy. Suma w funkcji celu jest matematycznie ta sama, ale zaokrąglenia (i ścieżka optymalizatora) już nie; teraz wejście jest deterministyczne.
-- **Historia — cichy powrót do punktu startowego (runy 1–6, wersje algorytmu 1–3).** Do 2026-10 dopasowanie robił `NelderMeadSimplex(1e-7, 20000)`, a `catch (Exception)` w `Fit` po `MaximumIterationsException` bez śladu podstawiał punkt startowy. Pomiar (audyt 2026-10-05, odtworzony testem `RealData` na starym kodzie): **13 z 17** dopasowań w 2024/25 (kolejki 19–25, 27, 29–33) i **7 z 17** w 2025/26 (20, 21, 23, 26, 27, 28, 33) kończyło się w punkcie startowym; udane potrzebowały 13,7–18,2 tys. iteracji. W tych kolejkach model był estymatorem momentów, nie MLE. Tam, gdzie Nelder-Mead „zbiegł", L-BFGS schodzi niżej: trening 2024/25 248,738 → 248,734786, k.34 2024/25 262,182 → 262,173636, k.34 2025/26 269,551 → 269,543276. Prognoza ze spike'u (2026-10-08) dla RPS Dixona-Colesa: 0,2290 → ~0,2287 (2024/25) i 0,2332 → ~0,2326 (2025/26); ρ ma prawdziwą dynamikę (w 2024/25 od −0,10 do +0,05), a fallback trzymał ją na −0,03. Pomiar na nowych runach — `STAN_PROJEKTU.md`.
+- **Historia — cichy powrót do punktu startowego (runy 1–6, wersje algorytmu 1–3).** Do 2026-10 dopasowanie robił `NelderMeadSimplex(1e-7, 20000)`, a `catch (Exception)` w `Fit` po `MaximumIterationsException` bez śladu podstawiał punkt startowy. Pomiar (audyt 2026-10-05, odtworzony testem `RealData` na starym kodzie): **13 z 17** dopasowań w 2024/25 (kolejki 19–25, 27, 29–33) i **7 z 17** w 2025/26 (20, 21, 23, 26, 27, 28, 33) kończyło się w punkcie startowym; udane potrzebowały 13,7–18,2 tys. iteracji. W tych kolejkach model był estymatorem momentów, nie MLE. Tam, gdzie Nelder-Mead „zbiegł", L-BFGS schodzi niżej: trening 2024/25 248,738 → 248,734786, k.34 2024/25 262,182 → 262,173636, k.34 2025/26 269,551 → 269,543276. Ponowne runy (7–8, wersja 4) dały RPS Dixona-Colesa 0,2290 → 0,2287 (2024/25) i 0,2332 → 0,2326 (2025/26) — mała poprawa, ranking modeli i wnioski z testów istotności bez zmian; ρ ma prawdziwą dynamikę (w 2024/25 od −0,10 do +0,05), a fallback trzymał ją na −0,03. Predykcje Poissona i Elo w runach 7–8 są bitowo identyczne z runami 5–6. Pełne porównanie: `context/changes/dixon-coles-optymalizator/porownanie-runow.md`; wpływ na dryf — sekcja [Metryka dryfu parametrów](#metryka-dryfu-parametrów).
 
 #### Minimalizacja: L-BFGS z gradientem analitycznym
 
@@ -346,17 +346,19 @@ Rozrzut średniego dryfu między modelami na sezonie 2024/2025:
 | --- | --- |
 | surowa norma L2 | 40,6× |
 | normalizacja globalnym σ | 27,7× |
-| **normalizacja w obrębie rodzin** | **4,7×** |
+| normalizacja w obrębie rodzin | 4,7× |
+| **ta sama metryka, Dixon-Coles z L-BFGS (wersja algorytmu 4)** | **3,4×** (2025/26: 3,2×) |
 
-Zmiana dotyczy wyłącznie dryfu — metryki predykcyjne (RPS, Brier, log-loss, trafności) są po niej **bitowo identyczne**, co potwierdzono porównaniem badań na tych samych danych.
+Zmiana metryki dotyczy wyłącznie dryfu — metryki predykcyjne (RPS, Brier, log-loss, trafności) są po niej **bitowo identyczne**, co potwierdzono porównaniem badań na tych samych danych. Ostatni wiersz to ta sama metryka po naprawie optymalizatora Dixona-Colesa (runy 7–8): zmienił się wyłącznie dryf DC.
 
-### Pozostałe 4,7× — częściowo sygnał, częściowo artefakt
+### Pozostały rozrzut — częściowo sygnał, częściowo artefakt
 
-Średni dryf (2024/25 → 2025/26): Elo 0,065 → 0,072, Poisson 0,178 → 0,173, DixonColes 0,308 → 0,350. Powtarzalność między sezonami jest wysoka. Dla Elo i Poissona uporządkowanie wynika z mechaniki aktualizacji:
+Średni dryf (średnia z kroczącej średniej okna 3; 2024/25 → 2025/26, runy 7–8): Elo 0,065 → 0,072, Poisson 0,178 → 0,173, Dixon-Coles 0,223 → 0,232 (w runach 5–6, przed naprawą optymalizatora: 0,308 → 0,350). Powtarzalność między sezonami jest wysoka. Uporządkowanie wynika z mechaniki aktualizacji:
 
 - **Elo** zmienia oceny przyrostowo o `K·G·(W−W_e)` przy K=10, więc rusza się najmniej i jego trajektoria jest **płaska** (0,053 → 0,060) — model jest w stanie ustalonym od pierwszej ocenianej kolejki.
 - **Poisson** przelicza średnie kroczące; im więcej meczów w koszyku, tym mniejszy wpływ kolejnego, stąd **łagodny spadek** (0,220 → 0,130).
-- **Dixon-Coles** — dryf jest najwyższy i **oscyluje** (0,455 → 0,235 z garbem 0,449 w kolejce 29), ale to **artefakt**, nie cecha modelu: wzór pokrywa się co do kolejki z sekwencją przełączeń między optimum a analitycznym punktem startowym przy przekroczeniu limitu iteracji (2024/25: trening optimum, 19–25 start, 26 optimum, 27 start, 28 optimum, 29–33 start, 34 optimum — patrz „Historia — cichy powrót do punktu startowego" w sekcji Dixona-Colesa). Pierwotnie przypisano go pełnemu ponownemu MLE co kolejkę; ta interpretacja była błędna. Do ponownego pomiaru po naprawie optymalizatora.
+- **Dixon-Coles** — dryf jest najwyższy, ale **bez oscylacji**: w 2024/25 łagodnie spada (0,260 → 0,178, z lekkim wzrostem w kolejkach 30–32), w 2025/26 jest płaski (0,217–0,244). Każda kolejka to pełne MLE od zimnego startu, a wygaszanie czasowe przesuwa przy tym wagi wszystkich meczów (punkt odniesienia to najnowszy mecz). Prawdopodobny mechanizm wysokiego, niewygasającego poziomu: drużyny bez nowych meczów — w tym 10 nieaktywnych w badanym sezonie — tracą wagę względem kary ridge i co kolejkę przesuwają się w stronę α = β = 1. Do sprawdzenia dryfem liczonym tylko po drużynach aktywnych.
+- **Historia (wersje 1–3, runy 1–6).** Dryf DC **oscylował** (0,455 → 0,235 z garbem 0,449 w kolejce 29). Był to **artefakt**: wzór pokrywał się co do kolejki z przełączaniem między optimum a analitycznym punktem startowym przy przekroczeniu limitu iteracji (2024/25: trening optimum, 19–25 start, 26 optimum, 27 start, 28 optimum, 29–33 start, 34 optimum — patrz „Historia — cichy powrót do punktu startowego" w sekcji Dixona-Colesa). Pierwotnie przypisano go pełnemu ponownemu MLE co kolejkę; ta interpretacja była błędna. Po naprawie oscylacja zniknęła, a średni dryf DC spadł o ~30% (tabela i liczby per kolejka: `context/changes/dixon-coles-optymalizator/porownanie-runow.md`).
 
 Dwa dalsze ograniczenia, przez które rozrzut nie jest czystym sygnałem:
 
@@ -367,14 +369,14 @@ Dwa dalsze ograniczenia, przez które rozrzut nie jest czystym sygnałem:
 
 Przy **wspólnym progu absolutnym** `StabilisedFromRound` nie odpowiada na pytanie „kiedy model się stabilizuje", bo zlepia dwie różne rzeczy: poziom dryfu w stanie ustalonym (który różni się między modelami mechanicznie) i moment wygaszenia dryfu (o który pytanie faktycznie chodzi). Widać to w przemiataniu progów na 2024/25:
 
-| Próg | Elo | Poisson | DixonColes |
-| --- | --- | --- | --- |
-| 0,05 | nigdy | nigdy | nigdy |
-| 0,10 | od 19 | nigdy | nigdy |
-| 0,20 | od 19 | od 20 | nigdy |
-| 0,25 | od 19 | od 19 | od 32 |
+| Próg | Elo | Poisson | Dixon-Coles (wersja 4) | Dixon-Coles (wersja 3, artefakt) |
+| --- | --- | --- | --- | --- |
+| 0,05 | nigdy | nigdy | nigdy | nigdy |
+| 0,10 | od 19 | nigdy | nigdy | nigdy |
+| 0,20 | od 19 | od 20 | od 34 | nigdy |
+| 0,25 | od 19 | od 19 | od 33 | od 32 |
 
-Każdy próg daje albo „Elo od razu, reszta nigdy", albo „wszyscy od razu". Domyślne 0,05 jest nieosiągalne dla każdego modelu. Wniosek, który dane rzeczywiście uzasadniają, to **różnica w charakterze aktualizacji parametrów** (Elo płaski, Poisson opadający; obraz Dixona-Colesa do ponownego pomiaru po naprawie optymalizatora), a nie jedna liczba „kolejka stabilizacji". Alternatywa, gdyby pojedyncza liczba była potrzebna: próg relatywny względem własnego poziomu dryfu modelu.
+W 2025/26 Dixon-Coles (wersja 4) daje „nigdy" przy 0,05–0,20 i „od 19" przy 0,25 — jego płaski poziom ~0,23 leży między tymi progami. Wynik każdego modelu zależy więc głównie od tego, czy próg leży nad, czy pod jego własnym poziomem dryfu: poniżej — „nigdy", powyżej — „od razu", a próg przecinający łagodny spadek daje kolejkę z końca rundy (Dixon-Coles 2024/25: 33–34). „Kolejka stabilizacji" Dixona-Colesa skacze przez to między 19 a 34 zależnie od sezonu i progu. Domyślne 0,05 jest nieosiągalne dla każdego modelu. Wniosek, który dane rzeczywiście uzasadniają, to **różnica w charakterze aktualizacji parametrów** (Elo płaski na niskim poziomie, Poisson łagodnie opadający, Dixon-Coles płaski lub łagodnie opadający na najwyższym poziomie), a nie jedna liczba „kolejka stabilizacji". Alternatywa, gdyby pojedyncza liczba była potrzebna: próg relatywny względem własnego poziomu dryfu modelu.
 
 Ranking z wiązaniami (`Ranking.AverageRanks`) zwraca rangi średnie i sumę `t³−t` potrzebną do korekty wariancji w obu testach.
 
