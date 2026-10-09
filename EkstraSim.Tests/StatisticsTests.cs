@@ -244,6 +244,62 @@ public class StatisticsTests
     }
 
     [Fact]
+    public void DetectAllAdjustsTrendPValuesAcrossModelsWithHolm()
+    {
+        var rounds = Enumerable.Range(19, 16).ToList();
+        var observationsByModel = new Dictionary<string, IReadOnlyList<RoundObservation>>
+        {
+            ["Poisson"] = rounds.Select((round, i) => new RoundObservation(round, 0.2, 0.3 - 0.005 * i + 0.02 * (i * 7 % 5))).ToList(),
+            ["Elo"] = rounds.Select(round => new RoundObservation(round, 0.2, 0.1)).ToList(),
+            ["DixonColes"] = rounds.Select((round, i) => new RoundObservation(round, 0.2, 0.3 + 0.02 * (i * 7 % 5))).ToList()
+        };
+
+        var results = StabilityAnalysis.DetectAll(observationsByModel, StabilityAnalysis.DefaultTolerance);
+
+        Assert.Equal(["DixonColes", "Elo", "Poisson"], results.Select(r => r.ModelName));
+
+        foreach (var result in results)
+        {
+            var alone = StabilityAnalysis.Detect(result.ModelName, observationsByModel[result.ModelName], StabilityAnalysis.DefaultTolerance);
+            Assert.Equal(alone.Trend.Statistic, result.Trend.Statistic);
+            Assert.Equal(alone.Trend.PValue, result.Trend.PValue);
+            Assert.Equal(alone.StabilisedFromRound, result.StabilisedFromRound);
+        }
+
+        var dixonColes = results[0];
+        var elo = results[1];
+        var poisson = results[2];
+
+        Assert.False(elo.Trend.IsConclusive);
+        Assert.Equal(1.0, elo.TrendAdjustedPValue);
+        Assert.True(poisson.Trend.IsConclusive && dixonColes.Trend.IsConclusive);
+        Assert.True(poisson.Trend.PValue > 0 && poisson.Trend.PValue < dixonColes.Trend.PValue);
+        Assert.Equal(Math.Min(1.0, 3 * poisson.Trend.PValue), poisson.TrendAdjustedPValue, precision: 12);
+        Assert.Equal(Math.Min(1.0, Math.Max(3 * poisson.Trend.PValue, 2 * dixonColes.Trend.PValue)), dixonColes.TrendAdjustedPValue, precision: 12);
+    }
+
+    [Fact]
+    public void DetectAllLimitsTheAnalysisToTheRequestedRounds()
+    {
+        var observations = Enumerable.Range(4, 31).Select(round => new RoundObservation(round, 0.2, 1.0 / round + 0.01 * (round % 3))).ToList();
+        var observationsByModel = new Dictionary<string, IReadOnlyList<RoundObservation>> { ["Poisson"] = observations };
+
+        var spring = Assert.Single(StabilityAnalysis.DetectAll(observationsByModel, 0.25, fromRound: 19));
+        var expected = StabilityAnalysis.Detect("Poisson", observations.Where(o => o.Round >= 19).ToList(), 0.25);
+
+        Assert.Equal(Enumerable.Range(19, 16), spring.Rounds);
+        Assert.Equal(expected.DriftLevel, spring.DriftLevel);
+        Assert.Equal(expected.StabilisedFromRound, spring.StabilisedFromRound);
+        Assert.Equal(expected.Trend.Statistic, spring.Trend.Statistic);
+        Assert.Equal(expected.Trend.PValue, spring.TrendAdjustedPValue);
+
+        var autumn = Assert.Single(StabilityAnalysis.DetectAll(observationsByModel, 0.25, toRound: 18));
+        Assert.Equal(Enumerable.Range(4, 15), autumn.Rounds);
+
+        Assert.Empty(StabilityAnalysis.DetectAll(observationsByModel, 0.25, fromRound: 40));
+    }
+
+    [Fact]
     public void SpearmanIsOneForIncreasingAndMinusOneForDecreasingSeries()
     {
         var rounds = Enumerable.Range(19, 16).Select(r => (double)r).ToList();

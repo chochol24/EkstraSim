@@ -11,6 +11,7 @@ public sealed class StabilityResult
     public double Tolerance { get; init; }
     public double Threshold { get; init; }
     public TestResult Trend { get; init; } = TestResult.Inconclusive(SpearmanTrendTest.TestName, 0);
+    public double TrendAdjustedPValue { get; init; } = 1.0;
     public int Window { get; init; }
     public IReadOnlyList<int> Rounds { get; init; } = [];
     public IReadOnlyList<double> RollingMetric { get; init; } = [];
@@ -95,5 +96,42 @@ public static class StabilityAnalysis
             RollingMetric = rollingMetric,
             RollingDrift = rollingDrift
         };
+    }
+
+    public static IReadOnlyList<StabilityResult> DetectAll(
+        IReadOnlyDictionary<string, IReadOnlyList<RoundObservation>> observationsByModel,
+        double tolerance,
+        int window = DefaultWindow,
+        int? fromRound = null,
+        int? toRound = null)
+    {
+        var results = observationsByModel
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => (ModelName: pair.Key, Observations: pair.Value
+                .Where(o => (!fromRound.HasValue || o.Round >= fromRound.Value) && (!toRound.HasValue || o.Round <= toRound.Value))
+                .ToList()))
+            .Where(model => model.Observations.Count > 0)
+            .Select(model => Detect(model.ModelName, model.Observations, tolerance, window))
+            .ToList();
+
+        var adjusted = HolmCorrection.Adjust(results.Select(r => r.Trend.IsConclusive ? r.Trend.PValue : 1.0).ToList());
+
+        return results
+            .Select((result, index) => new StabilityResult
+            {
+                ModelName = result.ModelName,
+                StabilisedFromRound = result.StabilisedFromRound,
+                DriftLevel = result.DriftLevel,
+                MeanDrift = result.MeanDrift,
+                Tolerance = result.Tolerance,
+                Threshold = result.Threshold,
+                Trend = result.Trend,
+                TrendAdjustedPValue = adjusted[index],
+                Window = result.Window,
+                Rounds = result.Rounds,
+                RollingMetric = result.RollingMetric,
+                RollingDrift = result.RollingDrift
+            })
+            .ToList();
     }
 }

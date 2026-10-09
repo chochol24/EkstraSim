@@ -37,6 +37,11 @@ public class ResearchRunService
     {
         try
         {
+            if (!double.IsFinite(request.StabilityTolerance) || request.StabilityTolerance < 0)
+            {
+                return Failure<ModelEvaluationRunDTO>("Tolerancja stabilności δ musi być liczbą nieujemną.");
+            }
+
             await using var context = await _dbFactory.CreateDbContextAsync();
 
             var season = await context.Seasons
@@ -291,11 +296,9 @@ public class ResearchRunService
                 return Failure<ModelComparisonDTO>("Tolerancja stabilności δ musi być liczbą nieujemną.");
             }
 
-            var stabilityMetrics = roundMetrics
-                .Where(m => (!fromRound.HasValue || m.Round >= fromRound.Value) && (!toRound.HasValue || m.Round <= toRound.Value))
-                .ToList();
+            var stability = BuildStability(roundMetrics, metric, stabilityTolerance, options.StabilityWindow, fromRound, toRound);
 
-            if ((fromRound.HasValue || toRound.HasValue) && stabilityMetrics.Count == 0)
+            if ((fromRound.HasValue || toRound.HasValue) && stability.Count == 0)
             {
                 return Failure<ModelComparisonDTO>(
                     $"Badanie nie ma ocenianych kolejek w zakresie {fromRound?.ToString() ?? "początek"}–{toRound?.ToString() ?? "koniec"}.");
@@ -311,7 +314,7 @@ public class ResearchRunService
                     .ToList(),
                 Pairwise = ModelComparison.Pairwise(evaluationsByModel, metric).Select(ToPairwiseDto).ToList(),
                 Promoted = BuildPromotedComparisons(evaluationsByModel, metric, roundMetrics),
-                Stability = BuildStability(stabilityMetrics, metric, stabilityTolerance, options.StabilityWindow)
+                Stability = stability
             };
 
             return new EkstraSimResult<ModelComparisonDTO>
@@ -368,27 +371,21 @@ public class ResearchRunService
         List<ModelRoundMetric> roundMetrics,
         MetricKind metric,
         double tolerance,
-        int window)
+        int window,
+        int? fromRound,
+        int? toRound)
     {
-        var results = roundMetrics
+        var observationsByModel = roundMetrics
             .GroupBy(m => m.ModelName)
-            .OrderBy(g => g.Key, StringComparer.Ordinal)
-            .Select(group =>
-            {
-                var observations = group
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<RoundObservation>)group
                     .OrderBy(m => m.Round)
                     .Select(m => new RoundObservation(m.Round, MetricValueOf(m, metric), m.ParameterDrift))
-                    .ToList();
+                    .ToList());
 
-                return StabilityAnalysis.Detect(group.Key, observations, tolerance, window);
-            })
-            .ToList();
-
-        var adjustedTrendPValues = HolmCorrection.Adjust(
-            results.Select(r => r.Trend.IsConclusive ? r.Trend.PValue : 1.0).ToList());
-
-        return results
-            .Select((result, index) => new StabilityDTO
+        return StabilityAnalysis.DetectAll(observationsByModel, tolerance, window, fromRound, toRound)
+            .Select(result => new StabilityDTO
             {
                 ModelName = result.ModelName,
                 StabilisedFromRound = result.StabilisedFromRound,
@@ -398,7 +395,7 @@ public class ResearchRunService
                 MeanDrift = result.MeanDrift,
                 TrendRho = result.Trend.Statistic,
                 TrendPValue = result.Trend.PValue,
-                TrendAdjustedPValue = adjustedTrendPValues[index],
+                TrendAdjustedPValue = result.TrendAdjustedPValue,
                 TrendIsConclusive = result.Trend.IsConclusive,
                 Window = result.Window,
                 Rounds = result.Rounds.ToList(),

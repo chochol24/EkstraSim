@@ -64,7 +64,7 @@ public static class WalkForwardEvaluator
 
                 if (hiddenIds.Count > 0)
                 {
-                    predictor = RestrictedModel(absorbed, hiddenIds, restrictedModels, createModel, options);
+                    predictor = RestrictedModel(absorbed, hiddenIds, restrictedModels, createModel, options, round, match.Id);
                     dateFilteredMatchIds.Add(match.Id);
                 }
 
@@ -118,7 +118,9 @@ public static class WalkForwardEvaluator
         IReadOnlyList<int> hiddenIds,
         Dictionary<string, IPredictionModel> restrictedModels,
         Func<IPredictionModel> createModel,
-        TrainingOptions options)
+        TrainingOptions options,
+        int round,
+        int matchId)
     {
         var key = string.Join(",", hiddenIds);
 
@@ -129,7 +131,19 @@ public static class WalkForwardEvaluator
 
         var hidden = hiddenIds.ToHashSet();
         restricted = createModel();
-        restricted.Train(absorbed.Where(m => !hidden.Contains(m.Id)).ToList(), options);
+
+        try
+        {
+            restricted.Train(absorbed.Where(m => !hidden.Contains(m.Id)).ToList(), options);
+        }
+        catch (ModelConvergenceException exception)
+        {
+            throw new ModelConvergenceException(
+                exception.Report,
+                $"model tymczasowy filtra daty przed kolejką {round}, mecz {matchId}, ukryte mecze: {hiddenIds.Count} — {exception.Reason}",
+                exception);
+        }
+
         restrictedModels[key] = restricted;
 
         return restricted;

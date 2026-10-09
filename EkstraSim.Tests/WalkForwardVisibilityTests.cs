@@ -93,6 +93,24 @@ public class WalkForwardVisibilityTests
         }
     }
 
+    [Fact]
+    public void FailedRestrictedFitNamesTheRoundAndTheMatch()
+    {
+        var (history, evaluation) = Split(League(withPostponements: true));
+        var reference = new WalkForwardReference(history, evaluation, Options());
+        var firstAffected = evaluation.First(m => reference.HiddenFrom(m).Count > 0);
+
+        var exception = Assert.Throws<ModelConvergenceException>(() => WalkForwardEvaluator.Run(
+            PredictionModelFactory.Create("Poisson"), history, evaluation, Options(),
+            createModel: () => new DixonColesModel(maxIterations: 1)));
+
+        var inner = Assert.IsType<ModelConvergenceException>(exception.InnerException);
+
+        Assert.StartsWith($"model tymczasowy filtra daty przed kolejką {firstAffected.Round}, mecz {firstAffected.Id},", exception.Reason);
+        Assert.EndsWith(inner.Reason, exception.Reason);
+        Assert.Same(inner.Report, exception.Report);
+    }
+
     private static (List<MatchData> History, List<MatchData> Evaluation) Split(List<MatchData> league)
     {
         return (
