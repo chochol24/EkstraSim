@@ -39,7 +39,7 @@
             }
             @if (structure.PromotedTeams.Any())
             {
-                <text>Beniaminki: @string.Join(", ", structure.PromotedTeams.Select(t => t.Name)).</text>
+                <text>Beniaminki: @string.Join(", ", structure.PromotedTeams.Select(PromotedTeamLabels.WithHistory)).</text>
             }
             else
             {

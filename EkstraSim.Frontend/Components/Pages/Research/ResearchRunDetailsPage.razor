@@ -38,7 +38,7 @@ else
             @if (PromotedTeams().Any())
             {
                 <MudText Typo="Typo.body2">
-                    Beniaminki: @string.Join(", ", PromotedTeams().Select(t => t.Name))
+                    Beniaminki: @string.Join(", ", PromotedTeams().Select(PromotedTeamLabels.WithHistory))
                 </MudText>
             }
         </MudItem>
@@ -263,6 +263,82 @@ else
                             }
                         </tbody>
                     </MudSimpleTable>
+
+                    @if (comparison.PromotedTeams.Any())
+                    {
+                        <MudText Typo="Typo.subtitle1" Class="pt-4">Beniaminki według historii w bazie</MudText>
+                        <MudText Typo="Typo.body2" Class="pb-2">
+                            Kategoria wynika z liczby rozegranych meczów ligowych drużyny w bazie przed badanym sezonem,
+                            licząc od najstarszego sezonu w bazie: 0 — zimny start, więcej — powracający.
+                            Dla każdego modelu średnia @MetricLabel(comparison.Metric) z meczów z udziałem drużyny, w nawiasie liczba meczów.
+                        </MudText>
+                        <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                            <thead>
+                                <tr>
+                                    <th>Beniaminek</th>
+                                    <th>Kategoria</th>
+                                    <th>Mecze w bazie przed sezonem</th>
+                                    <th>Ostatni sezon w lidze</th>
+                                    @foreach (var model in PromotedMetricModels)
+                                    {
+                                        <th>@model</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var team in comparison.PromotedTeams)
+                                {
+                                    <tr>
+                                        <td><b>@team.Name</b></td>
+                                        <td>@PromotedTeamLabels.Category(team.Category)</td>
+                                        <td>@(team.PriorMatchCount?.ToString() ?? "—")</td>
+                                        <td>@(team.LastPriorSeasonName ?? "—")</td>
+                                        @foreach (var model in PromotedMetricModels)
+                                        {
+                                            <td>@TeamMetricLabel(team.TeamId, model)</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+
+                        <MudText Typo="Typo.subtitle1" Class="pt-4">Kategorie beniaminków vs mecze bez beniaminka</MudText>
+                        <MudText Typo="Typo.body2" Class="pb-2">
+                            Test Mann-Whitneya osobno dla każdej kategorii: mecze z udziałem co najmniej jednej drużyny tej kategorii
+                            vs mecze bez żadnego beniaminka (te same „Pozostałe” co w tabeli wyżej). Mecz dwóch beniaminków liczy się
+                            w kategorii każdego z nich. Jedna poprawka Holma na wszystkie wiersze tej tabeli; kategoria bez drużyn
+                            w badanym sezonie nie ma wierszy.
+                        </MudText>
+                        <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Kategoria</th>
+                                    <th>Kategoria (n)</th>
+                                    <th>Pozostałe (n)</th>
+                                    <th>Różnica</th>
+                                    <th>p (Holm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in comparison.PromotedByCategory)
+                                {
+                                    <tr>
+                                        <td><b>@row.ModelName</b></td>
+                                        <td>@PromotedTeamLabels.Category(row.Category)</td>
+                                        <td>@Fixed3(row.PromotedMean) (@row.PromotedCount)</td>
+                                        <td>@Fixed3(row.OtherMean) (@row.OtherCount)</td>
+                                        <td>@Fixed3(row.Difference)</td>
+                                        <td>
+                                            <MudChip T="string" Size="Size.Small" Color="@SignificanceColour(row.IsSignificant)">
+                                                @PValueLabel(row.AdjustedPValue, row.IsConclusive)
+                                            </MudChip>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </MudSimpleTable>
+                    }
                 }
                 else
                 {

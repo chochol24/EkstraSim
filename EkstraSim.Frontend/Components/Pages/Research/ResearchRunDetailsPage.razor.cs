@@ -238,11 +238,24 @@ public partial class ResearchRunDetailsPage
 
     private List<PromotedTeamDTO> PromotedTeams()
     {
+        if (comparison != null)
+        {
+            return comparison.PromotedTeams;
+        }
+
         if (string.IsNullOrWhiteSpace(run?.PromotedTeamsJson))
         {
             return [];
         }
 
         return JsonConvert.DeserializeObject<List<PromotedTeamDTO>>(run.PromotedTeamsJson) ?? [];
+    }
+
+    private List<string> PromotedMetricModels => comparison?.Summaries.Select(s => s.ModelName).ToList() ?? [];
+
+    private string TeamMetricLabel(int teamId, string modelName)
+    {
+        var metric = comparison?.PromotedTeamMetrics.FirstOrDefault(m => m.TeamId == teamId && m.ModelName == modelName);
+        return metric == null ? "—" : $"{Fixed3(metric.Mean)} ({metric.Count})";
     }
 }
