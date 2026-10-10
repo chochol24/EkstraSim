@@ -1,3 +1,4 @@
+using EkstraSim.Prediction.Evaluation;
 using EkstraSim.Prediction.Metrics;
 
 namespace EkstraSim.Prediction.Statistics;
@@ -34,6 +35,7 @@ public sealed class PromotedTeamComparison
 {
     public string ModelName { get; init; } = string.Empty;
     public MetricKind Metric { get; init; }
+    public PromotedCategory? Category { get; init; }
     public int? FromRound { get; init; }
     public int? ToRound { get; init; }
 
@@ -46,6 +48,22 @@ public sealed class PromotedTeamComparison
     public double AdjustedPValue { get; init; } = 1.0;
 
     public double Difference => PromotedMean - OtherMean;
+}
+
+public sealed class PromotedTeamMetric
+{
+    public int TeamId { get; init; }
+    public PromotedCategory Category { get; init; }
+    public string ModelName { get; init; } = string.Empty;
+    public MetricKind Metric { get; init; }
+    public double Mean { get; init; }
+    public int Count { get; init; }
+}
+
+public sealed class PromotedCategoryAnalysis
+{
+    public IReadOnlyList<PromotedTeamComparison> Comparisons { get; init; } = [];
+    public IReadOnlyList<PromotedTeamMetric> TeamMetrics { get; init; } = [];
 }
 
 public static class ModelComparison
@@ -98,23 +116,66 @@ public static class ModelComparison
             }
         }
 
-        var adjusted = HolmCorrection.Adjust(comparisons.Select(c => c.Test.PValue).ToList());
+        return ApplyHolm(comparisons);
+    }
 
-        return comparisons
-            .Select((comparison, index) => new PromotedTeamComparison
+    public static PromotedCategoryAnalysis PromotedByCategory(
+        IReadOnlyDictionary<string, IReadOnlyList<MatchEvaluation>> evaluationsByModel,
+        MetricKind metric,
+        IReadOnlyDictionary<int, (int HomeTeamId, int AwayTeamId)> teamsByMatch,
+        IReadOnlyList<PromotedTeamHistory> promotedTeams)
+    {
+        var models = evaluationsByModel.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToList();
+
+        var missing = models.SelectMany(pair => pair.Value).FirstOrDefault(e => !teamsByMatch.ContainsKey(e.MatchId));
+        if (missing != null)
+        {
+            throw new ArgumentException($"Brak drużyn meczu {missing.MatchId} (model {missing.ModelName}).", nameof(teamsByMatch));
+        }
+
+        var categoryByTeam = promotedTeams.ToDictionary(team => team.TeamId, team => team.Category);
+        var categories = promotedTeams.Select(team => team.Category).Distinct().Order().ToList();
+        var comparisons = new List<PromotedTeamComparison>();
+
+        foreach (var (modelName, evaluations) in models)
+        {
+            var others = evaluations.Where(e => !PlayedBy(teamsByMatch, e, categoryByTeam.ContainsKey)).ToList();
+
+            foreach (var category in categories)
             {
-                ModelName = comparison.ModelName,
-                Metric = comparison.Metric,
-                FromRound = comparison.FromRound,
-                ToRound = comparison.ToRound,
-                PromotedMean = comparison.PromotedMean,
-                OtherMean = comparison.OtherMean,
-                PromotedCount = comparison.PromotedCount,
-                OtherCount = comparison.OtherCount,
-                Test = comparison.Test,
-                AdjustedPValue = adjusted[index]
-            })
+                var group = evaluations
+                    .Where(e => PlayedBy(teamsByMatch, e, teamId => categoryByTeam.TryGetValue(teamId, out var teamCategory) && teamCategory == category))
+                    .ToList();
+
+                comparisons.Add(BuildGroups(modelName, metric, category, null, null, group, others));
+            }
+        }
+
+        var teamMetrics = promotedTeams
+            .SelectMany(team => models.Select(pair =>
+            {
+                var values = pair.Value
+                    .Where(e => PlayedBy(teamsByMatch, e, teamId => teamId == team.TeamId))
+                    .Select(e => metric.ValueOf(e))
+                    .ToList();
+
+                return new PromotedTeamMetric
+                {
+                    TeamId = team.TeamId,
+                    Category = team.Category,
+                    ModelName = pair.Key,
+                    Metric = metric,
+                    Mean = values.Count > 0 ? values.Average() : 0,
+                    Count = values.Count
+                };
+            }))
             .ToList();
+
+        return new PromotedCategoryAnalysis
+        {
+            Comparisons = ApplyHolm(comparisons),
+            TeamMetrics = teamMetrics
+        };
     }
 
     private static PairwiseComparison BuildPair(
@@ -153,13 +214,33 @@ public static class ModelComparison
         int? fromRound,
         int? toRound)
     {
-        var promoted = evaluations.Where(e => e.InvolvesPromotedTeam).Select(e => metric.ValueOf(e)).ToList();
-        var others = evaluations.Where(e => !e.InvolvesPromotedTeam).Select(e => metric.ValueOf(e)).ToList();
+        return BuildGroups(
+            modelName,
+            metric,
+            null,
+            fromRound,
+            toRound,
+            evaluations.Where(e => e.InvolvesPromotedTeam),
+            evaluations.Where(e => !e.InvolvesPromotedTeam));
+    }
+
+    private static PromotedTeamComparison BuildGroups(
+        string modelName,
+        MetricKind metric,
+        PromotedCategory? category,
+        int? fromRound,
+        int? toRound,
+        IEnumerable<MatchEvaluation> promotedEvaluations,
+        IEnumerable<MatchEvaluation> otherEvaluations)
+    {
+        var promoted = promotedEvaluations.Select(e => metric.ValueOf(e)).ToList();
+        var others = otherEvaluations.Select(e => metric.ValueOf(e)).ToList();
 
         return new PromotedTeamComparison
         {
             ModelName = modelName,
             Metric = metric,
+            Category = category,
             FromRound = fromRound,
             ToRound = toRound,
             PromotedCount = promoted.Count,
@@ -168,6 +249,37 @@ public static class ModelComparison
             OtherMean = others.Count > 0 ? others.Average() : 0,
             Test = MannWhitneyUTest.Compare(promoted, others)
         };
+    }
+
+    private static bool PlayedBy(
+        IReadOnlyDictionary<int, (int HomeTeamId, int AwayTeamId)> teamsByMatch,
+        MatchEvaluation evaluation,
+        Func<int, bool> isTeam)
+    {
+        var (homeTeamId, awayTeamId) = teamsByMatch[evaluation.MatchId];
+        return isTeam(homeTeamId) || isTeam(awayTeamId);
+    }
+
+    private static IReadOnlyList<PromotedTeamComparison> ApplyHolm(List<PromotedTeamComparison> comparisons)
+    {
+        var adjusted = HolmCorrection.Adjust(comparisons.Select(c => c.Test.PValue).ToList());
+
+        return comparisons
+            .Select((comparison, index) => new PromotedTeamComparison
+            {
+                ModelName = comparison.ModelName,
+                Metric = comparison.Metric,
+                Category = comparison.Category,
+                FromRound = comparison.FromRound,
+                ToRound = comparison.ToRound,
+                PromotedMean = comparison.PromotedMean,
+                OtherMean = comparison.OtherMean,
+                PromotedCount = comparison.PromotedCount,
+                OtherCount = comparison.OtherCount,
+                Test = comparison.Test,
+                AdjustedPValue = adjusted[index]
+            })
+            .ToList();
     }
 
     private static IReadOnlyList<PairwiseComparison> ApplyHolm(List<PairwiseComparison> comparisons)

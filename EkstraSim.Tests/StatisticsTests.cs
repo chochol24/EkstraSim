@@ -1,3 +1,4 @@
+using EkstraSim.Prediction.Evaluation;
 using EkstraSim.Prediction.Metrics;
 using EkstraSim.Prediction.Statistics;
 
@@ -438,6 +439,170 @@ public class StatisticsTests
 
         Assert.Equal(2, windowed.Count);
         Assert.All(windowed, w => Assert.Equal(3, w.PromotedCount));
+    }
+
+    private const int ColdHome = 1;
+    private const int ColdAway = 2;
+    private const int ReturningTeam = 3;
+
+    private static readonly (int MatchId, int HomeTeamId, int AwayTeamId)[] GradedMatches =
+    [
+        (1, ColdHome, 11),
+        (2, 12, ColdHome),
+        (3, ColdAway, 13),
+        (4, ColdHome, ColdAway),
+        (5, ColdHome, ReturningTeam),
+        (6, ReturningTeam, 14),
+        (7, 15, ReturningTeam),
+        (8, 11, 12),
+        (9, 13, 14),
+        (10, 15, 16),
+        (11, 17, 18),
+        (12, 12, 11),
+        (13, 14, 13),
+        (14, 16, 15),
+        (15, 18, 17)
+    ];
+
+    private static readonly List<PromotedTeamHistory> GradedPromoted =
+    [
+        new(ColdHome, 0, null),
+        new(ColdAway, 0, null),
+        new(ReturningTeam, 135, 2)
+    ];
+
+    [Fact]
+    public void GradedComparisonPutsAMixedMatchInBothCategoriesAndTestsAgainstMatchesWithoutPromotedTeams()
+    {
+        var (byModel, teams) = GradedFixture();
+
+        var analysis = ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, GradedPromoted);
+
+        Assert.Equal(
+            [("Elo", PromotedCategory.ColdStart), ("Elo", PromotedCategory.Returning), ("Poisson", PromotedCategory.ColdStart), ("Poisson", PromotedCategory.Returning)],
+            analysis.Comparisons.Select(c => (c.ModelName, c.Category!.Value)));
+        Assert.All(analysis.Comparisons, c => Assert.Equal(MetricKind.Brier, c.Metric));
+        Assert.All(analysis.Comparisons, c => Assert.Null(c.FromRound));
+
+        foreach (var model in new[] { "Elo", "Poisson" })
+        {
+            var cold = analysis.Comparisons.Single(c => c.ModelName == model && c.Category == PromotedCategory.ColdStart);
+            var returning = analysis.Comparisons.Single(c => c.ModelName == model && c.Category == PromotedCategory.Returning);
+
+            Assert.Equal(5, cold.PromotedCount);
+            Assert.Equal(MeanOf(byModel[model], 1, 2, 3, 4, 5), cold.PromotedMean, precision: 12);
+            Assert.Equal(3, returning.PromotedCount);
+            Assert.Equal(MeanOf(byModel[model], 5, 6, 7), returning.PromotedMean, precision: 12);
+
+            Assert.All([cold, returning], c => Assert.Equal(8, c.OtherCount));
+            Assert.All([cold, returning], c => Assert.Equal(MeanOf(byModel[model], 8, 9, 10, 11, 12, 13, 14, 15), c.OtherMean, precision: 12));
+
+            var binary = ModelComparison.PromotedVersusRest(byModel, MetricKind.Brier).Single(c => c.ModelName == model);
+            Assert.Null(binary.Category);
+            Assert.Equal(binary.OtherCount, cold.OtherCount);
+            Assert.Equal(binary.OtherMean, cold.OtherMean);
+
+            Assert.True(cold.Test.IsConclusive);
+            Assert.True(cold.Difference > 0);
+            Assert.False(returning.Test.IsConclusive);
+            Assert.Equal(1.0, returning.Test.PValue);
+        }
+    }
+
+    [Fact]
+    public void GradedComparisonAppliesOneHolmFamilyAcrossModelsAndCategories()
+    {
+        var (byModel, teams) = GradedFixture();
+
+        var comparisons = ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, GradedPromoted).Comparisons;
+        var expected = HolmCorrection.Adjust(comparisons.Select(c => c.Test.PValue).ToList());
+
+        Assert.Equal(4, comparisons.Count);
+        Assert.Equal(expected, comparisons.Select(c => c.AdjustedPValue));
+        Assert.All(comparisons.Where(c => c.Test.IsConclusive), c => Assert.True(c.AdjustedPValue > c.Test.PValue));
+        Assert.Equal(Math.Min(1.0, 4 * comparisons.Min(c => c.Test.PValue)), comparisons.Min(c => c.AdjustedPValue), precision: 12);
+    }
+
+    [Fact]
+    public void GradedComparisonAveragesEachPromotedTeamOverItsOwnMatches()
+    {
+        var (byModel, teams) = GradedFixture();
+
+        var metrics = ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, GradedPromoted).TeamMetrics;
+
+        Assert.Equal(
+            [(ColdHome, "Elo"), (ColdHome, "Poisson"), (ColdAway, "Elo"), (ColdAway, "Poisson"), (ReturningTeam, "Elo"), (ReturningTeam, "Poisson")],
+            metrics.Select(m => (m.TeamId, m.ModelName)));
+
+        foreach (var model in new[] { "Elo", "Poisson" })
+        {
+            var coldHome = metrics.Single(m => m.TeamId == ColdHome && m.ModelName == model);
+            var coldAway = metrics.Single(m => m.TeamId == ColdAway && m.ModelName == model);
+            var returning = metrics.Single(m => m.TeamId == ReturningTeam && m.ModelName == model);
+
+            Assert.Equal((4, PromotedCategory.ColdStart), (coldHome.Count, coldHome.Category));
+            Assert.Equal(MeanOf(byModel[model], 1, 2, 4, 5), coldHome.Mean, precision: 12);
+            Assert.Equal((2, PromotedCategory.ColdStart), (coldAway.Count, coldAway.Category));
+            Assert.Equal(MeanOf(byModel[model], 3, 4), coldAway.Mean, precision: 12);
+            Assert.Equal((3, PromotedCategory.Returning), (returning.Count, returning.Category));
+            Assert.Equal(MeanOf(byModel[model], 5, 6, 7), returning.Mean, precision: 12);
+        }
+    }
+
+    [Fact]
+    public void GradedComparisonSkipsACategoryWithoutTeams()
+    {
+        var (byModel, teams) = GradedFixture();
+
+        var analysis = ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, [new PromotedTeamHistory(ReturningTeam, 37, 5)]);
+
+        Assert.Equal(["Elo", "Poisson"], analysis.Comparisons.Select(c => c.ModelName));
+        Assert.All(analysis.Comparisons, c => Assert.Equal(PromotedCategory.Returning, c.Category));
+        Assert.All(analysis.Comparisons, c => Assert.Equal((3, 12), (c.PromotedCount, c.OtherCount)));
+        Assert.All(analysis.TeamMetrics, m => Assert.Equal(ReturningTeam, m.TeamId));
+
+        var none = ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, []);
+
+        Assert.Empty(none.Comparisons);
+        Assert.Empty(none.TeamMetrics);
+    }
+
+    [Fact]
+    public void GradedComparisonRejectsAMatchWithoutTeams()
+    {
+        var (byModel, teams) = GradedFixture();
+        teams.Remove(8);
+
+        Assert.Throws<ArgumentException>(() => ModelComparison.PromotedByCategory(byModel, MetricKind.Brier, teams, GradedPromoted));
+    }
+
+    private static (Dictionary<string, IReadOnlyList<MatchEvaluation>> ByModel, Dictionary<int, (int HomeTeamId, int AwayTeamId)> Teams) GradedFixture()
+    {
+        var promotedIds = GradedPromoted.Select(team => team.TeamId).ToHashSet();
+
+        List<MatchEvaluation> Evaluations(string modelName, double scale) => GradedMatches
+            .Select(match => new MatchEvaluation
+            {
+                MatchId = match.MatchId,
+                ModelName = modelName,
+                Round = 20,
+                InvolvesPromotedTeam = promotedIds.Contains(match.HomeTeamId) || promotedIds.Contains(match.AwayTeamId),
+                Brier = scale * (match.MatchId <= 7 ? 0.5 + 0.01 * match.MatchId : 0.1 + 0.01 * match.MatchId)
+            })
+            .ToList();
+
+        var byModel = new Dictionary<string, IReadOnlyList<MatchEvaluation>>
+        {
+            ["Poisson"] = Evaluations("Poisson", 1.0),
+            ["Elo"] = Evaluations("Elo", 0.9)
+        };
+
+        return (byModel, GradedMatches.ToDictionary(match => match.MatchId, match => (match.HomeTeamId, match.AwayTeamId)));
+    }
+
+    private static double MeanOf(IReadOnlyList<MatchEvaluation> evaluations, params int[] matchIds)
+    {
+        return evaluations.Where(e => matchIds.Contains(e.MatchId)).Average(e => e.Brier);
     }
 
     private static List<MatchEvaluation> BuildEvaluations(
