@@ -594,12 +594,12 @@ Pliki CSV i baza **nie są tym samym źródłem** — badania czytają bazę, a 
 | 2021/22 – 2023/24 | 306 / 306 | 306 / 306 | — |
 | 2024/25 | **162 / 306** | **306 / 306** | plik CSV jest urwany na kolejce 18, ale **baza ma pełny sezon** — nie odtwarzać go z CSV |
 | 2025/26 | 306 / 306 | 306 / 306 | zaimportowane 2026-08-04 — uzupełniło 168 wyników; konflikt boisk Jagiellonia ↔ Wisła Płock rozstrzygnięty na korzyść pliku (zweryfikowane w źródłach) |
-| 2026/27 | 16 / 306 | 16 / 306 | sezon w toku; dane z eksportu 2026-08-03, do odświeżenia |
+| 2026/27 | 80 / 306 | 80 / 306 | sezon w toku; eksport z 2026-10-10 — kolejki 1–9 bez trzech meczów przełożonych (3. kolejka: 12.10, 4. kolejka: grudzień) i dwa mecze 10. kolejki |
 
 Dwa wnioski, oba ważne:
 
 - **2024/25 jest gotowe pod walk-forward**, bo baza ma wszystkie 306 wyników. Sam plik CSV by na to nie pozwolił — gdyby ten sezon odtwarzać z pliku, runda wiosenna wyszłaby pusta. Kierunek jest tu jednoznaczny: baza jest źródłem prawdy, plik nie.
-- **2026/27 jeszcze nie**. Odcięcie wypadnie ~kolejka 17, a `BuildEvaluationSet` bierze kolejki powyżej odcięcia i tylko rozegrane — przy wynikach z ~2 pierwszych kolejek zbiór ewaluacyjny jest **pusty**. Ten sezon obsługuje na razie wyłącznie `predict-round`.
+- **2026/27 jeszcze nie**. Odcięcie wypadnie ~kolejka 17, a `BuildEvaluationSet` bierze kolejki powyżej odcięcia i tylko rozegrane — przy wynikach z pierwszych ~10 kolejek zbiór ewaluacyjny jest **pusty**. Ten sezon obsługuje na razie wyłącznie `predict-round`.
 
 ### Konwersja eksportu z TheSportsDB
 
@@ -609,6 +609,8 @@ Pliki 2025/26 i 2026/27 przyszły w innym formacie niż pozostałe i wymagały k
 2. **Każdy wiersz danych jest owinięty w dodatkową parę cudzysłowów** z podwojonymi cudzysłowami wewnątrz (podwójnie zakodowany CSV). `ParseRow` robi naiwne `line.Split(',')`, więc `fields[1]` wychodzi jako `""2025-07-18 16:00:00""` i `DateTime.TryParse` odrzuca **każdy** wiersz.
 3. Kolejka to tekst `"Round 1"`, nie liczba — `int.TryParse` odrzuca ją nawet po naprawieniu cudzysłowów.
 4. Kodowanie to **cp1250 z CRLF**, nie UTF-8. Czytane jako UTF-8 daje `Bia<?>ystok` i zakłada śmieciowe rekordy `Team`.
+
+Skąd ten format: link „Download as CSV" na stronie sezonu w TheSportsDB (`/season/4422-polish-ekstraklasa/<sezon>?csv=1&all=1`) nie zwraca pliku, tylko stronę HTML z CSV w polu `<textarea>`. Każde pole jest tam w cudzysłowach, zapisanych jako `&quot;`, a znaki są w UTF-8. Owinięcie wierszy (punkt 2) i cp1250 (punkt 4) dokłada dopiero arkusz kalkulacyjny przy zapisie skopiowanego pola. Wierszy wziętych wprost z pola konwerter nie przyjmie: taki wiersz zaczyna się i kończy cudzysłowem, więc skrypt potraktuje go jak owinięty i rozjedzie pola. Treść pola trzeba najpierw doprowadzić do postaci z arkusza: zdekodować encje HTML, owinąć każdy wiersz danych w cudzysłowy z podwojeniem wewnętrznych, nagłówek zostawić bez zmian i zapisać całość w cp1250. Tak powstał import z 2026-10-10.
 
 Konwersję robi `scripts/Convert-SportsDbCsv.ps1`:
 
