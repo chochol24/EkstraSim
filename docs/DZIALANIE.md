@@ -610,15 +610,18 @@ Pliki 2025/26 i 2026/27 przyszły w innym formacie niż pozostałe i wymagały k
 3. Kolejka to tekst `"Round 1"`, nie liczba — `int.TryParse` odrzuca ją nawet po naprawieniu cudzysłowów.
 4. Kodowanie to **cp1250 z CRLF**, nie UTF-8. Czytane jako UTF-8 daje `Bia<?>ystok` i zakłada śmieciowe rekordy `Team`.
 
-Skąd ten format: link „Download as CSV" na stronie sezonu w TheSportsDB (`/season/4422-polish-ekstraklasa/<sezon>?csv=1&all=1`) nie zwraca pliku, tylko stronę HTML z CSV w polu `<textarea>`. Każde pole jest tam w cudzysłowach, zapisanych jako `&quot;`, a znaki są w UTF-8. Owinięcie wierszy (punkt 2) i cp1250 (punkt 4) dokłada dopiero arkusz kalkulacyjny przy zapisie skopiowanego pola. Wierszy wziętych wprost z pola konwerter nie przyjmie: taki wiersz zaczyna się i kończy cudzysłowem, więc skrypt potraktuje go jak owinięty i rozjedzie pola. Treść pola trzeba najpierw doprowadzić do postaci z arkusza: zdekodować encje HTML, owinąć każdy wiersz danych w cudzysłowy z podwojeniem wewnętrznych, nagłówek zostawić bez zmian i zapisać całość w cp1250. Tak powstał import z 2026-10-10.
+Skąd ten format: link „Download as CSV" na stronie sezonu w TheSportsDB (`/season/4422-polish-ekstraklasa/<sezon>?csv=1&all=1`) nie zwraca pliku, tylko stronę HTML z CSV w polu `<textarea>`. Każde pole jest tam w cudzysłowach, zapisanych jako `&quot;`, a znaki są w UTF-8. Owinięcie wierszy (punkt 2) i cp1250 (punkt 4) dokłada dopiero arkusz kalkulacyjny przy zapisie skopiowanego pola.
 
-Konwersję robi `scripts/Convert-SportsDbCsv.ps1`:
+Konwersję robi `scripts/Convert-SportsDbCsv.ps1`. Przyjmuje oba źródła — plik zapisany z arkusza albo, z przełącznikiem `-FromHtml`, wprost pobraną stronę:
 
 ```powershell
 .\scripts\Convert-SportsDbCsv.ps1 -Path Database\CSV\Ekstraklasa_2026_2027.csv -InPlace
+.\scripts\Convert-SportsDbCsv.ps1 -Path strona.html -FromHtml -OutPath Database\CSV\Ekstraklasa_2026_2027.csv
 ```
 
-Skrypt zdejmuje owinięcie, wyciąga numer z `Round N`, obcina znacznik czasu do daty, przepisuje `Thumb` na ósme pole i przekodowuje na UTF-8. **Nazw drużyn nie rusza** — kanonizuje je mapa aliasów w warstwie importu, dzięki czemu każdy kolejny download wymaga tylko konwersji formatu.
+Z `-FromHtml` skrypt czyta plik jako UTF-8 (ścisłe dekodowanie — plik w innym kodowaniu jest odrzucany, zamiast dać zniekształcone nazwy drużyn), wycina zawartość `<textarea id='myInput'>`, dekoduje encje HTML i parsuje wiersze jak zwykły CSV z polami w cudzysłowach, bez zdejmowania owinięcia. To rozróżnienie jest konieczne: wiersz wzięty wprost z pola zaczyna się i kończy cudzysłowem, więc tryb domyślny potraktowałby go jak owinięty i rozjechał pola. Dalej obie ścieżki są wspólne — ten sam nagłówek, te same kontrole wierszy i ten sam zapis. Na stronie z 2026-10-10 tryb `-FromHtml` daje bajtowo ten sam plik co tryb domyślny na wersji przepuszczonej przez format arkusza. `-FromHtml` wymaga `-OutPath` (strona nie jest nadpisywana plikiem CSV), a strona HTML podana bez przełącznika jest odrzucana z podpowiedzią.
+
+Skrypt wyciąga numer z `Round N`, obcina znacznik czasu do daty, przepisuje `Thumb` na ósme pole i zapisuje w UTF-8; w trybie domyślnym zdejmuje też owinięcie wierszy. **Nazw drużyn nie rusza** — kanonizuje je mapa aliasów w warstwie importu, dzięki czemu każdy kolejny download wymaga tylko konwersji formatu.
 
 Dwa zabezpieczenia: nic nie jest zapisywane, jeśli **którykolwiek** wiersz okaże się niepoprawny (żadnych plików w połowie skonwertowanych), a plik bez nagłówka `idEvent,...` jest odrzucany — więc powtórne uruchomienie na już skonwertowanym pliku nie zepsuje go. `-InPlace` odkłada oryginał do `*.csv.orig` (ignorowane przez git).
 

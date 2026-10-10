@@ -10,22 +10,33 @@ Nazwy druzyn NIE sa zmieniane - kanonizuje je TeamNameAliases w warstwie importu
 
 Nic nie jest zapisywane, jesli jakikolwiek wiersz okaze sie niepoprawny.
 
+-FromHtml czyta wprost strone sezonu pobrana z linku "Download as CSV"
+(eksport w polu <textarea>, UTF-8) zamiast pliku zapisanego z arkusza (cp1250).
+
 .EXAMPLE
 .\scripts\Convert-SportsDbCsv.ps1 -Path Database\CSV\Ekstraklasa_2026_2027.csv -InPlace
 
 .EXAMPLE
 .\scripts\Convert-SportsDbCsv.ps1 -Path pobrane.csv -OutPath Database\CSV\Ekstraklasa_2026_2027.csv
+
+.EXAMPLE
+.\scripts\Convert-SportsDbCsv.ps1 -Path strona.html -FromHtml -OutPath Database\CSV\Ekstraklasa_2026_2027.csv
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Path,
     [string]$OutPath,
-    [switch]$InPlace
+    [switch]$InPlace,
+    [switch]$FromHtml
 )
 
 $ErrorActionPreference = 'Stop'
 
 if (-not $InPlace -and [string]::IsNullOrWhiteSpace($OutPath)) {
     throw "Podaj -OutPath albo -InPlace."
+}
+
+if ($FromHtml -and $InPlace) {
+    throw "-FromHtml wymaga -OutPath - strona HTML nie moze zostac nadpisana plikiem CSV."
 }
 
 if ($InPlace) {
@@ -59,12 +70,33 @@ function Split-CsvLine([string]$line) {
     return $fields
 }
 
-$cp1250 = [System.Text.Encoding]::GetEncoding(1250)
-$raw = $cp1250.GetString([System.IO.File]::ReadAllBytes($Path))
+if ($FromHtml) {
+    $utf8 = New-Object System.Text.UTF8Encoding($false, $true)
+    try {
+        $html = $utf8.GetString([System.IO.File]::ReadAllBytes($Path))
+    }
+    catch [System.Text.DecoderFallbackException] {
+        throw "Plik $Path nie jest w UTF-8 - to nie jest strona pobrana z TheSportsDB."
+    }
+    $textarea = [regex]::Match($html, "(?s)<textarea[^>]*\bid=['""]myInput['""][^>]*>(.*?)</textarea>")
+    if (-not $textarea.Success) {
+        throw "W ${Path} nie ma pola <textarea id='myInput'> z eksportem CSV."
+    }
+    $raw = [System.Net.WebUtility]::HtmlDecode($textarea.Groups[1].Value)
+}
+else {
+    $cp1250 = [System.Text.Encoding]::GetEncoding(1250)
+    $raw = $cp1250.GetString([System.IO.File]::ReadAllBytes($Path))
+}
+
 $lines = $raw -split "`r`n|`n" | Where-Object { $_.Trim() -ne '' }
 
 if ($lines.Count -lt 2) {
     throw "Plik $Path ma mniej niz 2 niepuste linie."
+}
+
+if (-not $FromHtml -and $lines[0] -match '^\s*<') {
+    throw "Plik $Path wyglada na strone HTML - uzyj -FromHtml."
 }
 
 if ($lines[0] -notmatch '^idEvent,strTimestamp,Round,') {
@@ -78,7 +110,7 @@ $played = 0
 for ($n = 1; $n -lt $lines.Count; $n++) {
     $line = $lines[$n]
 
-    if ($line.StartsWith('"') -and $line.EndsWith('"')) {
+    if (-not $FromHtml -and $line.StartsWith('"') -and $line.EndsWith('"')) {
         $line = $line.Substring(1, $line.Length - 2) -replace '""', '"'
     }
 
