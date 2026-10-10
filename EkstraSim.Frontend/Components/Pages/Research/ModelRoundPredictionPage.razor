@@ -38,16 +38,18 @@
             <MudNumericField T="int" Label="Kolejka" @bind-Value="request.Round" Min="1" Max="60" Immediate="true" Margin="Margin.Dense" />
 
             <MudNumericField T="int?" Label="Trening do kolejki (puste = poprzednia)" @bind-Value="request.TrainingLastRound"
-                             Min="0" Max="60" Margin="Margin.Dense" />
+                             Min="0" Max="@(request.Round - 1)" Margin="Margin.Dense" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="prediction-submit mt-3"
                        OnClick="PredictAsync"
-                       Disabled="@(isPredicting || request.SeasonId == 0 || request.Round <= 0 || string.IsNullOrWhiteSpace(request.ModelName))">
+                       Disabled="@(isPredicting || request.SeasonId == 0 || request.Round <= 0 || request.TrainingLastRound >= request.Round || string.IsNullOrWhiteSpace(request.ModelName))">
                 @(isPredicting ? "Liczę..." : "Przewiduj")
             </MudButton>
 
             <MudText Typo="Typo.caption" Class="pt-2">
-                Model trenuje się na historii i kolejkach do odcięcia, a potem przewiduje wskazaną kolejkę.
+                Model trenuje się na historii i kolejkach do odcięcia (odcięcie musi być wcześniejsze niż przewidywana kolejka),
+                a potem przewiduje wskazaną kolejkę. Mecze rozegrane w dniu przewidywanego meczu lub później nie wchodzą do treningu
+                jego predykcji (np. mecze przełożone).
                 Działa też dla kolejek jeszcze nierozegranych — wtedy nie ma metryk, tylko predykcja.
             </MudText>
         </MudPaper>

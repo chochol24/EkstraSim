@@ -48,8 +48,7 @@ else
     {
         <MudAlert Severity="Severity.Error" Class="mb-3">@run.ErrorMessage</MudAlert>
     }
-
-    @if (!IsFinished)
+    else if (!IsFinished)
     {
         <MudAlert Severity="Severity.Info">
             Obliczenia jeszcze trwają.
