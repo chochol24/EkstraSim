@@ -71,7 +71,7 @@ public class ResearchOrchestrationService
         try
         {
             var run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId);
-            if (run == null)
+            if (run == null || run.Status == EvaluationRunStatus.Completed)
             {
                 return;
             }

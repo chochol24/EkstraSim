@@ -171,7 +171,7 @@ public class ResearchRunService
 
             if (run == null)
             {
-                return Failure<ModelEvaluationRunDTO>($"Badanie {runId} nie istnieje.");
+                return Failure<ModelEvaluationRunDTO>(string.Format(SnackbarMessages.Research_Run_NotFound, runId));
             }
 
             return new EkstraSimResult<ModelEvaluationRunDTO>

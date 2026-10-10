@@ -38,7 +38,9 @@
             <MudNumericField T="int" Label="Kolejka" @bind-Value="request.Round" Min="1" Max="60" Immediate="true" Margin="Margin.Dense" />
 
             <MudNumericField T="int?" Label="Trening do kolejki (puste = poprzednia)" @bind-Value="request.TrainingLastRound"
-                             Min="0" Max="@(request.Round - 1)" Margin="Margin.Dense" />
+                             Min="0" Max="@(request.Round - 1)" Margin="Margin.Dense"
+                             Error="@(request.TrainingLastRound >= request.Round)"
+                             ErrorText="Odcięcie musi być wcześniejsze niż przewidywana kolejka." />
 
             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="prediction-submit mt-3"
                        OnClick="PredictAsync"
