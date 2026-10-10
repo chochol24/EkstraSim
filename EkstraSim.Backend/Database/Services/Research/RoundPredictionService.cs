@@ -26,9 +26,17 @@ public class RoundPredictionService
     {
         try
         {
-            if (!PredictionModelFactory.IsKnown(request.ModelName))
+            var invalid = ResearchRequestRules.Validate(request);
+            if (invalid != null)
             {
-                return Failure($"Nieznany model '{request.ModelName}'. Dostepne: {string.Join(", ", PredictionModelFactory.AvailableModels)}.");
+                return Failure(invalid);
+            }
+
+            var modelName = PredictionModelFactory.CanonicalName(request.ModelName);
+            if (modelName == null)
+            {
+                return Failure(string.Format(
+                    SnackbarMessages.Research_Model_Unknown, request.ModelName, string.Join(", ", PredictionModelFactory.AvailableModels)));
             }
 
             await using var context = await _dbFactory.CreateDbContextAsync();
@@ -43,10 +51,6 @@ public class RoundPredictionService
             var chronology = await SeasonStructureService.GetSeasonChronologyAsync(context, request.LeagueId);
 
             var trainingLastRound = request.TrainingLastRound ?? request.Round - 1;
-            if (trainingLastRound < 0)
-            {
-                return Failure("Kolejka odciecia nie moze byc ujemna.");
-            }
 
             var toPredict = leagueMatches
                 .Where(m => m.SeasonId == request.SeasonId && m.Round == request.Round)
@@ -70,12 +74,15 @@ public class RoundPredictionService
                 RidgeLambda = request.RidgeLambda
             };
 
-            var model = PredictionModelFactory.Create(request.ModelName);
+            var model = PredictionModelFactory.Create(modelName);
             model.Train(history, options);
+
+            var (predictions, _) = WalkForwardEvaluator.PredictWithDateFilter(
+                model, history, toPredict, options, () => PredictionModelFactory.Create(modelName), request.Round);
 
             var matchesById = entities.ToDictionary(m => m.Id);
             var results = toPredict
-                .Select(match => ToDto(model.Predict(match), match, matchesById))
+                .Zip(predictions, (match, prediction) => ToDto(prediction, match, matchesById))
                 .ToList();
 
             return new EkstraSimResult<IEnumerable<ModelPredictionDTO>>

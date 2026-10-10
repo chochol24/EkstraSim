@@ -37,6 +37,7 @@ builder.Services.AddScoped<ResearchOrchestrationService>();
 builder.Services.AddScoped<ResearchRunService>();
 builder.Services.AddScoped<RoundPredictionService>();
 builder.Services.AddSingleton<IResearchRunLauncher, ResearchRunLauncher>();
+builder.Services.AddSingleton<ResearchRunRecovery>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
@@ -53,6 +54,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+await app.Services.GetRequiredService<ResearchRunRecovery>().RecoverInterruptedRunsAsync();
 
 app.UseOpenApi();
 app.UseSwagger();

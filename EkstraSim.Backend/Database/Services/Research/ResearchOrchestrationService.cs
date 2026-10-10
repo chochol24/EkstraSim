@@ -12,8 +12,6 @@ namespace EkstraSim.Backend.Database.Services.Research;
 
 public class ResearchOrchestrationService
 {
-    private const int SaveBatchSize = 500;
-
     private readonly IDbContextFactory<EkstraSimDbContext> _dbFactory;
     private readonly ILogger<ResearchOrchestrationService> _logger;
 
@@ -29,20 +27,23 @@ public class ResearchOrchestrationService
     {
         await using var context = await _dbFactory.CreateDbContextAsync(ct);
 
-        var run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId, ct);
-        if (run == null)
-        {
-            _logger.LogWarning("Nie znaleziono badania o Id {RunId}.", runId);
-            return;
-        }
-
-        run.Status = EvaluationRunStatus.Running;
-        run.StartedAt = DateTime.UtcNow;
-        run.AlgorithmVersion = ResearchAlgorithm.Version;
-        await context.SaveChangesAsync(ct);
+        var startedAt = DateTime.UtcNow;
+        ModelEvaluationRun? run = null;
 
         try
         {
+            run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId, ct);
+            if (run == null)
+            {
+                _logger.LogWarning("Nie znaleziono badania o Id {RunId}.", runId);
+                return;
+            }
+
+            run.Status = EvaluationRunStatus.Running;
+            run.StartedAt = startedAt;
+            run.AlgorithmVersion = ResearchAlgorithm.Version;
+            await context.SaveChangesAsync(ct);
+
             await RunEvaluationAsync(context, run, ct);
 
             run.Status = EvaluationRunStatus.Completed;
@@ -53,11 +54,47 @@ public class ResearchOrchestrationService
         {
             _logger.LogError(ex, "Badanie {RunId} zakonczylo sie bledem.", runId);
 
-            run.Status = EvaluationRunStatus.Failed;
-            run.ErrorMessage = ex.Message;
-            run.FinishedAt = DateTime.UtcNow;
-            await context.SaveChangesAsync(ct);
+            var effectiveOptionsJson = run?.EffectiveOptionsJson;
+            context.ChangeTracker.Clear();
+
+            await MarkFailedAsync(context, runId, startedAt, effectiveOptionsJson, ErrorMessageOf(ex));
         }
+    }
+
+    private async Task MarkFailedAsync(
+        EkstraSimDbContext context,
+        int runId,
+        DateTime startedAt,
+        string? effectiveOptionsJson,
+        string errorMessage)
+    {
+        try
+        {
+            var run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId);
+            if (run == null)
+            {
+                return;
+            }
+
+            run.Status = EvaluationRunStatus.Failed;
+            run.StartedAt ??= startedAt;
+            run.AlgorithmVersion ??= ResearchAlgorithm.Version;
+            run.EffectiveOptionsJson = effectiveOptionsJson;
+            run.ErrorMessage = errorMessage;
+            run.FinishedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Nie udalo sie zapisac statusu Failed dla badania {RunId} - domknie je odzyskiwanie przy starcie.", runId);
+        }
+    }
+
+    private static string ErrorMessageOf(Exception exception)
+    {
+        return exception is DbUpdateException { InnerException: not null }
+            ? exception.InnerException.Message
+            : exception.Message;
     }
 
     private async Task RunEvaluationAsync(EkstraSimDbContext context, ModelEvaluationRun run, CancellationToken ct)
@@ -108,15 +145,7 @@ public class ResearchOrchestrationService
         }
 
         await context.ModelRoundMetrics.AddRangeAsync(metricRows, ct);
-
-        for (var offset = 0; offset < predictionRows.Count; offset += SaveBatchSize)
-        {
-            var batch = predictionRows.Skip(offset).Take(SaveBatchSize).ToList();
-            await context.ModelPredictions.AddRangeAsync(batch, ct);
-            await context.SaveChangesAsync(ct);
-        }
-
-        await context.SaveChangesAsync(ct);
+        await context.ModelPredictions.AddRangeAsync(predictionRows, ct);
 
         run.EvaluatedMatchCount = evaluationSet.Count;
         run.EvaluatedRoundCount = SeasonCalendar.RoundsInOrder(evaluationSet).Count;

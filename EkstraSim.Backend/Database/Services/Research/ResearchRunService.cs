@@ -37,9 +37,30 @@ public class ResearchRunService
     {
         try
         {
-            if (!double.IsFinite(request.StabilityTolerance) || request.StabilityTolerance < 0)
+            var invalid = ResearchRequestRules.Validate(request);
+            if (invalid != null)
             {
-                return Failure<ModelEvaluationRunDTO>("Tolerancja stabilności δ musi być liczbą nieujemną.");
+                return Failure<ModelEvaluationRunDTO>(invalid);
+            }
+
+            var models = new List<string>();
+            foreach (var name in request.Models ?? [])
+            {
+                var canonical = PredictionModelFactory.CanonicalName(name);
+                if (canonical == null)
+                {
+                    return Failure<ModelEvaluationRunDTO>(UnknownModelMessage(name));
+                }
+
+                if (!models.Contains(canonical))
+                {
+                    models.Add(canonical);
+                }
+            }
+
+            if (models.Count == 0)
+            {
+                models = PredictionModelFactory.AvailableModels.ToList();
             }
 
             await using var context = await _dbFactory.CreateDbContextAsync();
@@ -52,16 +73,22 @@ public class ResearchRunService
                 return Failure<ModelEvaluationRunDTO>($"Sezon {request.SeasonId} nie istnieje w lidze {request.LeagueId}.");
             }
 
-            var models = request.Models.Where(PredictionModelFactory.IsKnown).ToList();
-            if (models.Count == 0)
-            {
-                models = PredictionModelFactory.AvailableModels.ToList();
-            }
-
             var trainingLastRound = request.TrainingLastRound ?? await DetectCutoffAsync(context, request.LeagueId, request.SeasonId);
             if (trainingLastRound <= 0)
             {
                 return Failure<ModelEvaluationRunDTO>("Nie udalo sie wyznaczyc kolejki odciecia - podaj ja recznie.");
+            }
+
+            var hasRoundsToEvaluate = await context.Matches.AnyAsync(m =>
+                m.LeagueId == request.LeagueId
+                && m.SeasonId == request.SeasonId
+                && m.Round > trainingLastRound
+                && m.HomeTeamScore != null
+                && m.AwayTeamScore != null);
+
+            if (!hasRoundsToEvaluate)
+            {
+                return Failure<ModelEvaluationRunDTO>(string.Format(SnackbarMessages.Research_Cutoff_NoRoundsToEvaluate, trainingLastRound));
             }
 
             var promoted = await _promotedTeams.GetPromotedTeamsAsync(context, request.LeagueId, request.SeasonId);
@@ -165,6 +192,12 @@ public class ResearchRunService
         {
             await using var context = await _dbFactory.CreateDbContextAsync();
 
+            var notCompleted = await NotCompletedMessageAsync(context, runId);
+            if (notCompleted != null)
+            {
+                return Failure<IEnumerable<ModelRoundMetricDTO>>(notCompleted);
+            }
+
             var metrics = await context.ModelRoundMetrics
                 .Where(m => m.ModelEvaluationRunId == runId)
                 .OrderBy(m => m.ModelName)
@@ -188,6 +221,12 @@ public class ResearchRunService
         try
         {
             await using var context = await _dbFactory.CreateDbContextAsync();
+
+            var notCompleted = await NotCompletedMessageAsync(context, runId);
+            if (notCompleted != null)
+            {
+                return Failure<IEnumerable<ModelPredictionDTO>>(notCompleted);
+            }
 
             var query = context.ModelPredictions
                 .Include(p => p.Match)
@@ -238,15 +277,19 @@ public class ResearchRunService
                 return Failure<ModelComparisonDTO>($"Kolejka początkowa ({fromRound}) jest większa niż końcowa ({toRound}).");
             }
 
+            if (!MetricKindExtensions.TryParseName(metricName, out var metric))
+            {
+                return Failure<ModelComparisonDTO>(string.Format(
+                    SnackbarMessages.Research_Metric_Unknown, metricName, string.Join(", ", Enum.GetNames<MetricKind>())));
+            }
+
             await using var context = await _dbFactory.CreateDbContextAsync();
 
             var run = await context.ModelEvaluationRuns.FirstOrDefaultAsync(r => r.Id == runId);
-            if (run == null)
+            if (run == null || run.Status != EvaluationRunStatus.Completed)
             {
-                return Failure<ModelComparisonDTO>($"Badanie {runId} nie istnieje.");
+                return Failure<ModelComparisonDTO>(NotCompletedMessage(runId, run?.Status));
             }
-
-            var metric = ParseMetric(metricName);
 
             var rows = await context.ModelPredictions
                 .Where(p => p.ModelEvaluationRunId == runId)
@@ -291,9 +334,10 @@ public class ResearchRunService
                 : JsonConvert.DeserializeObject<CreateEvaluationRunRequest>(run.OptionsJson) ?? new CreateEvaluationRunRequest();
 
             var stabilityTolerance = tolerance ?? options.StabilityTolerance;
-            if (!double.IsFinite(stabilityTolerance) || stabilityTolerance < 0)
+            var invalidTolerance = ResearchRequestRules.ValidateTolerance(stabilityTolerance);
+            if (invalidTolerance != null)
             {
-                return Failure<ModelComparisonDTO>("Tolerancja stabilności δ musi być liczbą nieujemną.");
+                return Failure<ModelComparisonDTO>(invalidTolerance);
             }
 
             var stability = BuildStability(roundMetrics, metric, stabilityTolerance, options.StabilityWindow, fromRound, toRound);
@@ -501,9 +545,26 @@ public class ResearchRunService
         IsSignificant = comparison.Test.IsConclusive && comparison.AdjustedPValue < 0.05
     };
 
-    private static MetricKind ParseMetric(string? name)
+    private static async Task<string?> NotCompletedMessageAsync(EkstraSimDbContext context, int runId)
     {
-        return Enum.TryParse<MetricKind>(name, ignoreCase: true, out var metric) ? metric : MetricKind.RankedProbability;
+        var status = await context.ModelEvaluationRuns
+            .Where(r => r.Id == runId)
+            .Select(r => (EvaluationRunStatus?)r.Status)
+            .FirstOrDefaultAsync();
+
+        return status == EvaluationRunStatus.Completed ? null : NotCompletedMessage(runId, status);
+    }
+
+    private static string NotCompletedMessage(int runId, EvaluationRunStatus? status) => status switch
+    {
+        null => string.Format(SnackbarMessages.Research_Run_NotFound, runId),
+        EvaluationRunStatus.Failed => string.Format(SnackbarMessages.Research_Run_EndedWithError, runId),
+        _ => string.Format(SnackbarMessages.Research_Run_NotFinished, runId)
+    };
+
+    private static string UnknownModelMessage(string? name)
+    {
+        return string.Format(SnackbarMessages.Research_Model_Unknown, name, string.Join(", ", PredictionModelFactory.AvailableModels));
     }
 
     private static async Task<int> DetectCutoffAsync(EkstraSimDbContext context, int leagueId, int seasonId)
