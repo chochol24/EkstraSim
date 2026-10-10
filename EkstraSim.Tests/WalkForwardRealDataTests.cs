@@ -99,6 +99,44 @@ public class WalkForwardRealDataTests
         Assert.Equal(distinctHiddenSets, created);
     }
 
+    public static IEnumerable<object[]> Models => PredictionModelFactory.AvailableModels.Select(name => new object[] { name });
+
+    [Theory]
+    [Trait("Category", "RealData")]
+    [MemberData(nameof(Models))]
+    public void PredictRoundPathEqualsTheFirstEvaluatedRound(string modelName)
+    {
+        const int seasonId = RealDataFixture.Season2526;
+        const int round = RealDataFixture.TrainingLastRound + 1;
+        var (history, evaluation) = Split(seasonId);
+        var options = RealDataFixture.Options(seasonId);
+
+        var walkForward = WalkForwardEvaluator.Run(PredictionModelFactory.Create(modelName), history, evaluation, options)
+            .Single(r => r.Round == round);
+
+        var matches = evaluation.Where(m => m.Round == round).OrderBy(m => m.Id).ToList();
+        var model = PredictionModelFactory.Create(modelName);
+        model.Train(history, options);
+
+        var (predictions, filtered) = WalkForwardEvaluator.PredictWithDateFilter(
+            model, history, matches, options, () => PredictionModelFactory.Create(modelName), round);
+
+        _output.WriteLine($"{modelName}, k.{round}: {matches.Count} meczów, zawężone: {string.Join(", ", filtered)}");
+
+        Assert.Equal(walkForward.DateFilteredMatchIds, filtered);
+        Assert.Equal(walkForward.Predictions.Select(p => p.MatchId), predictions.Select(p => p.MatchId));
+        Assert.All(
+            walkForward.Predictions.Zip(predictions),
+            pair => Assert.True(
+                WalkForwardReference.Identical(pair.First, pair.Second),
+                $"{modelName}: mecz {pair.First.MatchId} — predykcja predict-round różni się od walk-forward."));
+
+        Assert.NotEmpty(filtered);
+        Assert.Contains(
+            matches.Zip(predictions),
+            pair => WalkForwardReference.Differs(model.Predict(pair.First), pair.Second, WalkForwardReference.Tolerance));
+    }
+
     private static (List<MatchData> History, List<MatchData> Evaluation) Split(int seasonId)
     {
         return (

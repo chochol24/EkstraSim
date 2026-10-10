@@ -83,4 +83,16 @@ public sealed class WalkForwardReference
             || Math.Abs(expected.DrawProbability - actual.DrawProbability) > tolerance
             || Math.Abs(expected.AwayWinProbability - actual.AwayWinProbability) > tolerance;
     }
+
+    public static bool Identical(MatchPrediction expected, MatchPrediction actual)
+    {
+        return expected.MatchId == actual.MatchId
+            && expected.ModelName == actual.ModelName
+            && !Differs(expected, actual, 0)
+            && expected.PredictedHomeScore == actual.PredictedHomeScore
+            && expected.PredictedAwayScore == actual.PredictedAwayScore
+            && expected.ScoreProbabilities.GetLength(0) == actual.ScoreProbabilities.GetLength(0)
+            && expected.ScoreProbabilities.GetLength(1) == actual.ScoreProbabilities.GetLength(1)
+            && expected.ScoreProbabilities.Cast<double>().SequenceEqual(actual.ScoreProbabilities.Cast<double>());
+    }
 }

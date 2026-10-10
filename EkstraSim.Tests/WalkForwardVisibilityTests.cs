@@ -93,6 +93,69 @@ public class WalkForwardVisibilityTests
         }
     }
 
+    [Theory]
+    [MemberData(nameof(Models))]
+    public void DateFilterHidesPostponedMatchesFromTheRoundPrediction(string modelName)
+    {
+        var (history, evaluation) = Split(League(withPostponements: true));
+        var reference = new WalkForwardReference(history, evaluation, Options());
+        var round = evaluation.First(m => reference.HiddenFrom(m).Count > 0).Round!.Value;
+        var matchesInRound = evaluation.Where(m => m.Round == round).OrderBy(m => m.Id).ToList();
+        var absorbed = reference.AbsorbedBefore(matchesInRound[0]);
+
+        var model = PredictionModelFactory.Create(modelName);
+        model.Train(absorbed, Options());
+
+        var (predictions, filtered) = WalkForwardEvaluator.PredictWithDateFilter(
+            model, absorbed, matchesInRound, Options(), () => PredictionModelFactory.Create(modelName), round);
+
+        Assert.Equal(matchesInRound.Where(m => reference.HiddenFrom(m).Count > 0).Select(m => m.Id), filtered);
+        Assert.NotEmpty(filtered);
+        Assert.Equal(matchesInRound.Select(m => m.Id), predictions.Select(p => p.MatchId));
+
+        foreach (var (match, prediction) in matchesInRound.Zip(predictions))
+        {
+            var expected = reference.Predict(modelName, reference.VisibleTo(match), match);
+
+            Assert.False(
+                WalkForwardReference.Differs(expected, prediction, WalkForwardReference.Tolerance),
+                $"{modelName}: mecz {match.Id} z kolejki {round} widzi mecze rozegrane po nim.");
+        }
+
+        Assert.Contains(
+            matchesInRound.Zip(predictions),
+            pair => filtered.Contains(pair.First.Id)
+                && WalkForwardReference.Differs(model.Predict(pair.First), pair.Second, DetectableDifference));
+    }
+
+    [Theory]
+    [MemberData(nameof(Models))]
+    public void DateFilterUsesTheBaseModelWhenNothingIsHidden(string modelName)
+    {
+        var (history, evaluation) = Split(League(withPostponements: false));
+        var round = SeasonCalendar.RoundsInOrder(evaluation).First();
+        var matchesInRound = evaluation.Where(m => m.Round == round).OrderBy(m => m.Id).ToList();
+        var created = 0;
+
+        var model = PredictionModelFactory.Create(modelName);
+        model.Train(history, Options());
+
+        var (predictions, filtered) = WalkForwardEvaluator.PredictWithDateFilter(
+            model, history, matchesInRound, Options(),
+            () =>
+            {
+                created++;
+                return PredictionModelFactory.Create(modelName);
+            },
+            round);
+
+        Assert.Empty(filtered);
+        Assert.Equal(0, created);
+        Assert.All(
+            matchesInRound.Zip(predictions),
+            pair => Assert.True(WalkForwardReference.Identical(model.Predict(pair.First), pair.Second)));
+    }
+
     [Fact]
     public void FailedRestrictedFitNamesTheRoundAndTheMatch()
     {

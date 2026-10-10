@@ -47,37 +47,13 @@ public static class WalkForwardEvaluator
                 continue;
             }
 
-            var predictions = new List<MatchPrediction>(matchesInRound.Count);
-            var evaluations = new List<MatchEvaluation>(matchesInRound.Count);
-            var dateFilteredMatchIds = new List<int>();
-            var restrictedModels = new Dictionary<string, IPredictionModel>();
+            var (predictions, dateFilteredMatchIds) = PredictWithDateFilter(model, absorbed, matchesInRound, options, createModel, round);
 
-            foreach (var match in matchesInRound)
-            {
-                var hiddenIds = absorbed
-                    .Where(m => m.Date >= match.Date)
-                    .Select(m => m.Id)
-                    .Order()
-                    .ToList();
-
-                var predictor = model;
-
-                if (hiddenIds.Count > 0)
-                {
-                    predictor = RestrictedModel(absorbed, hiddenIds, restrictedModels, createModel, options, round, match.Id);
-                    dateFilteredMatchIds.Add(match.Id);
-                }
-
-                var prediction = predictor.Predict(match);
-                predictions.Add(prediction);
-
-                var involvesPromoted = promotedTeamIds != null
-                    && (promotedTeamIds.Contains(match.HomeTeamId) || promotedTeamIds.Contains(match.AwayTeamId));
-
-                evaluations.Add(PredictionMetrics
+            var evaluations = matchesInRound
+                .Zip(predictions, (match, prediction) => PredictionMetrics
                     .Evaluate(prediction, match.HomeScore!.Value, match.AwayScore!.Value)
-                    .WithContext(round, involvesPromoted));
-            }
+                    .WithContext(round, InvolvesPromoted(match, promotedTeamIds)))
+                .ToList();
 
             model.UpdateWithRound(matchesInRound);
             absorbed.AddRange(matchesInRound);
@@ -97,6 +73,46 @@ public static class WalkForwardEvaluator
         }
 
         return results;
+    }
+
+    public static (List<MatchPrediction> Predictions, List<int> DateFilteredMatchIds) PredictWithDateFilter(
+        IPredictionModel model,
+        IReadOnlyList<MatchData> absorbed,
+        IReadOnlyList<MatchData> matches,
+        TrainingOptions options,
+        Func<IPredictionModel> createModel,
+        int round)
+    {
+        var predictions = new List<MatchPrediction>(matches.Count);
+        var dateFilteredMatchIds = new List<int>();
+        var restrictedModels = new Dictionary<string, IPredictionModel>();
+
+        foreach (var match in matches)
+        {
+            var hiddenIds = absorbed
+                .Where(m => m.Date >= match.Date)
+                .Select(m => m.Id)
+                .Order()
+                .ToList();
+
+            var predictor = model;
+
+            if (hiddenIds.Count > 0)
+            {
+                predictor = RestrictedModel(absorbed, hiddenIds, restrictedModels, createModel, options, round, match.Id);
+                dateFilteredMatchIds.Add(match.Id);
+            }
+
+            predictions.Add(predictor.Predict(match));
+        }
+
+        return (predictions, dateFilteredMatchIds);
+    }
+
+    private static bool InvolvesPromoted(MatchData match, ISet<int>? promotedTeamIds)
+    {
+        return promotedTeamIds != null
+            && (promotedTeamIds.Contains(match.HomeTeamId) || promotedTeamIds.Contains(match.AwayTeamId));
     }
 
     private static HashSet<int> ActiveTeamIds(IReadOnlyList<MatchData> history, IReadOnlyList<MatchData> evaluationMatches)

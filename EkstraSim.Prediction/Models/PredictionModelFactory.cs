@@ -8,9 +8,9 @@ public static class PredictionModelFactory
 
     public static IReadOnlyList<string> AvailableModels => [Poisson, DixonColes, Elo];
 
-    public static bool IsKnown(string name) => AvailableModels.Contains(Canonical(name));
+    public static bool IsKnown(string name) => CanonicalName(name) != null;
 
-    public static IPredictionModel Create(string name) => Canonical(name) switch
+    public static IPredictionModel Create(string name) => CanonicalName(name) switch
     {
         Poisson => new PoissonModel(),
         DixonColes => new DixonColesModel(),
@@ -18,9 +18,8 @@ public static class PredictionModelFactory
         _ => throw new ArgumentException($"Nieznany model predykcyjny: '{name}'.", nameof(name))
     };
 
-    private static string Canonical(string name)
+    public static string? CanonicalName(string? name)
     {
-        return AvailableModels.FirstOrDefault(model => string.Equals(model, name?.Trim(), StringComparison.OrdinalIgnoreCase))
-            ?? string.Empty;
+        return AvailableModels.FirstOrDefault(model => string.Equals(model, name?.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 }

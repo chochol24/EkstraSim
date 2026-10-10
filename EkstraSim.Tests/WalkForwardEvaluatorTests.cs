@@ -321,4 +321,36 @@ public class WalkForwardEvaluatorTests
         Assert.True(PredictionModelFactory.IsKnown("poisson"));
         Assert.Equal("DixonColes", PredictionModelFactory.Create("dixoncoles").Name);
     }
+
+    [Theory]
+    [InlineData("Poisson", "Poisson")]
+    [InlineData("  poisson ", "Poisson")]
+    [InlineData("DIXONCOLES", "DixonColes")]
+    [InlineData("dixonColes", "DixonColes")]
+    [InlineData(" Elo ", "Elo")]
+    public void CanonicalNameTrimsAndIgnoresCase(string name, string expected)
+    {
+        Assert.Equal(expected, PredictionModelFactory.CanonicalName(name));
+        Assert.True(PredictionModelFactory.IsKnown(name));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Bayesian")]
+    [InlineData("Dixon Coles")]
+    [InlineData("Poisson,Elo")]
+    public void CanonicalNameIsNullForUnknownModels(string? name)
+    {
+        Assert.Null(PredictionModelFactory.CanonicalName(name));
+    }
+
+    [Fact]
+    public void CanonicalNamesAreTheAvailableModels()
+    {
+        Assert.All(
+            PredictionModelFactory.AvailableModels,
+            name => Assert.Equal(name, PredictionModelFactory.CanonicalName(name.ToLowerInvariant())));
+    }
 }

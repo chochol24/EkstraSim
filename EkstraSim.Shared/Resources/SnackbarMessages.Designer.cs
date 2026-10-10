@@ -374,5 +374,140 @@ namespace EkstraSim.Shared.Resources {
                 return ResourceManager.GetString("Research_Structure_Get_Failed", resourceCulture);
             }
         }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Kolejka odcięcia musi wynosić co najmniej 1 (podano {0})..
+        /// </summary>
+        public static string Research_Cutoff_TooLow {
+            get {
+                return ResourceManager.GetString("Research_Cutoff_TooLow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Sezon nie ma rozegranych meczów po kolejce odcięcia {0} — nie ma czego oceniać..
+        /// </summary>
+        public static string Research_Cutoff_NoRoundsToEvaluate {
+            get {
+                return ResourceManager.GetString("Research_Cutoff_NoRoundsToEvaluate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Wygaszanie czasowe ξ musi być skończoną liczbą nieujemną..
+        /// </summary>
+        public static string Research_TimeDecay_Invalid {
+            get {
+                return ResourceManager.GetString("Research_TimeDecay_Invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Regularyzacja ridge musi być skończoną liczbą nieujemną..
+        /// </summary>
+        public static string Research_Ridge_Invalid {
+            get {
+                return ResourceManager.GetString("Research_Ridge_Invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Tolerancja stabilności δ musi być skończoną liczbą nieujemną..
+        /// </summary>
+        public static string Research_Tolerance_Invalid {
+            get {
+                return ResourceManager.GetString("Research_Tolerance_Invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Okno średniej kroczącej musi obejmować co najmniej 1 kolejkę (podano {0})..
+        /// </summary>
+        public static string Research_Window_TooLow {
+            get {
+                return ResourceManager.GetString("Research_Window_TooLow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Kolejka musi wynosić co najmniej 1 (podano {0})..
+        /// </summary>
+        public static string Research_Round_TooLow {
+            get {
+                return ResourceManager.GetString("Research_Round_TooLow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Trening do kolejki nie może być ujemny (podano {0})..
+        /// </summary>
+        public static string Research_PredictCutoff_Negative {
+            get {
+                return ResourceManager.GetString("Research_PredictCutoff_Negative", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Trening do kolejki ({0}) musi kończyć się przed przewidywaną kolejką ({1})..
+        /// </summary>
+        public static string Research_PredictCutoff_NotBeforeRound {
+            get {
+                return ResourceManager.GetString("Research_PredictCutoff_NotBeforeRound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nieznany model &apos;{0}&apos;. Dostępne: {1}..
+        /// </summary>
+        public static string Research_Model_Unknown {
+            get {
+                return ResourceManager.GetString("Research_Model_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Nieznana metryka &apos;{0}&apos;. Dostępne: {1}..
+        /// </summary>
+        public static string Research_Metric_Unknown {
+            get {
+                return ResourceManager.GetString("Research_Metric_Unknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Badanie {0} nie istnieje..
+        /// </summary>
+        public static string Research_Run_NotFound {
+            get {
+                return ResourceManager.GetString("Research_Run_NotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Badanie {0} jeszcze się liczy — wyniki będą dostępne po jego zakończeniu..
+        /// </summary>
+        public static string Research_Run_NotFinished {
+            get {
+                return ResourceManager.GetString("Research_Run_NotFinished", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Badanie {0} zakończyło się błędem i nie ma wyników..
+        /// </summary>
+        public static string Research_Run_EndedWithError {
+            get {
+                return ResourceManager.GetString("Research_Run_EndedWithError", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Obliczenia przerwane restartem backendu — uruchom badanie ponownie..
+        /// </summary>
+        public static string Research_Run_Interrupted {
+            get {
+                return ResourceManager.GetString("Research_Run_Interrupted", resourceCulture);
+            }
+        }
     }
 }

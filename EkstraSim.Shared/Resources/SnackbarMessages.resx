@@ -192,6 +192,51 @@
   <data name="Research_Structure_Get_Failed" xml:space="preserve">
     <value>Nie udało się pobrać struktury sezonu.</value>
   </data>
+  <data name="Research_Cutoff_TooLow" xml:space="preserve">
+    <value>Kolejka odcięcia musi wynosić co najmniej 1 (podano {0}).</value>
+  </data>
+  <data name="Research_Cutoff_NoRoundsToEvaluate" xml:space="preserve">
+    <value>Sezon nie ma rozegranych meczów po kolejce odcięcia {0} — nie ma czego oceniać.</value>
+  </data>
+  <data name="Research_TimeDecay_Invalid" xml:space="preserve">
+    <value>Wygaszanie czasowe ξ musi być skończoną liczbą nieujemną.</value>
+  </data>
+  <data name="Research_Ridge_Invalid" xml:space="preserve">
+    <value>Regularyzacja ridge musi być skończoną liczbą nieujemną.</value>
+  </data>
+  <data name="Research_Tolerance_Invalid" xml:space="preserve">
+    <value>Tolerancja stabilności δ musi być skończoną liczbą nieujemną.</value>
+  </data>
+  <data name="Research_Window_TooLow" xml:space="preserve">
+    <value>Okno średniej kroczącej musi obejmować co najmniej 1 kolejkę (podano {0}).</value>
+  </data>
+  <data name="Research_Round_TooLow" xml:space="preserve">
+    <value>Kolejka musi wynosić co najmniej 1 (podano {0}).</value>
+  </data>
+  <data name="Research_PredictCutoff_Negative" xml:space="preserve">
+    <value>Trening do kolejki nie może być ujemny (podano {0}).</value>
+  </data>
+  <data name="Research_PredictCutoff_NotBeforeRound" xml:space="preserve">
+    <value>Trening do kolejki ({0}) musi kończyć się przed przewidywaną kolejką ({1}).</value>
+  </data>
+  <data name="Research_Model_Unknown" xml:space="preserve">
+    <value>Nieznany model '{0}'. Dostępne: {1}.</value>
+  </data>
+  <data name="Research_Metric_Unknown" xml:space="preserve">
+    <value>Nieznana metryka '{0}'. Dostępne: {1}.</value>
+  </data>
+  <data name="Research_Run_NotFound" xml:space="preserve">
+    <value>Badanie {0} nie istnieje.</value>
+  </data>
+  <data name="Research_Run_NotFinished" xml:space="preserve">
+    <value>Badanie {0} jeszcze się liczy — wyniki będą dostępne po jego zakończeniu.</value>
+  </data>
+  <data name="Research_Run_EndedWithError" xml:space="preserve">
+    <value>Badanie {0} zakończyło się błędem i nie ma wyników.</value>
+  </data>
+  <data name="Research_Run_Interrupted" xml:space="preserve">
+    <value>Obliczenia przerwane restartem backendu — uruchom badanie ponownie.</value>
+  </data>
   <data name="Match_Result_Updated" xml:space="preserve">
     <value>Zaktualizowano wynik spotkania.</value>
   </data>
