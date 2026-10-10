@@ -293,8 +293,12 @@ public class ResearchRunService
 
             var rows = await context.ModelPredictions
                 .Where(p => p.ModelEvaluationRunId == runId)
+                .OrderBy(p => p.MatchId)
+                .ThenBy(p => p.Id)
                 .Select(p => new EvaluationRow(
                     p.MatchId,
+                    p.Match.HomeTeamId,
+                    p.Match.AwayTeamId,
                     p.ModelName,
                     p.Round,
                     p.InvolvesPromotedTeam,
@@ -348,6 +352,15 @@ public class ResearchRunService
                     $"Badanie nie ma ocenianych kolejek w zakresie {fromRound?.ToString() ?? "początek"}–{toRound?.ToString() ?? "koniec"}.");
             }
 
+            var promotedTeams = await _promotedTeams.CompleteHistoryAsync(
+                context, run.LeagueId, run.SeasonId, PromotedTeamsService.ReadSnapshot(run.PromotedTeamsJson));
+
+            var graded = ModelComparison.PromotedByCategory(
+                evaluationsByModel,
+                metric,
+                rows.GroupBy(r => r.MatchId).ToDictionary(g => g.Key, g => (g.First().HomeTeamId, g.First().AwayTeamId)),
+                promotedTeams.Select(t => new PromotedTeamHistory(t.TeamId, t.PriorMatchCount!.Value, t.LastPriorSeasonId)).ToList());
+
             var comparison = new ModelComparisonDTO
             {
                 RunId = runId,
@@ -358,7 +371,18 @@ public class ResearchRunService
                     .ToList(),
                 Pairwise = ModelComparison.Pairwise(evaluationsByModel, metric).Select(ToPairwiseDto).ToList(),
                 Promoted = BuildPromotedComparisons(evaluationsByModel, metric, roundMetrics),
-                Stability = stability
+                Stability = stability,
+                PromotedTeams = promotedTeams,
+                PromotedByCategory = graded.Comparisons.Select(ToPromotedDto).ToList(),
+                PromotedTeamMetrics = graded.TeamMetrics
+                    .Select(m => new PromotedTeamMetricDTO
+                    {
+                        TeamId = m.TeamId,
+                        ModelName = m.ModelName,
+                        Mean = m.Mean,
+                        Count = m.Count
+                    })
+                    .ToList()
             };
 
             return new EkstraSimResult<ModelComparisonDTO>
@@ -459,6 +483,8 @@ public class ResearchRunService
 
     private sealed record EvaluationRow(
         int MatchId,
+        int HomeTeamId,
+        int AwayTeamId,
         string ModelName,
         int? Round,
         bool InvolvesPromotedTeam,
@@ -532,6 +558,7 @@ public class ResearchRunService
     private static PromotedComparisonDTO ToPromotedDto(PromotedTeamComparison comparison) => new()
     {
         ModelName = comparison.ModelName,
+        Category = comparison.Category?.ToString(),
         FromRound = comparison.FromRound,
         ToRound = comparison.ToRound,
         PromotedMean = comparison.PromotedMean,

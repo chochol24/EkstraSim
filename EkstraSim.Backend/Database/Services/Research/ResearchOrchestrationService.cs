@@ -3,7 +3,6 @@ using EkstraSim.Prediction.Evaluation;
 using EkstraSim.Prediction.Metrics;
 using EkstraSim.Prediction.Models;
 using EkstraSim.Shared;
-using EkstraSim.Shared.DTOs;
 using EkstraSim.Shared.Requests;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -227,13 +226,7 @@ public class ResearchOrchestrationService
 
     public static HashSet<int> ReadPromotedTeamIds(string? promotedTeamsJson)
     {
-        if (string.IsNullOrWhiteSpace(promotedTeamsJson))
-        {
-            return [];
-        }
-
-        var promoted = JsonConvert.DeserializeObject<List<PromotedTeamDTO>>(promotedTeamsJson);
-        return promoted?.Select(p => p.TeamId).ToHashSet() ?? [];
+        return PromotedTeamsService.ReadSnapshot(promotedTeamsJson).Select(p => p.TeamId).ToHashSet();
     }
 
     public static List<string> SplitModels(string models)

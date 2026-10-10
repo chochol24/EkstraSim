@@ -9,6 +9,10 @@ public class ModelComparisonDTO
     public List<PairwiseComparisonDTO> Pairwise { get; set; } = [];
     public List<PromotedComparisonDTO> Promoted { get; set; } = [];
     public List<StabilityDTO> Stability { get; set; } = [];
+
+    public List<PromotedTeamDTO> PromotedTeams { get; set; } = [];
+    public List<PromotedComparisonDTO> PromotedByCategory { get; set; } = [];
+    public List<PromotedTeamMetricDTO> PromotedTeamMetrics { get; set; } = [];
 }
 
 public class ModelSummaryDTO
@@ -50,6 +54,7 @@ public class PairwiseComparisonDTO
 public class PromotedComparisonDTO
 {
     public string ModelName { get; set; } = string.Empty;
+    public string? Category { get; set; }
     public int? FromRound { get; set; }
     public int? ToRound { get; set; }
 
@@ -63,6 +68,14 @@ public class PromotedComparisonDTO
     public double AdjustedPValue { get; set; }
     public bool IsConclusive { get; set; }
     public bool IsSignificant { get; set; }
+}
+
+public class PromotedTeamMetricDTO
+{
+    public int TeamId { get; set; }
+    public string ModelName { get; set; } = string.Empty;
+    public double Mean { get; set; }
+    public int Count { get; set; }
 }
 
 public class StabilityDTO

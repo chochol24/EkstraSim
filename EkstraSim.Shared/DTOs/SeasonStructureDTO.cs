@@ -23,4 +23,9 @@ public class PromotedTeamDTO
 {
     public int TeamId { get; set; }
     public string Name { get; set; } = string.Empty;
+
+    public int? PriorMatchCount { get; set; }
+    public int? LastPriorSeasonId { get; set; }
+    public string? LastPriorSeasonName { get; set; }
+    public string? Category { get; set; }
 }
