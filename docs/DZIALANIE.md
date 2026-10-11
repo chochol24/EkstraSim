@@ -22,7 +22,7 @@ Stary silnik (`SimulatingService`) pozostaje nietknięty — nowa warstwa powsta
 `EkstraSim.Prediction/Models`:
 
 - `MatchData` — rekord meczu (id, data, kolejka, sezon, liga, drużyny, wynik). `IsPlayed` = oba wyniki niepuste.
-- `TrainingOptions` — liga, badany sezon, **`SeasonChronology`** (lista id sezonów od najstarszego), parametry modeli. `PreviousSeasonId` wyliczane z chronologii, bo `Season.Id` nie gwarantuje kolejności czasowej.
+- `TrainingOptions` — liga, badany sezon, **`SeasonChronology`** (lista id sezonów od najstarszego), parametry modeli. `PreviousSeasonId` wyliczane z chronologii, bo `Season.Id` nie gwarantuje kolejności czasowej. Typ jest rekordem (`record`), więc wariant opcji powstaje przez `with` ([Analiza wrażliwości parametrów](#analiza-wrażliwości-parametrów)). Zamiana z klasy na rekord nie zmieniła serializacji: JSON z Newtonsoft jest znak w znak równy `EffectiveOptionsJson` runów 7, 9 i 10.
 - `MatchPrediction` — λ dla obu stron, P(1/X/2), typowany wynik, macierz wyników.
 - `ScoreGrid` — macierz prawdopodobieństw wyników liczona **analitycznie** (iloczyn dwóch rozkładów Poissona, `MathNet.Numerics.Distributions.Poisson`), domyślnie 11×11 (0–10 goli, jak w starym silniku). Po obcięciu przy 10 golach macierz jest **normalizowana**, więc sumuje się dokładnie do 1. Brak Monte Carlo = brak szumu losowego w badaniach.
 - `ModelSnapshot` — parametry modelu w danym momencie. Dwie miary odległości: `Distance()` (surowa norma L2 po wspólnych kluczach) i **`NormalisedDistance()`**, która mierzy dryf parametrów między kolejkami (pytanie badawcze nr 2). Szczegóły i powód rozdzielenia — sekcja [Metryka dryfu parametrów](#metryka-dryfu-parametrów).
@@ -72,7 +72,7 @@ Szczegóły implementacyjne:
 
 - **Identyfikowalność.** Likelihood ma jedną redundancję: α→cα przy β→β/c nie zmienia λ. Rozwiązywana normalizacją średniej ataków do 1 wewnątrz funkcji celu, z jednoczesnym przemnożeniem obron przez tę samą stałą (inaczej λ gościa by się przeskalowało). Poziom bramkowy gościa siedzi więc w β, a stosunek dom/wyjazd w γ.
 - **Parametryzacja.** α, β, γ optymalizowane w logarytmach (dodatniość gwarantowana), ρ jako `0.3 · tanh(r)` — trzyma korektę w rozsądnym zakresie bez twardych więzów. Punkty, w których τ ≤ 0 lub λ ≤ 0, dostają karę `1e12`.
-- **Wygaszanie czasowe.** Waga meczu `φ(t) = exp(−ξ · Δdni)` względem najnowszego znanego meczu; ξ z `TrainingOptions.TimeDecayXi` (domyślnie 0.0065 ≈ półokres ~107 dni).
+- **Wygaszanie czasowe.** Waga meczu `φ(t) = exp(−ξ · Δdni)` względem najnowszego znanego meczu; ξ z `TrainingOptions.TimeDecayXi` (domyślnie 0.0065 ≈ półokres ~107 dni). Kod stosuje ξ na dzień, a w literaturze 0,0065 to stopa na pół tygodnia (≈ 0,00186 na dzień). Jednostkę i wpływ ξ na wyniki opisuje [Analiza wrażliwości parametrów](#analiza-wrażliwości-parametrów).
 - **Regularyzacja ridge.** Kara `RidgeLambda · wᵢ · (log²αᵢ + log²βᵢ)`, gdzie `wᵢ = 1/(1 + efektywna liczba meczów drużyny)` (efektywna = suma wag czasowych), domyślnie `RidgeLambda = 0.05`. Ściąga do α = β = 1 tym mocniej, im mniej danych ma drużyna — to obsługuje beniaminków na starcie sezonu. Uwaga: przy normalizacji średniej ataku do 1 poziom goli gościa siedzi w β (typowo ~1,1–1,2), więc **β = 1 nie jest średnią ligową**, tylko obroną lepszą niż przeciętna — dotyczy to zarówno celu ridge, jak i drużyn nieobecnych w treningu.
 - **Punkt startowy** liczony analitycznie ze średnich bramkowych (α ze zdobytych, β ze straconych przeskalowanych do poziomu goli gościa, γ ze stosunku dom/wyjazd, ρ = −0.03) — ten sam co przed zmianą optymalizatora. Wymiar problemu to 2N + 2, gdzie N to **wszystkie drużyny z historii**, nie tylko z badanego sezonu — dla 2024/25 i 2025/26 N = 28, czyli **58 wymiarów**. Logarytmy parametrów są przycinane do ±20.
 - `UpdateWithRound` = pełne ponowne dopasowanie, za każdym razem od analitycznego punktu startowego (nie od poprzedniego optimum) — powód w punkcie „Zimny start" niżej.
@@ -171,7 +171,7 @@ ELO_gosp += K · G · (W − W_e)        K = 10
 ELO_gość -= K · G · (W − W_e)
 ```
 
-Ranking jest więc **zerosumowy** — suma ocen wszystkich drużyn nie zmienia się w trakcie replayu. Nowe drużyny startują z 1300.
+Ranking jest więc **zerosumowy** — suma ocen wszystkich drużyn nie zmienia się w trakcie replayu. Nowe drużyny startują z 1300. Wartość startowa nie wpływa na predykcje, bo liczą się tylko różnice ocen ([Analiza wrażliwości parametrów](#analiza-wrażliwości-parametrów)).
 
 Zachowana dziwność oryginału: dla remisu (różnica 0 bramek) `G` wpada w gałąź `(11 + 0) / 8 = 1.375`, czyli remis waży więcej niż zwycięstwo jedną bramką. Nie poprawiam tego, bo porównanie ma dotyczyć modelu faktycznie użytego w pracy inżynierskiej — ale warto to opisać w tekście pracy.
 
@@ -257,7 +257,7 @@ Na kodzie wersji 4 testy „po dacie" były czerwone (wszystkie trzy modele, sez
 
 ### Kolejka odcięcia i beniaminki
 
-- **Odcięcie** domyślnie wykrywane automatycznie (`SeasonCalendar.DetectSplit`): największa przerwa między datami kolejnych kolejek = przerwa zimowa. Można nadpisać ręcznie w żądaniu. Wyjątek: w **2019/20** największa przerwa to pauza COVID po kolejce 26 (81 dni), nie zimowa po kolejce 20 (48 dni) — dla tego sezonu odcięcie trzeba podać ręcznie. Przełożony mecz z ostatniej kolejki jesiennej rozegrany wiosną też potrafi przesunąć wykryty podział.
+- **Odcięcie** domyślnie wykrywane automatycznie (`SeasonCalendar.DetectSplit`): największa przerwa między datami kolejnych kolejek = przerwa zimowa. Można nadpisać ręcznie w żądaniu. Wyjątek: w **2019/20** największa przerwa to pauza COVID po kolejce 26 (81 dni), nie zimowa po kolejce 20 (48 dni) — dla tego sezonu odcięcie trzeba podać ręcznie. Przełożony mecz z ostatniej kolejki jesiennej rozegrany wiosną też potrafi przesunąć wykryty podział. Tak jest w **2023/24**: mecze przełożone z kolejek 17 i 20 zasłaniają przerwę zimową i `DetectSplit` wskazuje kolejkę 25 zamiast 19 ([Analiza wrażliwości parametrów](#analiza-wrażliwości-parametrów)).
 - **Beniaminki** (`PromotedTeamsService`): drużyny mające mecze w sezonie S i żadnego w S−1. Chronologia sezonów liczona z **najwcześniejszej daty meczu**, nie z `Season.Id` ani nazwy — Id nie gwarantuje kolejności czasowej. Lista jest zapisywana jako snapshot JSON na rekordzie badania, żeby wynik dał się odtworzyć nawet po dodaniu nowych sezonów. Orkiestrator czyta ze snapshotu wyłącznie `TeamId` (flaga `InvolvesPromotedTeam` predykcji), więc dodatkowe pola snapshotu nie wpływają na predykcje.
 - **Historia beniaminka** (`PromotedTeamHistory.Compute`, `EkstraSim.Prediction/Evaluation`): `PriorMatchCount` to liczba **rozegranych** meczów **ligi badania** z udziałem drużyny w sezonach **wcześniejszych w chronologii** (tej samej, liczonej po dacie), a `LastPriorSeasonId` — najpóźniejszy w chronologii taki sezon, nie sezon o największym Id. Sezon badany i późniejsze się nie liczą, a sezon spoza chronologii to błąd. Kategoria (`PromotedTeamHistory.CategoryOf`): 0 meczów → **zimny start** (`ColdStart`), więcej → **powracający** (`Returning`). „0" znaczy „brak meczów od najstarszego sezonu w bazie" (2019/20), więc import starszych sezonów zmieniłby liczby runów liczonych przy odczycie. Reguła kategorii i liczenie historii istnieją tylko w rdzeniu — backend ich nie powiela.
 - **Snapshot nowych runów a stare runy.** `GetPromotedTeamsAsync` zwraca beniaminków z historią (`PriorMatchCount`, `LastPriorSeasonId`, `LastPriorSeasonName`, `Category`), więc runy tworzone po tej zmianie zapisują ją w snapshocie. Snapshoty runów 1–12 mają same `TeamId` i `Name`. `PromotedTeamsService.CompleteHistoryAsync` uzupełnia przy odczycie wpisy bez `PriorMatchCount` tą samą funkcją rdzenia, na meczach ligi z bazy, i dla każdego wpisu przelicza kategorię z liczby meczów. Kategoria zapisana w snapshocie nie jest więc źródłem prawdy, a zbiór drużyn zawsze pochodzi ze snapshotu — beniaminki nie są wyznaczane od nowa. `comparison` czyta snapshot przy każdym odczycie, więc uszkodzony snapshot kończy błędem całą odpowiedź, a nie tylko stopniowanie. To świadome: run `Completed` ma snapshot już raz przeczytany przez orkiestrator tym samym deserializatorem (niepoprawny JSON skończyłby run jako `Failed`), a powtórzony `TeamId` `PromotedTeamsService.ReadSnapshot` pomija (zostaje pierwszy wpis), tak jak dawne `ToHashSet` w orkiestratorze.
@@ -598,6 +598,168 @@ Odpowiedź na pytanie nr 2:
 Liczby z obu tabel zwraca endpoint porównania (`GET …/runs/{RunId}/comparison` z `tolerance`, `fromRound`, `toRound`), więc da się je odtworzyć z bazy.
 
 Ranking z wiązaniami (`Ranking.AverageRanks`) zwraca rangi średnie i sumę `t³−t` potrzebną do korekty wariancji w obu testach.
+
+## Analiza wrażliwości parametrów
+
+Wnioski z pytań nr 1 i 3 (runy 9–10) pochodzą z jednego zestawu wartości domyślnych: mnożniki formy Poissona włączone, wagi horyzontów 0,67 / 0,3 / 0,03, ξ = 0,0065, `RidgeLambda` = 0,05, Elo K = 10, start 1300, przewaga gospodarza 100. Analiza wrażliwości sprawdza, które wnioski przetrwają zmianę tych wartości i czy któraś wartość domyślna jest gorsza od alternatyw także poza badanymi sezonami. Ma być podstawą decyzji o wartościach domyślnych (korekta albo wnioski warunkowe), a nie wyborem „najlepszego" zestawu. Liczy się w rdzeniu na fixture z prawdziwymi danymi (`EkstraSim.Tests/Data/ekstraklasa-liga1-mecze.csv`), bez bazy i bez nowych runów. Predykcje domyślne są nietknięte, wersja algorytmu zostaje 5. Pytania nr 2 i 4 są poza zakresem.
+
+### Metoda
+
+**Sezony.** Tylko runda wiosenna, odcięcie na przerwie zimowej:
+
+| Sezon | Rola | Odcięcie | Mecze wiosny |
+| --- | --- | --- | --- |
+| 2021/22 | walidacja | po kolejce 19 (`DetectSplit`) | 135 |
+| 2022/23 | walidacja | po kolejce 17 (`DetectSplit`, przerwa na mundial) | 153 |
+| 2023/24 | walidacja | po kolejce 19 (**ręcznie**, `DetectSplit` daje 25) | 135 |
+| 2024/25 | ewaluacja (run 9) | po kolejce 18 | 144 |
+| 2025/26 | ewaluacja (run 10) | po kolejce 18 | 144 |
+
+Sezony ewaluacyjne to te, na których praca porównuje modele. Trzy wcześniejsze wiosny z fixture w porównaniu nie biorą udziału i służą za zbiór walidacyjny. Wariant lepszy od domyślnego także na walidacji jest kandydatem na korektę wartości domyślnej, a wariant lepszy tylko na ewaluacji byłby strojeniem na zbiorze testowym. Tak też dobiera się ξ w literaturze: przez wiarygodność predykcyjną na danych spoza ewaluacji.
+
+**Defekt `DetectSplit` w 2023/24.** Dwa mecze kolejki 17 rozegrano 28.02 i 12.03.2024, a jeden mecz kolejki 20 już 30.08.2023. Przedziały dat kolejek 17–20 nakładają się, więc przerwa zimowa (18.12.2023 → 9.02.2024) nie jest luką między kolejnymi kolejkami, a największą luką zostaje 13 dni po kolejce 25. Raport podaje dla tego sezonu odcięcie ręcznie. Kodu `DetectSplit` nie poprawiano.
+
+**Siatka** (`SensitivityGrid.Default`, 24 warianty, w tym jeden wariant domyślny na model):
+
+| Model | Parametr | Wartości (w nawiasie domyślna) |
+| --- | --- | --- |
+| Dixon-Coles | `TimeDecayXi` (ξ, na dzień) | 0; 0,001; 0,00186 = 0,0065/3,5 (literatura); 0,003; 0,004; 0,01; 0,015 (0,0065) |
+| Dixon-Coles | `RidgeLambda` | 0; 0,5; 5; 50 (0,05) |
+| Poisson | `UseFormFactors` | wyłączone (włączone) |
+| Poisson | wagi horyzontów bieżący / poprzedni / historia | 0,7 / 0,3 / 0; 0,6 / 0,3 / 0,1 (0,67 / 0,3 / 0,03) |
+| Elo | `EloK` | 5; 15; 20; 30 (10) |
+| Elo | `EloHomeAdvantage` | 0; 200 (100) |
+| Elo | `EloInitialRating` | 1500 (1300) |
+
+**Jeden parametr naraz.** Każdy parametr dotyka dokładnie jednego modelu, więc wariant modelu m liczy się przy pozostałych modelach na wartościach domyślnych: testy dostają zestaw {m: wariant, pozostałe: domyślne}. Kombinacje między modelami nie wymagają nowych obliczeń, bo scenariusz to ten sam zestaw z wariantem wybranym dla każdego modelu. Siatki ξ × ridge (oba parametry Dixona-Colesa) nie liczono. Ridge sprawdzono przy domyślnym ξ, a przy mniejszym ξ efektywna liczba meczów drużyny rośnie, więc waga kary `1/(1 + efektywna liczba meczów)` i dźwignia ridge jeszcze maleją.
+
+**Testy.** Każdy wariant i scenariusz dostaje dokładnie to, co `comparison` runu: test Wilcoxona dla trzech par (RPS) z jedną rodziną Holma, beniaminki binarnie (`PromotedVersusRest`, cały zakres) i kategoriami (`PromotedByCategory`) z rodziną Holma kategorii. Siatka jest opisowa: raport podaje ΔRPS, ranking i to, czy wniosek z testu po Holmie się przestawia. Nie ma korekty między wariantami ani testu „najlepszy wariant vs domyślny". **Zastrzeżenie dla tekstu pracy:** 24 warianty w pięciu sezonach to ponad sto rodzin testów, więc pojedyncze p < 0,05 w siatce nie jest wynikiem. Liczy się kierunek, który powtarza się w sezonach, zwłaszcza walidacyjnych. Wyższość wariantu nad domyślnym opiera się na pięciu wiosnach (135–153 mecze) i nie była testowana.
+
+**Scenariusze.** Cztery: domyślne; ξ z literatury; formy wyłączone; oba naraz.
+
+**Stała linia bazowa** (`ConstantBaseline`). P(1/X/2) równe częstościom zwycięstw gospodarzy, remisów i zwycięstw gości wśród rozegranych meczów ligi w historii treningowej (sezony wcześniejsze i runda jesienna), takie samo dla każdego meczu wiosny. Linia bazowa nie ma parametrów i nie wie nic o drużynach. Jeśli grupa meczów jest trudna także dla niej, nadwyżka modeli w tej grupie jest po części cechą meczów, a nie modeli. Raport liczy dla niej osobno beniaminków binarnie i kategoriami (z własną rodziną Holma).
+
+**Implementacja** (`EkstraSim.Prediction/Evaluation`):
+
+- `SensitivitySeason.Build` składa sezon tak jak run: mecze ligi, `BuildHistory`, `BuildEvaluationSet`, opcje domyślne z chronologią i historia beniaminków (`PromotedTeamHistory.Compute`).
+- `SensitivitySweep.Run` liczy walk-forward każdego wariantu (`WalkForwardEvaluator.Run` z filtrem daty, flagą beniaminka i fabryką modeli tymczasowych) równolegle. Wynik nie zależy od stopnia równoległości. Ewaluacje są sortowane po `MatchId`, tak jak `comparison` czyta predykcje z bazy. Bez tego średnie grup beniaminków różniłyby się na ostatnich bitach, bo pętla zwraca mecze w kolejności (kolejka, Id), a średnie sumują się w kolejności wejścia. `ModelConvergenceException` jest wynikiem wariantu („nie zbiega" z komunikatem). Każdy inny wyjątek to błąd kodu i przerywa przemiatanie.
+- `SensitivitySummary.Summarise` składa dla każdego wariantu zestaw modeli i woła na nim `ModelComparison.Pairwise`, `PromotedVersusRest` i `PromotedByCategory`. `Scenario` robi to samo dla wariantów wybranych etykietą per model; model bez etykiety dostaje wariant domyślny. Brak albo błąd wariantu domyślnego, nieznana etykieta i wariant z błędem w scenariuszu kończą się `ArgumentException`.
+- `TrainingOptions` jest rekordem, więc wariant to `opcje with { TimeDecayXi = … }`. Test sprawdza refleksją, że każdy wariant zmienia dokładnie deklarowane właściwości, na dwóch różnych zestawach opcji bazowych. Na samych wartościach domyślnych wariant, który przy okazji ustawia drugi parametr na jego wartość domyślną, byłby niewidoczny.
+
+**Uruchomienie.** Raport drukuje test `SensitivityRealDataTests` (`Category=RealData`):
+
+```bash
+dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter "FullyQualifiedName~SensitivityRealDataTests" --logger "console;verbosity=detailed"
+```
+
+Raport ma pięć części:
+
+1. tabelę wariantów dla każdego sezonu: RPS, ΔRPS, Brier, log-loss, ranking i p po Holmie trzech par, a w sezonach ewaluacyjnych także średnie reszta / zimny start / powracający, p Holma kategorii i średnie per drużyna,
+2. przekrój RPS wszystkich wariantów w pięciu sezonach,
+3. scenariusze,
+4. linię bazową z nadwyżkami grup beniaminków,
+5. dowód niezmienniczości startu Elo (w teście `EloInitialRatingDoesNotChangeEvaluations`).
+
+Przemiatanie liczy się raz na klasę testów (sezony równolegle) i trwa ok. 15 s, cała klasa ok. 20 s.
+
+**Kotwice.** Test przypina:
+
+- wariant domyślny bitowo równy bezpośredniemu `WalkForwardEvaluator.Run` (każdy sezon i model),
+- średni RPS, p po Holmie par, średnie per beniaminek, średnie meczów bez beniaminka i p Holma kategorii powracających z runów 9–10,
+- liczności wiosen i odcięcia sezonów walidacyjnych,
+- zbieżność wariantów domyślnych.
+
+Fixture odtwarza runy 9–10 **bitowo**. Warianty domyślne zestawione z `ModelPredictions` runów 9 i 10 (żywa i testowa baza) dają 864 z 864 par (model, mecz) równych we wszystkich polach metryk: RPS, Brier, log-loss, P wyniku, P rezultatu, kolejka, flaga beniaminka i trafienia. Tolerancje kotwic nie są więc potrzebne do zgodności z bazą.
+
+### Wyniki
+
+Liczby z raportu: RPS (niższy = lepszy) i p po Holmie w rodzinie wariantu. Kody rankingu: E = Elo, D = Dixon-Coles, P = Poisson.
+
+**Start Elo nic nie zmienia.** Start 1500 zamiast 1300 daje predykcje identyczne co do bitu we wszystkich pięciu sezonach (maks. |ΔRPS|, |ΔBrier|, |ΔLogLoss| = 0). To własność matematyczna. Replay jest zerosumowy, wszystkie drużyny startują z tej samej wartości, a oczekiwany wynik i cecha regresji biorą tylko różnice ocen, więc przesunięcie wszystkich ocen o stałą niczego nie zmienia. Drużyna powracająca wraca z oceną zamrożoną w chwili spadku, bo replay nie resetuje ocen między sezonami. Parametru nie ma w żądaniu badania.
+
+**Ridge wiosną nie ma dźwigni.** `RidgeLambda` od 0 do 5 zmienia RPS Dixona-Colesa najwyżej o 0,0010 w każdym sezonie. Przy λ = 0 zmiana jest poniżej 0,0001, a dopasowania zbiegają we wszystkich pięciu sezonach. Dopiero λ = 50, tysiąc razy więcej niż domyślne, daje −0,0010…−0,0067, a ranking zmienia tylko w 2023/24 (D < E < P). Po 17–19 meczach jesieni waga kary `1/(1 + efektywna liczba meczów)` jest mała dla każdej drużyny, także beniaminka. Hipoteza, że domyślne 0,05 jest za słabe, by pomóc beniaminkom, nie wyjaśnia kary Dixona-Colesa w pytaniu nr 3.
+
+**ξ przestawia pytanie nr 1.** RPS Dixona-Colesa (półokres = ln 2 / ξ):
+
+| ξ (na dzień) | Półokres | 2021/22 | 2022/23 | 2023/24 | 2024/25 | 2025/26 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | ∞ | 0,2115 | 0,2065 | **0,2306** | **0,2161** | **0,2145** |
+| 0,001 | 693 dni | 0,2105 | **0,2064** | 0,2316 | 0,2166 | 0,2174 |
+| 0,00186 (literatura) | 373 dni | **0,2103** | 0,2067 | 0,2318 | 0,2186 | 0,2207 |
+| 0,003 | 231 dni | 0,2110 | 0,2073 | 0,2318 | 0,2216 | 0,2247 |
+| 0,004 | 173 dni | 0,2121 | 0,2077 | 0,2320 | 0,2238 | 0,2274 |
+| **0,0065 (domyślne)** | 107 dni | 0,2154 | 0,2082 | 0,2340 | 0,2287 | 0,2324 |
+| 0,01 | 69 dni | 0,2192 | 0,2091 | 0,2383 | 0,2353 | 0,2373 |
+| 0,015 | 46 dni | 0,2237 | 0,2118 | nie zbiega | 0,2443 | 0,2424 |
+
+- Każde ξ ≤ 0,004 jest lepsze od domyślnego w każdym z pięciu sezonów, a minimum leży między 0 a 0,00186. Na walidacji minimum wypada kolejno przy 0,00186, 0,001 i 0. ξ z literatury poprawia RPS o 0,0050 / 0,0014 / 0,0022 na walidacji i o 0,0101 / 0,0117 na ewaluacji.
+- ξ = 0,015 nie zbiega w 2023/24: L-BFGS wyczerpuje limit 2000 iteracji po kolejce 26. Przy szybkim wygaszaniu efektywna próba jest mała.
+
+Ranking i p po Holmie w sezonach ewaluacyjnych:
+
+| ξ | 2024/25: ranking; p DC–E; p DC–P | 2025/26: ranking; p DC–E; p DC–P |
+| --- | --- | --- |
+| 0 | D < E < P; 0,2758; 0,0557 | D < E < P; 0,1884; **0,0017** |
+| 0,001 | D < E < P; 0,1463; **0,0412** | E < D < P; 0,6174; **0,0017** |
+| 0,00186 | D < E < P; 0,7870; **0,0497** | E < D < P; 0,2219; **0,0023** |
+| 0,003 | E < D < P; 0,3884; 0,0833 | E < D < P; **0,0173**; **0,0036** |
+| 0,004 | E < D < P; 0,1932; 0,0833 | E < D < P; **0,0076**; **0,0075** |
+| 0,0065 | E < D < P; 0,0833; 0,1403 | E < D < P; **0,0035**; **0,0129** |
+| 0,01 | E < D < P; 0,0522; 0,4539 | E < D < P; **0,0027**; 0,0552 |
+| 0,015 | E < D < P; **0,0201**; 0,9928 | E < D < P; **0,0028**; 0,2397 |
+
+Przy ξ z literatury Dixon-Coles wyprzedza Elo w 2024/25 (0,2186 vs 0,2189), a w 2025/26 różnica DC–Elo traci istotność (0,0035 → 0,2219). Istotność DC–Elo w 2025/26 trzyma się tylko dla ξ ≥ 0,003. Para Elo–Poisson od ξ nie zależy: w 2025/26 jest istotna przy każdym ξ, w 2024/25 przy żadnym.
+
+**Jednostka ξ.** Kod liczy wagę meczu `exp(−ξ · Δdni)` (`DixonColesModel`), więc domyślne 0,0065 działa na dzień, z półokresem ok. 107 dni. W literaturze ta sama liczba występuje jako stopa na **pół tygodnia**. Dixon i Coles (1997) mierzą czas w półtygodniach, więc ich 0,0065 odpowiada 0,0065/3,5 ≈ 0,00186 na dzień i półokresowi ok. 373 dni, czyli ok. roku. Wartość weszła do kodu w pierwszej wersji rdzenia bez opisu jednostki.
+
+- **Źródło pierwotne niesprawdzone.** Oryginału (M. J. Dixon, S. G. Coles, *Modelling Association Football Scores and Inefficiencies in the Football Betting Market*, Journal of the Royal Statistical Society: Series C 46(2), 1997, s. 265–280, DOI 10.1111/1467-9876.00065) nie udało się przeczytać: 2026-10-11 był dostępny tylko w subskrypcji wydawcy, a repozytorium Uniwersytetu w Lancasterze ma sam opis bibliograficzny.
+- **Źródła wtórne są zgodne co do jednostki.** Clegg, Song i Cartlidge (2026, arXiv:2605.16066, rozdz. 5.1, wzór 6) ważą mecze przez exp(−ξ·d/3,5), gdzie d to dni, a dzielenie przez 3,5 zamienia je na półtygodnie. Biorą ξ = 0,0065 na pół tygodnia za Dixonem i Colesem i podają półokres ok. roku. Kharrat, López Peña i McHale (2017, arXiv:1706.04943) też skalują odległości czasowe w półtygodniach i powołują się przy tym na Dixona i Colesa.
+- **Niezależny punkt odniesienia.** Pitcan (2026, arXiv:2608.11505) dobrał ξ siatką na sezonach walidacyjnych Serie A i dostał 0,002 na dzień (półokres 347 dni), czyli prawie tyle, co 0,00186.
+- **Sformułowanie w pracy.** Do czasu sprawdzenia oryginału pisać o „wartości z literatury podawanej na pół tygodnia, stosowanej w kodzie na dzień", a nie o błędzie. Niezależnie od źródła dane z walidacji same wskazują wolniejsze wygaszanie.
+
+**Formy pogarszają Poissona w każdym sezonie.** Wyłączenie mnożników formy obniża RPS Poissona o 0,0098 / 0,0042 / 0,0283 / 0,0266 / 0,0252 (od 2021/22 do 2025/26). Ranking z Poissonem bez form to E < P < D w 2021/22, 2023/24 i 2024/25 oraz E < D < P w 2022/23 i 2025/26. W 2024/25 żadna para nie jest wtedy istotna (DC–E 0,1213, DC–P 0,6529, E–P 0,6442). W 2025/26 istotne zostają Elo–Poisson (0,0096) i DC–Elo (0,0053), a DC–Poisson przestaje być istotne (0,0129 → 0,5597). Poisson z formami jest na meczach bez beniaminka gorszy od stałej predykcji: 0,2469 vs 0,2231 (2024/25) i 0,2602 vs 0,2247 (2025/26). Dwa mnożniki formy po ±20% i H2H ±5% (sekcja Poissona) wnoszą więc szum, nie sygnał.
+
+**K i przewaga Elo.** RPS Elo:
+
+| K | 2021/22 | 2022/23 | 2023/24 | 2024/25 | 2025/26 |
+| --- | --- | --- | --- | --- | --- |
+| 5 | **0,2051** | **0,2054** | 0,2325 | **0,2177** | **0,2150** |
+| 10 (domyślne) | 0,2070 | 0,2067 | 0,2302 | 0,2189 | 0,2169 |
+| 15 | 0,2091 | 0,2075 | 0,2285 | 0,2203 | 0,2190 |
+| 20 | 0,2111 | 0,2080 | 0,2274 | 0,2215 | 0,2209 |
+| 30 | 0,2143 | 0,2083 | **0,2261** | 0,2233 | 0,2235 |
+
+K = 5 jest lepsze od domyślnego w czterech sezonach (o 0,0012–0,0019), a w 2023/24 kierunek jest odwrotny i najlepsze jest K = 30. Ranking E < D < P trzyma się dla każdego K poza K = 30 w 2022/23 (Dixon-Coles lepszy o 0,0001). W 2025/26 wszystkie trzy pary są istotne przy każdym K (najwyższe p 0,0344 przy K = 30), w 2024/25 żadna (najniższe p 0,0505 przy K = 5). Przewaga gospodarza 0 albo 200 zmienia RPS Elo najwyżej o 0,0010 i nie zmienia rankingu.
+
+**Wagi horyzontów Poissona.** Więcej wagi dla historii (0,6 / 0,3 / 0,1) obniża RPS o 0,0018–0,0029, a jej usunięcie (0,7 / 0,3 / 0) podnosi go o 0,0008–0,0013. Ranking nie zmienia się w żadnym sezonie. Efekt jest o rząd mniejszy niż efekt form.
+
+**Scenariusze** (ranking; p po Holmie DC–E / DC–P / E–P):
+
+| Scenariusz | 2024/25 | 2025/26 |
+| --- | --- | --- |
+| domyślne | E < D < P; 0,0833 / 0,1403 / 0,0833 | E < D < P; **0,0035 / 0,0129 / 0,0027** |
+| ξ z literatury | D < E < P; 0,7870 / **0,0497** / 0,0555 | E < D < P; 0,2219 / **0,0023 / 0,0023** |
+| formy wyłączone | E < P < D; 0,1213 / 0,6529 / 0,6442 | E < D < P; **0,0053** / 0,5597 / **0,0096** |
+| oba | D < E < P; 0,7870 / 0,7240 / 0,7240 | E < D < P; 0,2219 / **0,0121 / 0,0121** |
+
+- W sezonach walidacyjnych żaden scenariusz nie daje istotnej pary (najniższe p 0,1476: 2023/24, domyślne). W całej siatce walidacji istotna jest tylko para DC–Poisson przy λ = 50 w 2023/24 (0,0447).
+- Wniosek „Elo najlepszy" trzyma się w 2025/26 w każdym scenariuszu (w siatce wyjątkiem jest ξ = 0), ale w 2024/25 zależy od ξ i form.
+- Wniosek „w 2025/26 istotne są wszystkie trzy różnice" wymaga form włączonych i ξ między 0,003 a 0,0065 (przy 0,01 przestaje być istotna para DC–Poisson). Przy ξ z literatury albo bez form jedna para przestaje być istotna.
+
+**Stała linia bazowa a modele.** RPS stałej predykcji: 0,2315 / 0,2219 / 0,2217 / 0,2281 / 0,2270 (od 2021/22 do 2025/26). Porównania ze stałą są opisowe, bez testów.
+
+- Dixon-Coles na wartościach domyślnych jest od niej gorszy w trzech sezonach, w tym w obu ewaluacyjnych (0,2287 vs 0,2281 i 0,2324 vs 0,2270). Z ξ z literatury jest gorszy tylko w 2023/24.
+- Poisson domyślny jest gorszy w 2023/24, 2024/25 i 2025/26 (o 0,024–0,039), Elo tylko w 2023/24.
+- W 2023/24 stała predykcja wygrywa z każdym wariantem każdego modelu (najlepszy wariant: Elo K = 30, 0,2261).
+
+**Pytanie nr 3: kara powracających to cecha meczów, nie parametrów.**
+
+- **Kara trwa w każdym wariancie.** W 2024/25 średnia meczów powracającej Lechii jest wyższa niż meczów bez beniaminka o +0,040…+0,074 we wszystkich 24 wariantach, a w 2025/26 kategoria powracających odstaje o 0,000…+0,016. Drużyna ze 135 meczami historii (Lechia, Wisła Płock) ma najwyższy RPS wśród beniaminków w każdym wariancie obu sezonów. Żaden test kategorii nie jest istotny w żadnym wariancie (najniższe p po Holmie 0,29). Zimny start odstaje od reszty o −0,003…+0,040.
+- **Ani ξ, ani ridge kary nie usuwa.** Niższe ξ obniża RPS wszystkich grup. Przy ξ = 0 Lechia ma 0,247 przy reszcie 0,2076 (domyślnie 0,285 przy 0,2175), a Wisła Płock 0,279 przy 0,2121 (domyślnie 0,312 przy 0,2281). Przy λ = 50 Lechia ma 0,266 przy 0,2151, a Wisła Płock 0,301 przy 0,2281. Elo, które nie ma wygaszania czasowego, ma podobną nadwyżkę (+0,048 i +0,069).
+- **Punkty odniesienia bez parametrów odtwarzają część kary.** Stała linia bazowa też ma nadwyżkę na tych drużynach, tylko mniejszą: Lechia +0,015 (modele +0,048…+0,068), Wisła Płock +0,045 (modele +0,069…+0,084). Na meczach zimnego startu w 2024/25 stała ma nadwyżkę +0,017, tyle co modele (Elo +0,016, Dixon-Coles +0,022, Poisson −0,001). Jednorazowy pomiar prostym modelem formy (probit na punktach na mecz z bieżącego sezonu, bez historii i bez parametrów do strojenia; kodu nie ma w repozytorium) odtworzył +0,070…+0,073 z nadwyżki Wisły Płock, czyli 83–106%, i +0,033…+0,049 z nadwyżki Lechii. Korelacja nadwyżek modeli i tego modelu formy na sześciu beniaminkach wyniosła 0,91–0,98. Wisła Płock była w tym pomiarze najtrudniejszym z 72 drużyno-sezonów: spadła z 2. miejsca w tabeli jesieni na 15. w tabeli wiosny, 11 z 16 meczów wypadło poniżej oczekiwań. Lechia poszła w drugą stronę, z 17. na 8. miejsce.
+- **Wniosek.** Kategoria „135 meczów historii" to w każdym sezonie jedna drużyna, akurat z największą zmianą formy między jesienią a wiosną, więc długość historii jest pomieszana z drużyną. Kary powracających nie da się przypisać wygaszaniu historii, ridge'owi ani startowi Elo. Werdykt pytania nr 3 („żadna różnica nie jest istotna") trzyma się w każdym wariancie.
+
+**Stan decyzji.** Wartości domyślne są niezmienione. Zmiana ξ, form albo K zmienia predykcje, więc wymaga podbicia `ResearchAlgorithm.Version` (6) i nowych runów. Do tego czasu wnioski z pytania nr 1 trzeba czytać jako warunkowe względem ξ i form.
 
 ## Interfejs badawczy
 
