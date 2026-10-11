@@ -28,7 +28,7 @@ public class PromotedTeamRealDataTests
     [InlineData(RealDataFixture.Season2526, new[] { 20, 23, 27 })]
     public void PromotedTeamsFollowTheSeasonDefinition(int seasonId, int[] expectedTeamIds)
     {
-        Assert.Equal(expectedTeamIds, PromotedTeamIds(seasonId));
+        Assert.Equal(expectedTeamIds, RealDataFixture.PromotedTeamIds(seasonId));
     }
 
     [Theory]
@@ -46,7 +46,7 @@ public class PromotedTeamRealDataTests
             RealDataFixture.SeasonChronology,
             RealDataFixture.LeagueId,
             seasonId,
-            PromotedTeamIds(seasonId));
+            RealDataFixture.PromotedTeamIds(seasonId));
 
         Assert.Equal(new PromotedTeamHistory(teamId, expectedCount, expectedLastSeasonId), histories.Single(h => h.TeamId == teamId));
     }
@@ -145,27 +145,11 @@ public class PromotedTeamRealDataTests
         }
     }
 
-    private static List<int> PromotedTeamIds(int seasonId)
-    {
-        var chronology = RealDataFixture.SeasonChronology.ToList();
-        var previousSeasonId = chronology[chronology.IndexOf(seasonId) - 1];
-
-        return TeamIdsIn(seasonId).Except(TeamIdsIn(previousSeasonId)).Order().ToList();
-    }
-
-    private static HashSet<int> TeamIdsIn(int seasonId)
-    {
-        return RealDataFixture.Matches
-            .Where(m => m.LeagueId == RealDataFixture.LeagueId && m.SeasonId == seasonId)
-            .SelectMany(m => new[] { m.HomeTeamId, m.AwayTeamId })
-            .ToHashSet();
-    }
-
     private static SpringEvaluation EvaluateSpring(int seasonId)
     {
         var history = WalkForwardEvaluator.BuildHistory(RealDataFixture.Matches, RealDataFixture.SeasonChronology, seasonId, RealDataFixture.TrainingLastRound);
         var evaluation = WalkForwardEvaluator.BuildEvaluationSet(RealDataFixture.Matches, seasonId, RealDataFixture.TrainingLastRound);
-        var promotedIds = PromotedTeamIds(seasonId);
+        var promotedIds = RealDataFixture.PromotedTeamIds(seasonId);
         var options = RealDataFixture.Options(seasonId);
 
         var byModel = PredictionModelFactory.AvailableModels.ToDictionary(

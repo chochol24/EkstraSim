@@ -6,6 +6,9 @@ namespace EkstraSim.Tests;
 public static class RealDataFixture
 {
     public const int LeagueId = 1;
+    public const int Season2122 = 3;
+    public const int Season2223 = 2;
+    public const int Season2324 = 1;
     public const int Season2425 = 6;
     public const int Season2526 = 7;
     public const int TrainingLastRound = 18;
@@ -31,6 +34,22 @@ public static class RealDataFixture
             TimeDecayXi = 0.0065,
             RidgeLambda = 0.05
         };
+    }
+
+    public static List<int> PromotedTeamIds(int seasonId)
+    {
+        var chronology = SeasonChronology.ToList();
+        var previousSeasonId = chronology[chronology.IndexOf(seasonId) - 1];
+
+        return TeamIdsIn(seasonId).Except(TeamIdsIn(previousSeasonId)).Order().ToList();
+    }
+
+    private static HashSet<int> TeamIdsIn(int seasonId)
+    {
+        return Matches
+            .Where(m => m.LeagueId == LeagueId && m.SeasonId == seasonId)
+            .SelectMany(m => new[] { m.HomeTeamId, m.AwayTeamId })
+            .ToHashSet();
     }
 
     private static List<MatchData> Load()
