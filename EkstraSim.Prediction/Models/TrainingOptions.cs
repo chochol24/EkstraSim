@@ -2,7 +2,7 @@ using Shared;
 
 namespace EkstraSim.Prediction.Models;
 
-public sealed class TrainingOptions
+public sealed record TrainingOptions
 {
     public int LeagueId { get; init; }
     public int SeasonId { get; init; }
