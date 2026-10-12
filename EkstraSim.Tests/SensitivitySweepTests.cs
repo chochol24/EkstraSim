@@ -119,6 +119,15 @@ public class SensitivitySweepTests
         Assert.Equal(Season.Evaluation.Count, Season.TeamsByMatch.Count);
     }
 
+    [Fact]
+    public void SeasonWithoutEvaluatedMatchesIsRejected()
+    {
+        var exception = Assert.Throws<ArgumentException>(() => SensitivitySeason.Build(
+            League(), Chronology, TestLeague.LeagueId, TargetSeason, 10, [ReturningTeam, ColdStartTeam]));
+
+        Assert.Equal("trainingLastRound", exception.ParamName);
+    }
+
     [Theory]
     [MemberData(nameof(Models))]
     public void DefaultVariantEqualsTheDirectWalkForwardSortedByMatchId(string modelName)
@@ -277,6 +286,32 @@ public class SensitivitySweepTests
         Assert.Empty(row.Pairwise);
         Assert.Empty(row.Promoted);
         Assert.Empty(row.PromotedByCategory.Comparisons);
+    }
+
+    [Fact]
+    public void OutcomeWithoutEvaluationsIsNeverASuccessfulSummary()
+    {
+        var empty = new SensitivityVariant(PredictionModelFactory.Elo, nameof(TrainingOptions.EloK), "K = 99", false, o => o with { EloK = 99 });
+        var outcomes = Outcomes.Append(new VariantOutcome(empty, null, null)).ToList();
+
+        var row = SensitivitySummary.Summarise(Season, outcomes).Last();
+
+        Assert.False(row.Succeeded);
+        Assert.Null(row.Means);
+        Assert.Empty(row.Pairwise);
+    }
+
+    [Fact]
+    public void ScenarioRejectsADuplicatedLabel()
+    {
+        var original = Outcomes.Single(o => o.Variant.ModelName == PredictionModelFactory.Elo && o.Variant.Label == "K = 5");
+        var duplicate = new VariantOutcome(original.Variant with { Apply = o => o with { EloK = 6 } }, original.Evaluations, null);
+        var outcomes = Outcomes.Append(duplicate).ToList();
+
+        var exception = Assert.Throws<ArgumentException>(() => SensitivitySummary.Scenario(
+            Season, outcomes, new Dictionary<string, string> { [PredictionModelFactory.Elo] = "K = 5" }));
+
+        Assert.Contains("2 wariantów", exception.Message);
     }
 
     [Fact]

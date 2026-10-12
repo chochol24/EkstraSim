@@ -141,6 +141,54 @@ public class SensitivityRealDataTests
 
     [Theory]
     [Trait("Category", "RealData")]
+    [InlineData(RealDataFixture.Season2122, 0.2103, 0.2140)]
+    [InlineData(RealDataFixture.Season2223, 0.2067, 0.2169)]
+    [InlineData(RealDataFixture.Season2324, 0.2318, 0.2321)]
+    [InlineData(RealDataFixture.Season2425, 0.2186, 0.2253)]
+    [InlineData(RealDataFixture.Season2526, 0.2207, 0.2352)]
+    public void LiteratureTimeDecayAndFormsOffReproduceTheDocumentedMeans(int seasonId, double literatureTimeDecay, double formsOff)
+    {
+        var summaries = Sweep(seasonId).Summaries;
+
+        Assert.Equal(literatureTimeDecay, summaries.Single(s => s.Variant.Label == LiteratureLabel).Means!.RankedProbability, MeanTolerance);
+        Assert.Equal(formsOff, summaries.Single(s => s.Variant.Label == FormsOffLabel).Means!.RankedProbability, MeanTolerance);
+    }
+
+    [Fact]
+    [Trait("Category", "RealData")]
+    public void OnlyTheFastestTimeDecayIn2023_24FailsToConverge()
+    {
+        var failed = Sweeps.Value
+            .SelectMany(sweep => sweep.Outcomes.Where(o => !o.Succeeded).Select(o => (sweep.Season.SeasonId, o)))
+            .ToList();
+
+        var (seasonId, outcome) = Assert.Single(failed);
+        Assert.Equal(RealDataFixture.Season2324, seasonId);
+        Assert.Equal("ξ = 0.015", outcome.Variant.Label);
+        Assert.Contains("po kolejce 26", outcome.Error);
+    }
+
+    [Theory]
+    [Trait("Category", "RealData")]
+    [InlineData(RealDataFixture.Season2425, "ξ z literatury", "D<E<P", 0.7870, 0.0497, 0.0555)]
+    [InlineData(RealDataFixture.Season2526, "ξ z literatury", "E<D<P", 0.2219, 0.0023, 0.0023)]
+    [InlineData(RealDataFixture.Season2425, "formy wyłączone", "E<P<D", 0.1213, 0.6529, 0.6442)]
+    [InlineData(RealDataFixture.Season2526, "formy wyłączone", "E<D<P", 0.0053, 0.5597, 0.0096)]
+    [InlineData(RealDataFixture.Season2425, "ξ z literatury + formy wyłączone", "D<E<P", 0.7870, 0.7240, 0.7240)]
+    [InlineData(RealDataFixture.Season2526, "ξ z literatury + formy wyłączone", "E<D<P", 0.2219, 0.0121, 0.0121)]
+    public void ScenariosReproduceTheDocumentedConclusions(int seasonId, string scenarioName, string ranking, double dixonColesElo, double dixonColesPoisson, double eloPoisson)
+    {
+        var sweep = Sweep(seasonId);
+        var scenario = SensitivitySummary.Scenario(sweep.Season, sweep.Outcomes, Scenarios.Single(s => s.Name == scenarioName).Labels);
+
+        Assert.Equal(ranking, RankingCode(scenario.Ranking));
+        Assert.Equal(dixonColesElo, Holm(scenario.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Elo), MeanTolerance);
+        Assert.Equal(dixonColesPoisson, Holm(scenario.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Poisson), MeanTolerance);
+        Assert.Equal(eloPoisson, Holm(scenario.Pairwise, PredictionModelFactory.Elo, PredictionModelFactory.Poisson), MeanTolerance);
+    }
+
+    [Theory]
+    [Trait("Category", "RealData")]
     [MemberData(nameof(SeasonIds))]
     public void EloInitialRatingDoesNotChangeEvaluations(int seasonId)
     {
@@ -219,7 +267,7 @@ public class SensitivityRealDataTests
         }
 
         var header = Invariant($"{"model",-11} {"parametr",-16} {"wartość",-26} {"RPS",7} {"ΔRPS",8} {"Brier",7} {"LogLoss",7} {"ranking",-7} {"E–P",6} {"DC–E",6} {"DC–P",6}");
-        _output.WriteLine(evaluated ? header + "   reszta zimny  powr.  | Holm kat.   | per drużyna" : header);
+        _output.WriteLine(evaluated ? header + "   binarnie (Holm) | reszta zimny  powr.  | Holm kat.   | per drużyna" : header);
 
         foreach (var summary in sweep.Summaries)
         {
@@ -236,7 +284,8 @@ public class SensitivityRealDataTests
 
             if (evaluated)
             {
-                line += "   " + PromotedColumns(summary.PromotedByCategory, variant.ModelName);
+                var binary = summary.Promoted.Single(c => c.ModelName == variant.ModelName);
+                line += Invariant($"   {binary.Difference,7:+0.0000;-0.0000} ({binary.AdjustedPValue:F2}) | ") + PromotedColumns(summary.PromotedByCategory, variant.ModelName);
             }
 
             _output.WriteLine(line);

@@ -32,7 +32,7 @@ public sealed class VariantSummary
     public IReadOnlyList<PromotedTeamComparison> Promoted { get; init; } = [];
     public PromotedCategoryAnalysis PromotedByCategory { get; init; } = new();
 
-    public bool Succeeded => Error == null;
+    public bool Succeeded => Means != null;
 }
 
 public sealed class ScenarioSummary
@@ -138,8 +138,14 @@ public static class SensitivitySummary
 
     private static VariantOutcome Chosen(IReadOnlyList<VariantOutcome> outcomes, string modelName, string label)
     {
-        var outcome = outcomes.SingleOrDefault(o => o.Variant.ModelName == modelName && o.Variant.Label == label)
-            ?? throw new ArgumentException($"Model {modelName} nie ma wariantu „{label}”.", nameof(outcomes));
+        var matching = outcomes.Where(o => o.Variant.ModelName == modelName && o.Variant.Label == label).ToList();
+
+        if (matching.Count != 1)
+        {
+            throw new ArgumentException($"Model {modelName} ma {matching.Count} wariantów „{label}”, oczekiwano 1.", nameof(outcomes));
+        }
+
+        var outcome = matching[0];
 
         if (!outcome.Succeeded)
         {

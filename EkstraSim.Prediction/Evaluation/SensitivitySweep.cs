@@ -23,12 +23,18 @@ public sealed record SensitivitySeason(
         IReadOnlyCollection<int> promotedTeamIds)
     {
         var leagueMatches = matches.Where(m => m.LeagueId == leagueId).ToList();
+        var evaluation = WalkForwardEvaluator.BuildEvaluationSet(leagueMatches, seasonId, trainingLastRound);
+
+        if (evaluation.Count == 0)
+        {
+            throw new ArgumentException($"Sezon {seasonId} nie ma rozegranych meczów po kolejce {trainingLastRound}.", nameof(trainingLastRound));
+        }
 
         return new SensitivitySeason(
             seasonId,
             trainingLastRound,
             WalkForwardEvaluator.BuildHistory(leagueMatches, chronology, seasonId, trainingLastRound),
-            WalkForwardEvaluator.BuildEvaluationSet(leagueMatches, seasonId, trainingLastRound),
+            evaluation,
             new TrainingOptions
             {
                 LeagueId = leagueId,
