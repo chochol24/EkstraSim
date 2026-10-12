@@ -8,5 +8,6 @@
 		public const double CurrentSeasonScale = 0.67;
 		public const double PreviousSeasonScale = 0.3;
 		public const double HistoricalScale = 0.03;
+		public const double DixonColesTimeDecayXi = 0.0065 / 3.5;
 	}
 }

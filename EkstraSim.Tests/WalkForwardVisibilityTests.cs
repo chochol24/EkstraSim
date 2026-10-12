@@ -188,7 +188,8 @@ public class WalkForwardVisibilityTests
             LeagueId = TestLeague.LeagueId,
             SeasonId = TargetSeason,
             SeasonChronology = [PreviousSeason, TargetSeason],
-            UseFormFactors = true
+            UseFormFactors = true,
+            TimeDecayXi = 0.0065
         };
     }
 

@@ -62,7 +62,7 @@
         <MudExpansionPanel Text="Parametry zaawansowane">
             <MudSwitch T="bool" @bind-Value="request.UseFormFactors" Label="Mnożniki formy (Poisson)" Color="Color.Primary" />
             <MudNumericField T="double" Label="Wygaszanie czasowe ξ (Dixon-Coles)" @bind-Value="request.TimeDecayXi"
-                             Min="0" Max="0.1" Step="0.0005" Format="F4" Margin="Margin.Dense" />
+                             Min="0" Max="0.1" Step="0.0001" Format="F6" Margin="Margin.Dense" />
             <MudNumericField T="double" Label="Regularyzacja ridge" @bind-Value="request.RidgeLambda"
                              Min="0" Max="10" Step="0.01" Format="F2" Margin="Margin.Dense" />
             <MudNumericField T="double" Label="Tolerancja stabilności δ" @bind-Value="request.StabilityTolerance"

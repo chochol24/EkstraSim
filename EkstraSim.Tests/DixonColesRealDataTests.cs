@@ -8,7 +8,6 @@ namespace EkstraSim.Tests;
 
 public class DixonColesRealDataTests
 {
-    private const int ExpectedFitCount = 17;
     private const double AuditStartObjective = 248.939860312;
     private const double NelderMeadTrainingObjective = 248.738;
 
@@ -21,13 +20,18 @@ public class DixonColesRealDataTests
 
     [Theory]
     [Trait("Category", "RealData")]
-    [InlineData(RealDataFixture.Season2425)]
-    [InlineData(RealDataFixture.Season2526)]
-    public void EveryWalkForwardFitConvergesToAStationaryPoint(int seasonId)
+    [InlineData(5, RealDataFixture.Season2425, RealDataFixture.TrainingLastRound, 17)]
+    [InlineData(5, RealDataFixture.Season2526, RealDataFixture.TrainingLastRound, 17)]
+    [InlineData(6, RealDataFixture.Season2425, RealDataFixture.TrainingLastRound, 17)]
+    [InlineData(6, RealDataFixture.Season2526, RealDataFixture.TrainingLastRound, 17)]
+    [InlineData(6, RealDataFixture.Season2425, 3, 32)]
+    [InlineData(6, RealDataFixture.Season2526, 3, 32)]
+    public void EveryWalkForwardFitConvergesToAStationaryPoint(int version, int seasonId, int trainingLastRound, int expectedFitCount)
     {
-        var (reports, fits) = ReplayWalkForward(seasonId);
+        var options = version == 5 ? RealDataFixture.OptionsVersion5(seasonId) : RealDataFixture.Options(seasonId);
+        var (reports, fits) = ReplayWalkForward(seasonId, trainingLastRound, options);
 
-        _output.WriteLine($"Sezon {seasonId}: {reports.Count} dopasowań");
+        _output.WriteLine($"Sezon {seasonId}, wersja {version}, odcięcie {trainingLastRound}: {reports.Count} dopasowań");
         _output.WriteLine(string.Format(
             CultureInfo.InvariantCulture,
             "{0,-9} {1,5} {2,-17} {3,12} {4,12} {5,10} {6,10} {7,9}",
@@ -43,7 +47,7 @@ public class DixonColesRealDataTests
                 report.FinalObjective, report.GradientNorm, fits[i].Rho, fits[i].HomeAdvantage));
         }
 
-        Assert.Equal(ExpectedFitCount, reports.Count);
+        Assert.Equal(expectedFitCount, reports.Count);
         Assert.Equal(fits.Select(fit => fit.AfterRound), reports.Select(report => report.AfterRound));
 
         var violations = reports
@@ -63,7 +67,7 @@ public class DixonColesRealDataTests
     {
         var seasonId = RealDataFixture.Season2425;
         var model = new DixonColesModel();
-        model.Train(History(seasonId), RealDataFixture.Options(seasonId));
+        model.Train(History(seasonId, RealDataFixture.TrainingLastRound), RealDataFixture.OptionsVersion5(seasonId));
 
         var report = Assert.Single(model.FitReports);
 
@@ -95,25 +99,25 @@ public class DixonColesRealDataTests
         return problems;
     }
 
-    private static List<MatchData> History(int seasonId)
+    private static List<MatchData> History(int seasonId, int trainingLastRound)
     {
         return WalkForwardEvaluator.BuildHistory(
             RealDataFixture.Matches,
             RealDataFixture.SeasonChronology,
             seasonId,
-            RealDataFixture.TrainingLastRound);
+            trainingLastRound);
     }
 
-    private static (IReadOnlyList<DixonColesFitReport> Reports, List<Fit> Fits) ReplayWalkForward(int seasonId)
+    private static (IReadOnlyList<DixonColesFitReport> Reports, List<Fit> Fits) ReplayWalkForward(int seasonId, int trainingLastRound, TrainingOptions options)
     {
         var evaluationSet = WalkForwardEvaluator.BuildEvaluationSet(
             RealDataFixture.Matches,
             seasonId,
-            RealDataFixture.TrainingLastRound);
+            trainingLastRound);
 
         var model = new DixonColesModel();
         var recorder = new RecordingModel(model);
-        WalkForwardEvaluator.Run(recorder, History(seasonId), evaluationSet, RealDataFixture.Options(seasonId));
+        WalkForwardEvaluator.Run(recorder, History(seasonId, trainingLastRound), evaluationSet, options);
 
         return (model.FitReports, recorder.Fits);
     }

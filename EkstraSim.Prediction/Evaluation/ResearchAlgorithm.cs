@@ -2,5 +2,5 @@ namespace EkstraSim.Prediction.Evaluation;
 
 public static class ResearchAlgorithm
 {
-    public const int Version = 5;
+    public const int Version = 6;
 }

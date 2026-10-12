@@ -29,11 +29,13 @@ public static class RealDataFixture
         {
             LeagueId = LeagueId,
             SeasonId = seasonId,
-            SeasonChronology = SeasonChronology,
-            UseFormFactors = true,
-            TimeDecayXi = 0.0065,
-            RidgeLambda = 0.05
+            SeasonChronology = SeasonChronology
         };
+    }
+
+    public static TrainingOptions OptionsVersion5(int seasonId)
+    {
+        return Options(seasonId) with { TimeDecayXi = 0.0065 };
     }
 
     public static List<int> PromotedTeamIds(int seasonId)

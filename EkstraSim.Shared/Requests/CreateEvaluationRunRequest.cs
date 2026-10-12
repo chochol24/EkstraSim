@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Shared;
 
 namespace EkstraSim.Shared.Requests;
 
@@ -17,7 +18,7 @@ public class CreateEvaluationRunRequest
     public List<string> Models { get; set; } = [];
 
     public bool UseFormFactors { get; set; } = true;
-    public double TimeDecayXi { get; set; } = 0.0065;
+    public double TimeDecayXi { get; set; } = Constants.DixonColesTimeDecayXi;
     public double RidgeLambda { get; set; } = 0.05;
 
     public double StabilityTolerance { get; set; } = 0.25;

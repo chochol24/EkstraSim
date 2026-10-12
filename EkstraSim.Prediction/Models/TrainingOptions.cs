@@ -17,7 +17,7 @@ public sealed record TrainingOptions
     public double PreviousSeasonScale { get; init; } = Constants.PreviousSeasonScale;
     public double HistoricalScale { get; init; } = Constants.HistoricalScale;
 
-    public double TimeDecayXi { get; init; } = 0.0065;
+    public double TimeDecayXi { get; init; } = Constants.DixonColesTimeDecayXi;
     public double RidgeLambda { get; init; } = 0.05;
 
     public double EloK { get; init; } = Constants.KValueEkstraklasa;

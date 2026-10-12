@@ -92,7 +92,7 @@ public class SensitivitySweepTests
 
         Assert.Equal(0.0065 / 3.5, SensitivityGrid.LiteratureTimeDecayXi);
         Assert.Equal([0, 0.001, 0.0065 / 3.5, 0.003, 0.004, 0.01, 0.015], Values(nameof(TrainingOptions.TimeDecayXi), o => o.TimeDecayXi));
-        Assert.Contains("literatura", SensitivityGrid.Default.Single(v => v.Apply(options).TimeDecayXi == SensitivityGrid.LiteratureTimeDecayXi).Label);
+        Assert.Contains("literatura", SensitivityGrid.Default.Single(v => v.Parameter == nameof(TrainingOptions.TimeDecayXi) && v.Apply(options).TimeDecayXi == SensitivityGrid.LiteratureTimeDecayXi).Label);
         Assert.Equal([0, 0.5, 5, 50], Values(nameof(TrainingOptions.RidgeLambda), o => o.RidgeLambda));
         Assert.Equal([false], Values(nameof(TrainingOptions.UseFormFactors), o => o.UseFormFactors));
         Assert.Equal(
@@ -112,7 +112,7 @@ public class SensitivitySweepTests
         Assert.Equal(Ids(WalkForwardEvaluator.BuildEvaluationSet(leagueMatches, TargetSeason, Cutoff)), Ids(Season.Evaluation));
         Assert.All(Season.History, m => Assert.Equal(TestLeague.LeagueId, m.LeagueId));
         Assert.Equal(DefaultBase(), Season.Options);
-        Assert.Equal((true, 0.0065, 0.05), (Season.Options.UseFormFactors, Season.Options.TimeDecayXi, Season.Options.RidgeLambda));
+        Assert.Equal((true, 0.0065 / 3.5, 0.05), (Season.Options.UseFormFactors, Season.Options.TimeDecayXi, Season.Options.RidgeLambda));
         Assert.Equal(
             [new PromotedTeamHistory(ColdStartTeam, 0, null), new PromotedTeamHistory(ReturningTeam, 10, OldSeason)],
             Season.PromotedTeams);

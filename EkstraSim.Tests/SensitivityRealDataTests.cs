@@ -47,7 +47,12 @@ public class SensitivityRealDataTests
     private const string LiteratureLabel = "ξ = 0.00186 (literatura)";
     private const string FormsOffLabel = "formy wył.";
 
+    private static readonly IReadOnlyList<SensitivityVariant> Version6Grid = SensitivityGrid.Default
+        .Where(v => v.Parameter != nameof(TrainingOptions.TimeDecayXi))
+        .ToList();
+
     private static readonly Lazy<IReadOnlyList<SeasonSweep>> Sweeps = new(ComputeSweeps);
+    private static readonly Lazy<IReadOnlyList<SeasonSweep>> Version6Sweeps = new(ComputeVersion6Sweeps);
 
     private readonly ITestOutputHelper _output;
 
@@ -57,6 +62,8 @@ public class SensitivityRealDataTests
     }
 
     public static IEnumerable<object[]> SeasonIds => SeasonCutoffs.Select(season => new object[] { season.SeasonId });
+
+    public static IEnumerable<object[]> EvaluatedSeasonIds => EvaluatedSeasons.Select(seasonId => new object[] { seasonId });
 
     [Theory]
     [Trait("Category", "RealData")]
@@ -68,12 +75,15 @@ public class SensitivityRealDataTests
         var evaluation = WalkForwardEvaluator.BuildEvaluationSet(RealDataFixture.Matches, seasonId, sweep.Season.TrainingLastRound);
         var promotedIds = RealDataFixture.PromotedTeamIds(seasonId).ToHashSet();
 
-        Assert.Equal(RealDataFixture.Options(seasonId), Built(seasonId, sweep.Season.TrainingLastRound).Options);
+        var builtOptions = Built(seasonId, sweep.Season.TrainingLastRound).Options;
+        Assert.Equal(RealDataFixture.Options(seasonId), builtOptions);
+        Assert.Equal(RealDataFixture.OptionsVersion5(seasonId), builtOptions with { TimeDecayXi = 0.0065 });
+        Assert.Equal(RealDataFixture.OptionsVersion5(seasonId), sweep.Season.Options);
 
         foreach (var modelName in ModelOrder)
         {
             var direct = WalkForwardEvaluator
-                .Run(PredictionModelFactory.Create(modelName), history, evaluation, RealDataFixture.Options(seasonId), promotedIds)
+                .Run(PredictionModelFactory.Create(modelName), history, evaluation, RealDataFixture.OptionsVersion5(seasonId), promotedIds)
                 .SelectMany(round => round.Evaluations)
                 .OrderBy(e => e.MatchId)
                 .ToList();
@@ -234,6 +244,82 @@ public class SensitivityRealDataTests
         Assert.Equal(SensitivityGrid.Default, sweep.Outcomes.Select(o => o.Variant));
         Assert.All(sweep.Outcomes.Where(o => o.Variant.IsDefault), o => Assert.True(o.Succeeded, o.Error));
         Assert.All(sweep.Outcomes.Where(o => o.Succeeded), o => Assert.Equal(sweep.Season.Evaluation.Count, o.Evaluations!.Count));
+
+        if (EvaluatedSeasons.Contains(seasonId))
+        {
+            var version6 = Version6Sweep(seasonId);
+
+            Assert.Equal(Version6Grid, version6.Outcomes.Select(o => o.Variant));
+            Assert.All(version6.Outcomes, o => Assert.True(o.Succeeded, o.Error));
+            Assert.All(version6.Outcomes, o => Assert.Equal(version6.Season.Evaluation.Count, o.Evaluations!.Count));
+        }
+    }
+
+    [Theory]
+    [Trait("Category", "RealData")]
+    [MemberData(nameof(EvaluatedSeasonIds))]
+    public void Version6DefaultsEqualTheLiteratureVariant(int seasonId)
+    {
+        var version5 = Sweep(seasonId);
+        var version6 = Version6Sweep(seasonId);
+
+        Assert.Equal(RealDataFixture.Options(seasonId), version6.Season.Options);
+        Assert.Equal(
+            version5.Outcomes.Single(o => o.Variant.Label == LiteratureLabel).Evaluations!.Select(Fingerprint),
+            Default(version6, PredictionModelFactory.DixonColes).Evaluations!.Select(Fingerprint));
+
+        foreach (var modelName in new[] { PredictionModelFactory.Elo, PredictionModelFactory.Poisson })
+        {
+            Assert.Equal(Default(version5, modelName).Evaluations!.Select(Fingerprint), Default(version6, modelName).Evaluations!.Select(Fingerprint));
+        }
+    }
+
+    [Theory]
+    [Trait("Category", "RealData")]
+    [MemberData(nameof(EvaluatedSeasonIds))]
+    public void Version6WithoutFormsEqualsTheCombinedScenario(int seasonId)
+    {
+        var combined = SensitivitySummary.Scenario(Sweep(seasonId).Season, Sweep(seasonId).Outcomes, Scenarios.Single(s => s.Name == "ξ z literatury + formy wyłączone").Labels);
+        var formsOff = Version6Sweep(seasonId).Summaries.Single(s => s.Variant.Label == FormsOffLabel);
+
+        Assert.Equal(combined.Ranking, formsOff.Ranking);
+        Assert.Equal(combined.Pairwise.Select(p => (p.FirstModel, p.SecondModel, p.AdjustedPValue)), formsOff.Pairwise.Select(p => (p.FirstModel, p.SecondModel, p.AdjustedPValue)));
+    }
+
+    [Theory]
+    [Trait("Category", "RealData")]
+    [InlineData(RealDataFixture.Season2425, "K = 5", "E<D<P", 0.6645, 0.0497, 0.0497)]
+    [InlineData(RealDataFixture.Season2425, "K = 30", "D<E<P", 0.0790, 0.0497, 0.0790)]
+    [InlineData(RealDataFixture.Season2425, "przewaga = 200", "E<D<P", 0.9849, 0.0497, 0.0497)]
+    [InlineData(RealDataFixture.Season2425, "λ = 50", "D<E<P", 0.6819, 0.0441, 0.0555)]
+    [InlineData(RealDataFixture.Season2526, "K = 5", "E<D<P", 0.1014, 0.0020, 0.0020)]
+    [InlineData(RealDataFixture.Season2526, "K = 20", "D<E<P", 0.3221, 0.0023, 0.0047)]
+    [InlineData(RealDataFixture.Season2526, "K = 30", "D<E<P", 0.1376, 0.0023, 0.0119)]
+    public void Version6RobustnessReproducesTheDocumentedNumbers(int seasonId, string label, string ranking, double dixonColesElo, double dixonColesPoisson, double eloPoisson)
+    {
+        var summary = Version6Sweep(seasonId).Summaries.Single(s => s.Variant.Label == label);
+
+        Assert.Equal(ranking, RankingCode(summary.Ranking));
+        Assert.Equal(dixonColesElo, Holm(summary.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Elo), MeanTolerance);
+        Assert.Equal(dixonColesPoisson, Holm(summary.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Poisson), MeanTolerance);
+        Assert.Equal(eloPoisson, Holm(summary.Pairwise, PredictionModelFactory.Elo, PredictionModelFactory.Poisson), MeanTolerance);
+    }
+
+    [Fact]
+    [Trait("Category", "RealData")]
+    public void Version6ConclusionsHoldAcrossVariants()
+    {
+        foreach (var sweep in Version6Sweeps.Value)
+        {
+            Assert.All(sweep.Summaries, s => Assert.True(Holm(s.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Elo) > 0.05, $"{SeasonNames[sweep.Season.SeasonId]} {s.Variant.Label}: DC–E istotne"));
+            Assert.All(sweep.Summaries.Where(s => s.Variant.Parameter == nameof(TrainingOptions.RidgeLambda)), s => Assert.InRange(Math.Abs(s.Delta!.RankedProbability), 0, 0.0005));
+        }
+
+        Assert.All(Version6Sweep(RealDataFixture.Season2526).Summaries, s =>
+        {
+            Assert.True(Holm(s.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Poisson) < 0.05, $"{s.Variant.Label}: DC–P nieistotne");
+            Assert.True(Holm(s.Pairwise, PredictionModelFactory.Elo, PredictionModelFactory.Poisson) < 0.05, $"{s.Variant.Label}: E–P nieistotne");
+        });
     }
 
     [Fact]
@@ -249,16 +335,25 @@ public class SensitivityRealDataTests
         ReportScenarios();
         ReportBaseline();
 
+        _output.WriteLine("");
+        _output.WriteLine("=== Odporność wartości wersji 6 (ξ = 0,0065/3,5 na dzień; warianty bez ξ, pozostałe modele na wartościach wersji 6) ===");
+
+        foreach (var sweep in Version6Sweeps.Value)
+        {
+            ReportSeason(sweep, " — wersja 6");
+        }
+
         Assert.Equal(SeasonCutoffs.Length, Sweeps.Value.Count);
+        Assert.Equal(EvaluatedSeasons.Length, Version6Sweeps.Value.Count);
     }
 
-    private void ReportSeason(SeasonSweep sweep)
+    private void ReportSeason(SeasonSweep sweep, string suffix = "")
     {
         var season = sweep.Season;
         var evaluated = EvaluatedSeasons.Contains(season.SeasonId);
 
         _output.WriteLine("");
-        _output.WriteLine(Invariant($"=== Sezon {SeasonNames[season.SeasonId]} (Id {season.SeasonId}): odcięcie po k.{season.TrainingLastRound}, {season.Evaluation.Count} meczów wiosny, {(evaluated ? "ewaluacja" : "walidacja")} ==="));
+        _output.WriteLine(Invariant($"=== Sezon {SeasonNames[season.SeasonId]} (Id {season.SeasonId}): odcięcie po k.{season.TrainingLastRound}, {season.Evaluation.Count} meczów wiosny, {(evaluated ? "ewaluacja" : "walidacja")}{suffix} ==="));
 
         if (evaluated)
         {
@@ -420,8 +515,23 @@ public class SensitivityRealDataTests
             .AsOrdered()
             .Select(season =>
             {
-                var built = Built(season.SeasonId, season.TrainingLastRound) with { Options = RealDataFixture.Options(season.SeasonId) };
+                var built = Built(season.SeasonId, season.TrainingLastRound) with { Options = RealDataFixture.OptionsVersion5(season.SeasonId) };
                 var outcomes = SensitivitySweep.Run(built, SensitivityGrid.Default, Environment.ProcessorCount);
+
+                return new SeasonSweep(built, outcomes, SensitivitySummary.Summarise(built, outcomes));
+            })
+            .ToList();
+    }
+
+    private static IReadOnlyList<SeasonSweep> ComputeVersion6Sweeps()
+    {
+        return EvaluatedSeasons
+            .AsParallel()
+            .AsOrdered()
+            .Select(seasonId =>
+            {
+                var built = Built(seasonId, RealDataFixture.TrainingLastRound);
+                var outcomes = SensitivitySweep.Run(built, Version6Grid, Environment.ProcessorCount);
 
                 return new SeasonSweep(built, outcomes, SensitivitySummary.Summarise(built, outcomes));
             })
@@ -440,6 +550,8 @@ public class SensitivityRealDataTests
     }
 
     private static SeasonSweep Sweep(int seasonId) => Sweeps.Value.Single(sweep => sweep.Season.SeasonId == seasonId);
+
+    private static SeasonSweep Version6Sweep(int seasonId) => Version6Sweeps.Value.Single(sweep => sweep.Season.SeasonId == seasonId);
 
     private static VariantOutcome Default(SeasonSweep sweep, string modelName)
     {

@@ -1,3 +1,5 @@
+using Shared;
+
 namespace EkstraSim.Shared.Requests;
 
 public record ResearchRunRequest(int RunId);
@@ -12,6 +14,6 @@ public class PredictRoundRequest
     public string ModelName { get; set; } = string.Empty;
     public int? TrainingLastRound { get; set; }
     public bool UseFormFactors { get; set; } = true;
-    public double TimeDecayXi { get; set; } = 0.0065;
+    public double TimeDecayXi { get; set; } = Constants.DixonColesTimeDecayXi;
     public double RidgeLambda { get; set; } = 0.05;
 }
