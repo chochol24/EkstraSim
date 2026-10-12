@@ -39,7 +39,7 @@ dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter FullyQualifiedName~D
 dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter "Category!=RealData"
 ```
 
-The full test run takes ~20 s, mostly the `Category=RealData` tests on the real-data fixture (the parameter sensitivity sweep alone is ~15 s); the filter above runs the rest in under a second.
+The full test run takes ~20–25 s, mostly the `Category=RealData` tests on the real-data fixture (the parameter sensitivity sweeps take ~15–20 s and `Version6RealDataTests` ~5 s); the filter above runs the rest in under a second.
 
 ```bash
 dotnet run --project EkstraSim.Backend --launch-profile https

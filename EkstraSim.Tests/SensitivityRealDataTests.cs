@@ -313,6 +313,7 @@ public class SensitivityRealDataTests
         {
             Assert.All(sweep.Summaries, s => Assert.True(Holm(s.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Elo) > 0.05, $"{SeasonNames[sweep.Season.SeasonId]} {s.Variant.Label}: DC–E istotne"));
             Assert.All(sweep.Summaries.Where(s => s.Variant.Parameter == nameof(TrainingOptions.RidgeLambda)), s => Assert.InRange(Math.Abs(s.Delta!.RankedProbability), 0, 0.0005));
+            Assert.All(sweep.Summaries, s => Assert.Equal(PredictionModelFactory.Poisson, s.Ranking[^1]));
         }
 
         Assert.All(Version6Sweep(RealDataFixture.Season2526).Summaries, s =>
@@ -320,6 +321,12 @@ public class SensitivityRealDataTests
             Assert.True(Holm(s.Pairwise, PredictionModelFactory.DixonColes, PredictionModelFactory.Poisson) < 0.05, $"{s.Variant.Label}: DC–P nieistotne");
             Assert.True(Holm(s.Pairwise, PredictionModelFactory.Elo, PredictionModelFactory.Poisson) < 0.05, $"{s.Variant.Label}: E–P nieistotne");
         });
+
+        var lowestCategoryHolm = Version6Sweeps.Value
+            .SelectMany(sweep => sweep.Summaries)
+            .SelectMany(s => s.PromotedByCategory.Comparisons)
+            .Min(c => c.AdjustedPValue);
+        Assert.Equal(0.2890, lowestCategoryHolm, MeanTolerance);
     }
 
     [Fact]

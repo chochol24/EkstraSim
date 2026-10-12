@@ -174,6 +174,20 @@ public class WalkForwardVisibilityTests
         Assert.Same(inner.Report, exception.Report);
     }
 
+    [Fact]
+    public void DixonColesEndsInAnInfeasiblePointOnThisLeagueAtTheDefaultTimeDecay()
+    {
+        var (history, evaluation) = Split(League(withPostponements: true));
+        var defaults = Options() with { TimeDecayXi = new TrainingOptions().TimeDecayXi };
+
+        var exception = Assert.Throws<ModelConvergenceException>(() => WalkForwardEvaluator.Run(
+            PredictionModelFactory.Create(PredictionModelFactory.DixonColes), history, evaluation, defaults));
+
+        Assert.StartsWith("punkt niedopuszczalny", exception.Reason);
+        Assert.Equal(7, exception.Report.AfterRound);
+        Assert.NotEmpty(WalkForwardEvaluator.Run(PredictionModelFactory.Create(PredictionModelFactory.DixonColes), history, evaluation, Options()));
+    }
+
     private static (List<MatchData> History, List<MatchData> Evaluation) Split(List<MatchData> league)
     {
         return (
