@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Solution layout
 
-Five projects (`EkstraSim.sln` at the repo root), `net9.0` throughout, file-scoped namespaces:
+Six projects (`EkstraSim.sln` at the repo root), `net9.0` throughout, file-scoped namespaces:
 
 | Project | Role |
 | --- | --- |
@@ -19,7 +19,8 @@ Five projects (`EkstraSim.sln` at the repo root), `net9.0` throughout, file-scop
 | `EkstraSim.Frontend` | Blazor **Server** app (interactive server render mode) with MudBlazor. Talks to the backend over HTTP only. UI is in Polish. |
 | `EkstraSim.Shared` | DTOs, request records, the `EkstraSimResult<T>` envelope, `Constants`, and the `SnackbarMessages` resx. Referenced by everything. |
 | `EkstraSim.Prediction` | Pure computational core for the master's thesis: prediction models, metrics, statistics. **No EF, no HTTP** — depends only on `Shared` + MathNet.Numerics. |
-| `EkstraSim.Tests` | xUnit tests for `EkstraSim.Prediction` (and `EkstraSim.Shared`, referenced transitively). Backend and frontend have no tests. |
+| `EkstraSim.Tests` | xUnit tests for `EkstraSim.Prediction` (and `EkstraSim.Shared`, referenced transitively). |
+| `EkstraSim.Backend.Tests` | xUnit parity test: runs the frozen legacy engine unchanged on EF Core InMemory and compares it with `PoissonModel`. The only tests that touch the backend; the frontend has none. |
 
 ## Commands
 
@@ -39,7 +40,13 @@ dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter FullyQualifiedName~D
 dotnet test EkstraSim.Tests/EkstraSim.Tests.csproj --filter "Category!=RealData"
 ```
 
-The full test run takes ~20–25 s, mostly the `Category=RealData` tests on the real-data fixture (the parameter sensitivity sweeps take ~15–20 s and `Version6RealDataTests` ~5 s); the filter above runs the rest in under a second.
+The full test run takes ~20–25 s, mostly the `Category=RealData` tests on the real-data fixture (the parameter sensitivity sweeps take ~15–20 s, `Version6RealDataTests` ~5 s and `BaselineAndCalibrationRealDataTests` ~6 s; xUnit runs these classes in parallel, so the times overlap); the filter above runs the rest in under a second.
+
+```bash
+dotnet test EkstraSim.Backend.Tests/EkstraSim.Backend.Tests.csproj
+```
+
+The legacy-engine parity test takes ~20 s (100 000 simulations per match over two springs). The legacy engine draws from an unseeded `Random`, so its assertions are statistical (5 standard errors) and the reported legacy numbers vary slightly between runs.
 
 ```bash
 dotnet run --project EkstraSim.Backend --launch-profile https
@@ -90,6 +97,8 @@ Known defects, documented rather than fixed (the research layer routes around th
 - [CSVService.cs](EkstraSim.Backend/Database/Services/CSVService.cs) has `filePath = null` (path commented out) and an empty `catch`, so `GET /v1/api/importcsv` silently does nothing.
 - [TeamService.cs](EkstraSim.Backend/Database/Services/TeamService.cs) `UpdateAverageTeamGoals` hardcodes `LeagueId == 1`, current `SeasonId == 6`, previous `SeasonId == 1`.
 - `SimulatingService.cs:190` applies `PreviousSeasonScale` (0.3) instead of `HistoricalScale` (0.03) to the away historical term, so away weights sum to 1.27. The `EkstraSim.Prediction` port fixes this — see `docs/DZIALANIE.md`.
+
+`EkstraSim.Backend.Tests` (`PoissonLegacyParityTests`) checks the port against this engine. To satisfy the hardcoded ids it renumbers seasons in the InMemory database (studied season → 6, previous → 1), and it reproduces the away-weight defect on the port side.
 
 Data-prep order for the legacy engine (then restart the backend): `importcsv` → `league/goals` → `team/goals` → `rebase-elo`.
 

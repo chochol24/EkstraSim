@@ -14,6 +14,7 @@ Zamiast komentarzy w kodzie — wyjaśnienia trafiają tutaj. Każda zmiana zach
 | `EkstraSim.Shared` | DTO, requesty, koperta `EkstraSimResult<T>`, stałe |
 | `EkstraSim.Prediction` | **(nowy)** czysty rdzeń obliczeniowy: modele predykcyjne, metryki, statystyka — bez EF/HTTP |
 | `EkstraSim.Tests` | **(nowy)** testy jednostkowe rdzenia (xUnit) |
+| `EkstraSim.Backend.Tests` | **(nowy)** test zgodności portu Poissona z niezmienionym silnikiem z pracy inżynierskiej na EF Core InMemory (xUnit) — sekcja „Weryfikacja portu względem oryginału” |
 
 Stary silnik (`SimulatingService`) pozostaje nietknięty — nowa warstwa powstaje obok niego.
 
@@ -46,6 +47,14 @@ Matematyka jak w `SimulatingService.SimulateRound`: siła ataku i obrony drużyn
 
 Mnożniki formy (gdy `UseFormFactors`, domyślnie włączone): forma z 10 ostatnich meczów, forma dom/wyjazd z 5 ostatnich, H2H z 5 ostatnich. Każdy liczony jako `(śr. zdobyte − śr. stracone) / 2 + 1` i przycięty: forma i forma dom/wyjazd do [0.8, 1.2], H2H do [0.95, 1.05].
 
+Składniki zwraca publiczna metoda `PoissonModel.FormComponents(mecz, drużyna, isHome)` jako rekord `FormFactors` (`Recent`, `Venue`, `HeadToHead`). `Predict` mnoży λ przez `FormFactors.Product`, czyli iloczyn składników w tej samej kolejności co wcześniej prywatny `FormMultiplier`. Wydzielenie nie zmieniło prognoz: prognozy przebiegów 13–16 z fixture (λ, P(1/X/2), skróty macierzy, dryf) i odpowiedzi `comparison` runów 13–16 są bitowo takie same jak przed nim. Kolejność mnożenia pilnuje test `FormProductMultipliesFromLeftToRight`, bo przy innej kolejności iloczyn różni się na ostatnim bicie.
+
+**Charakter modelu.** To heurystyka ilorazu średnich z mnożnikami formy, a nie model Poissona dopasowywany metodą największej wiarygodności. Taki model opisał Maher (*Modelling association football scores*, Statistica Neerlandica 36(3), 1982, s. 109–118, DOI 10.1111/j.1467-9574.1982.tb00782.x; opis bibliograficzny sprawdzony w Crossref, treści nie czytano).
+- **Siła drużyny** to jej średnia podzielona przez średnią ligi, z jej własnych meczów, bez korekty o siłę faktycznych rywali.
+- **Rozkład Poissona** służy tu, tak jak w Dixonie-Colesie i Elo, tylko do zamiany λ na macierz wyników (`ScoreGrid`).
+- **Wynik „Poisson jest najsłabszy”** dotyczy więc tej heurystyki, a nie rozkładu Poissona. Dixon-Coles też liczy wynik z rozkładu Poissona, a siły drużyn dopasowuje łącznie na całej historii i wypada wyraźnie lepiej.
+- **Nazewnictwo.** W pracy model nazywa się „modelem Poissona z pracy inżynierskiej”. W kodzie i w bazie zostaje nazwa `Poisson`.
+
 **Cztery świadome odstępstwa od oryginału** (istotne dla porównywalności modeli):
 
 1. **Poprawiona waga historyczna dla gościa.** Oryginał (`SimulatingService.cs:190`) mnoży składnik historyczny `awayPred` przez `PreviousSeasonScale` (0.3) zamiast `HistoricalScale` (0.03) — wagi sumują się tam do 1.27, co systematycznie zawyża oczekiwane gole gościa. Port używa poprawnej wagi (suma = 1.0).
@@ -56,6 +65,84 @@ Mnożniki formy (gdy `UseFormFactors`, domyślnie włączone): forma z 10 ostatn
 Model trzyma własną listę wchłoniętych meczów (`HashSet` po id — powtórne podanie tej samej kolejki jest bezpieczne) i przelicza średnie po każdym `Train`/`UpdateWithRound`. Skutek uboczny: poprawiony wynik meczu o już znanym id jest ignorowany.
 
 Średnia ligowa, która służy za normalizator sił i wartość awaryjną, jest **wspólna dla wszystkich wchłoniętych sezonów** — nie jest liczona osobno dla każdego horyzontu. Okna formy przekraczają granice sezonów.
+
+#### Weryfikacja portu względem oryginału
+
+Test `PoissonLegacyParityTests` w osobnym projekcie `EkstraSim.Backend.Tests` uruchamia **niezmieniony** kod z pracy inżynierskiej na tych samych meczach co port i porównuje prognozy mecz po meczu.
+
+**Baza i zasiew** (`LegacyDatabase`):
+- Każda kolejka wiosen 2024/25 i 2025/26 dostaje nową bazę EF Core InMemory.
+- Zasiew: liga 1, drużyny, mecze znane przed kolejką (historia, jesień i kolejki już ocenione) z wynikami oraz mecze kolejki bez wyników. Późniejszych meczów w bazie nie ma.
+- `TeamService.UpdateAverageTeamGoals` ma zahardkodowane id sezonów, więc baza je przenumerowuje: badany → 6, poprzedni według chronologii → 1, pozostałe → 100 + Id.
+
+**Uruchomienie:**
+- Łańcuch jak w aplikacji: `LeagueService.UpdateAverageLeagueGoals(1)` → `TeamService.UpdateAverageTeamGoals()` → `SimulatingService.CreateAsync` → `SimulateRound(mecze kolejki, 1, N)`, przy N = 100 000.
+- Port to `PoissonModel` trenowany od zera na tym samym zbiorze meczów, z `MaxGoals` = 20, bo oryginał liczy 1X2 także z wyników powyżej 10 goli.
+- Żeby odtworzyć błąd wagi gościa (odstępstwo 1), λ gospodarza pochodzi z opcji domyślnych, a λ gościa z `HistoricalScale = 0,3`.
+
+**Asercja:**
+- Kryterium: |p_oryginał − p_port| ≤ 5·√(p(1−p)/N) + 0,002 dla p₁, p_X i p₂.
+- Margines 0,002 pokrywa zaokrąglanie średnich drużyn do 3 miejsc w `TeamService`.
+- Asercja obejmuje mecze, przed którymi żaden znany mecz z datą ≥ daty meczu nie dotyczy jego drużyn. Pozostałe mecze różnią się przez odstępstwo 4 (oryginał nie filtruje form po dacie) i idą tylko do raportu.
+- Oryginał losuje bez ziarna (`new Random()` przy każdym meczu), więc test jest statystyczny; przy ok. 800 porównaniach na 5 błędach standardowych fałszywy alarm zdarza się rzadziej niż raz na tysiąc przebiegów.
+
+| | 2024/25 | 2025/26 |
+| --- | --- | --- |
+| mecze w asercji / tylko w raporcie | 144 / 0 | 118 / 26 |
+| największa różnica P(1/X/2) w asercji | rzędu 0,004–0,006 | rzędu 0,004–0,006 |
+| największa różnica w pozostałych meczach | — | ok. 0,04 |
+| RPS oryginału | ok. 0,2556 | ok. 0,2589 |
+| RPS portu z błędem wagi gościa (te same mecze) | 0,2555 | 0,2591 |
+| RPS portu poprawionego (te same mecze) | 0,2518 | 0,2605 |
+| RPS stałej predykcji | 0,2281 | 0,2270 |
+
+- **Wartości oryginału** zmieniają się między przebiegami, bo symulacja losuje bez ziarna. W ośmiu przebiegach największa różnica w asercji wyniosła 0,0036–0,0053, a RPS oryginału zmieniał się o najwyżej ±0,0003.
+- **Granica asercji.** Różnica nigdy nie przekracza progu asercji, czyli ok. 0,01 przy p = 0,5.
+- **Wartości portu i stałej** są deterministyczne.
+
+- **Port jest wierny.** Jedyna różnica merytoryczna to poprawiona waga gościa, a w 26 meczach 2025/26 dochodzi brak filtra daty w oryginale.
+- **Skutek błędu wagi gościa.** Błąd zawyża λ gościa średnio o 0,291 gola (od 0,104 do 0,706). Prawdopodobieństwa 1X2 zmienia najwyżej o 0,138 w 2024/25 i 0,148 w 2025/26.
+- **λ z macierzy oryginału.** Oryginał zapisuje macierz tylko dla 0–10 goli. Średnia z niej odbiega od λ portu o więcej niż 0,02 w kilku meczach porównywalnych na sezon, prawie zawsze przy λ gospodarza powyżej ok. 3,6. To skutek obcięcia, a nie różnica w modelu; pojedyncze przypadki przy niższym λ to szum symulacji.
+- **Oryginał też przegrywa ze stałą predykcją.** Słabość modelu to cecha metody z pracy inżynierskiej, a nie artefakt portu. Poprawka wagi gościa obniża RPS w 2024/25 o 0,0037, a w 2025/26 podnosi go o 0,0014, więc wniosku nie zmienia.
+
+Projekt jest osobny, bo test trwa ok. 20 s i potrzebuje referencji do backendu oraz EF Core InMemory. `EkstraSim.Tests` zostaje przy samym rdzeniu. Uruchomienie z raportem:
+
+```bash
+dotnet test EkstraSim.Backend.Tests/EkstraSim.Backend.Tests.csproj --logger "console;verbosity=detailed"
+```
+
+#### Kalibracja — prognozy zbyt pewne
+
+`CalibrationSummary` na prognozach przebiegów 13–14, wiosny po 144 mecze. Wartości dla 2024/25 / 2025/26, a „bez form” to Poisson z `UseFormFactors = false`:
+
+| | Poisson | Poisson bez form | Dixon-Coles | Elo |
+| --- | --- | --- | --- | --- |
+| średnie λ gospodarza (faktycznie 1,611 / 1,444 gola) | 1,739 / 1,899 | 1,544 / 1,677 | 1,502 / 1,551 | 1,470 / 1,491 |
+| nachylenie: faktyczne gole gospodarza względem λ (idealnie 1) | 0,427 / 0,239 | 0,777 / 0,299 | 1,089 / 0,828 | 1,134 / 1,142 |
+| to samo dla goli gościa | −0,052 / 0,011 | 0,110 / 0,174 | 0,393 / 0,360 | 0,881 / 0,974 |
+| odchylenie standardowe λ − μ | 1,282 / 1,074 | 0,648 / 0,585 | 0,521 / 0,477 | 0,526 / 0,398 |
+| największe λ gospodarza | 4,34 / 5,45 | 2,87 / 3,61 | 2,56 / 2,78 | 2,33 / 2,36 |
+| mecze z λ gospodarza > 3 | 16 / 17 | 0 / 6 | 0 / 0 | 0 / 0 |
+| średnie P(remis) (faktycznie 0,243 / 0,278) | 0,216 / 0,221 | 0,244 / 0,240 | 0,257 / 0,263 | 0,251 / 0,253 |
+| RPS | 0,2518 / 0,2604 | 0,2253 / 0,2352 | 0,2186 / 0,2207 | 0,2189 / 0,2169 |
+
+**Krzywa niezawodności** (obie wiosny razem, 288 meczów):
+- **Poisson, wysokie P(gospodarz).** Przy P ≥ 0,70 (70 meczów, średnio 0,805) gospodarz wygrywa w 0,514 przypadków.
+- **Poisson, niskie P(gospodarz).** Przy P < 0,25 (43 mecze, średnio 0,169) gospodarz wygrywa w 0,395.
+- **Poisson, P(gość) 0,40–0,55** (40 meczów, średnio 0,480): gość wygrywa w 0,225.
+- **Największe P(gospodarz):** Poisson 0,975, bez form 0,893, Dixon-Coles 0,782, Elo 0,707.
+- **Dixon-Coles i Elo** odbiegają od rzeczywistości o kilka punktów, np. Dixon-Coles 0,470 → 0,448 i 0,617 → 0,592, Elo 0,614 → 0,638.
+
+**Mechanizm: mnożnik dom/wyjazd drugi raz dolicza przewagę własnego boiska.**
+- **Składniki form** (średnie z wiosny, 2024/25 / 2025/26):
+  - gospodarz: forma z 10 meczów 0,9941 / 1,0101, dom 1,0576 / 1,0757, H2H 1,0003 / 0,9969, łącznie ×1,0739 / ×1,0976;
+  - gość: forma z 10 meczów 0,9951 / 0,9944, wyjazd 0,9306 / 0,9250, H2H 0,9997 / 1,0031, łącznie ×0,9459 / ×0,9345.
+- **Skąd się bierze.** Gospodarze w historii treningowej mają średnio +0,3199 / +0,3403 gola różnicy na mecz. Przeciętna drużyna dostaje więc z formy u siebie przed przycięciem ok. 1 + 0,32/2 ≈ 1,16, a na wyjeździe ok. 0,84. Przycięcie do [0,8; 1,2] obniża te średnie do ok. 1,06–1,08 i 0,93.
+- **Dlaczego to podwójne liczenie.** λ już opiera się na średnich ligowych osobno u siebie i na wyjeździe, więc przewaga własnego boiska wchodzi do niego dwa razy. To przesunięcie systematyczne na korzyść gospodarza, a nie sam szum: zawyżone λ gospodarza i zaniżone P(remis).
+- **Bez form zostaje nadmierny rozrzut.** Nachylenie dla goli gospodarza w 2025/26 wynosi 0,299, a w meczach z λ > 3 jest 6. Najbardziej prawdopodobna przyczyna to ilorazy liczone z ok. 9 meczów bieżącego sezonu u siebie i na wyjeździe, ważone 0,67. Tej części nie badano osobno.
+- **RPS bez form** jest na poziomie stałej predykcji: 0,2253 / 0,2352 przy 0,2281 / 0,2270. Wilcoxon dla tej jednej pary daje p 0,7855 / 0,4612.
+
+Liczby przypina `BaselineAndCalibrationRealDataTests` (`Category=RealData`). Kalibracja, przedziały, składniki form i ich zgodność z prognozami walk-forwardu: λ z formami = λ bez form × iloczyn składników, także dla 72 prognoz z filtrem daty.
 
 ### 2. Dixon-Coles (1997)
 
@@ -310,6 +397,21 @@ Wersja 5 (runy 9–10) różniła się tylko Dixonem-Colesem: zimny start +0,022
 
 W runach diagnostycznych 15–16 (kolejki 4–34; służą pytaniu nr 2, bo trening na trzech kolejkach to inny problem predykcyjny) zimny start odstaje mocniej (run 15: +0,038 / +0,026 / +0,045 dla Dixona-Colesa / Elo / Poissona, surowe p 0,040–0,096, po Holmie 0,24–0,38; wersja 5, run 11: +0,039 / +0,026 / +0,045, po Holmie 0,45), co zgadza się z oczekiwaniem, że brak historii szkodzi najbardziej na początku sezonu. Liczności: run 15 — 60 / 31 / 191, run 16 — 87 / 192.
 
+**Okna kolejek** (`PromotedVersusRest` z `RoundWindows`, binarnie, RPS; wszyscy beniaminki razem). Różnica beniaminki − reszta w oknach 19–23 / 24–28 / 29–33 / 34, runy 13–14:
+
+| Model | 2024/25 | 2025/26 |
+| --- | --- | --- |
+| Dixon-Coles | +0,057 / −0,045 / +0,058 / +0,177 | −0,051 / +0,033 / +0,059 / +0,033 |
+| Elo | +0,050 / −0,039 / +0,050 / +0,153 | −0,058 / +0,022 / +0,053 / +0,031 |
+| Poisson | +0,023 / −0,066 / +0,040 / +0,335 | −0,125 / +0,025 / +0,077 / +0,127 |
+
+- **Liczności beniaminki / reszta:** 13 / 32, 15 / 30, 15 / 30, 2 / 7 w 2024/25 i 15 / 30, 14 / 31, 13 / 32, 3 / 6 w 2025/26.
+- **Żaden wiersz nie jest istotny** (rodzina Holma 12 wierszy na run, najniższe p po Holmie 0,3972). Okno 34 ma 2–3 mecze z beniaminkiem, więc test jest tam nierozstrzygający (p = 1).
+- **Znaki różnic zmieniają się** między oknami i sezonami. Wiosną nie widać więc, żeby trudność z beniaminkami zanikała z kolejnymi kolejkami.
+- **Runy diagnostyczne 15–16** (okna od 4–8 do 34, rodzina 21 wierszy; liczby z `comparison`, nie przypięte testem) też nie mają istotnego wiersza (najniższe p po Holmie 0,6952 i 0,7829). W 2024/25 jesienne różnice Dixona-Colesa wynoszą +0,021 / +0,048 / +0,044, czyli nie maleją.
+
+Wiersze runów 13–14 przypina `BaselineAndCalibrationRealDataTests.PromotedWindowsPinTheRows`.
+
 ### Encje i przepływ
 
 Migracja `research_evaluation_runs` jest **wyłącznie addytywna** — trzy nowe tabele, zero zmian w istniejących:
@@ -448,9 +550,24 @@ Stary, zepsuty `CSVService` i endpoint `api/importcsv` pozostają nietknięte.
 
 - **Wilcoxon signed-rank** (`WilcoxonSignedRankTest`) — pytanie nr 1. Test sparowany na różnicach metryk **na tych samych meczach**, aproksymacja normalna z korektą na wiązania i korektą ciągłości. Różnice zerowe odrzucane; poniżej 6 par wynik oznaczany jako `IsConclusive = false` (nie udajemy istotności na małej próbie).
 - **Mann-Whitney U** (`MannWhitneyUTest`) — pytanie nr 3. Test dla prób niezależnych (mecze z beniaminkiem vs pozostałe, a w porównaniu stopniowanym mecze z beniaminkiem danej kategorii vs mecze bez beniaminka), ta sama aproksymacja z korektami. Każda grupa musi mieć co najmniej 4 wartości, inaczej wynik jest nierozstrzygający (p = 1).
-- **Holm-Bonferroni** (`HolmCorrection`) — poprawka na wielokrotne porównania (3 pary modeli, a przy podziale na okna kolejek więcej). Bez niej przy kilkunastu testach fałszywe „istotności" pojawiają się same. Testy nierozstrzygające wchodzą z p = 1 i zwiększają liczbę porównań m, co czyni korektę bardziej konserwatywną. Okna beniaminków to kolejne porcje po 5 ocenianych kolejek — dla kolejek 19–34 ostatnie okno ma tylko kolejkę 34.
+- **Holm-Bonferroni** (`HolmCorrection`) — poprawka na wielokrotne porównania (3 pary modeli, a przy podziale na okna kolejek więcej). Bez niej przy kilkunastu testach fałszywe „istotności" pojawiają się same. Testy nierozstrzygające wchodzą z p = 1 i zwiększają liczbę porównań m, co czyni korektę bardziej konserwatywną. Okna beniaminków to kolejne porcje po 5 ocenianych kolejek — dla kolejek 19–34 ostatnie okno ma tylko kolejkę 34. Buduje je `ModelComparison.RoundWindows` (przy mniej niż 4 kolejkach okien nie ma), wspólne dla `comparison` w backendzie i testów. Przeniesienie z prywatnej metody serwisu nie zmieniło odpowiedzi `comparison` runów 13–16 (porównane bitowo przed i po).
 - `BetterModel` w porównaniu par wybierany jest po **średniej** metryki, a Wilcoxon testuje położenie rang — przy skośnych rozkładach kierunki mogą się różnić. Metryki trafności (1X2, top-1, top-3) nie są `MetricKind`, więc nie podlegają testom istotności.
-- **`ModelComparison`** — składa całość: `Pairwise` (każda para modeli na wspólnym podzbiorze meczów), `PromotedVersusRest` (beniaminki vs reszta, opcjonalnie w oknach kolejek, żeby zobaczyć *kiedy* różnica zanika; całość i okna to dwie osobne rodziny Holma) i `PromotedByCategory` (zimny start / powracający vs mecze bez beniaminka z jedną rodziną Holma na run plus średnie per drużyna — sekcja „Stopniowanie beniaminków"). Wiersze binarne i stopniowane budują ten sam kod (`BuildGroups`, `ApplyHolm`), a stopniowane różnią się polem `Category`.
+- **`ModelComparison`** — składa całość: `Pairwise` (każda para modeli na wspólnym podzbiorze meczów), `PromotedVersusRest` (beniaminki vs reszta, opcjonalnie w oknach kolejek, żeby zobaczyć *kiedy* różnica zanika; całość i okna to dwie osobne rodziny Holma) i `PromotedByCategory` (zimny start / powracający vs mecze bez beniaminka z jedną rodziną Holma na run plus średnie per drużyna — sekcja „Stopniowanie beniaminków"). Wiersze binarne i stopniowane budują ten sam kod (`BuildGroups`, `ApplyHolm`), a stopniowane różnią się polem `Category`. `VersusBaseline` porównuje każdy model z jedną linią bazową testem Wilcoxona: jeden wiersz na model (`SecondModel` = nazwa linii bazowej), pary łączone po `MatchId` jak w `Pairwise`. Jedna rodzina Holma obejmuje modele wywołania i jest osobna od rodziny par modeli. Linia bazowa nie ma rozkładu wyniku, więc `ProbabilityOfActualScore` kończy się `ArgumentException`.
+- **Punkty odniesienia i diagnostyka** (`EkstraSim.Prediction/Evaluation`, poza backendem i UI):
+  - `ConstantBaseline` — stała predykcja 1X2, opisana w „Analiza wrażliwości parametrów”. Jej trafność 1X2 to reguła „zawsze najczęstszy rezultat”, w badanych sezonach „zawsze wygrywa gospodarz”.
+  - `ConstantScoreBaseline` — reguła „zawsze najczęstszy wynik historii treningowej” dla trafności top-1. `Fit` bierze rozegrane mecze ligi i remisy liczności rozstrzyga jak `ScoreGrid.RankedScores` (mniej goli łącznie, potem mniej goli gospodarza). `Evaluate` zwraca `ExactScoreHit` dla rozegranych meczów w kolejności Id.
+  - `CalibrationSummary` — dla listy prognoz z faktycznymi wynikami (po `MatchId`):
+    - średnie λ, μ i faktycznych goli;
+    - nachylenie regresji faktycznych goli na λ i na μ (najmniejsze kwadraty z wyrazem wolnym);
+    - populacyjne odchylenie standardowe λ − μ, największe λ i liczba meczów z λ > 3;
+    - średnie P(1/X/2) i częstości rezultatów;
+    - przedziały niezawodności dla P(gospodarz) i P(gość). Granice domyślnie 0; 0,25; 0,40; 0,55; 0,70; 1, przedział [od, do), ostatni domknięty, pusty z NaN.
+    - Nachylenie przy zerowej wariancji λ to NaN.
+    - `ArgumentException`: pusta lista prognoz, rosnące granice w liczbie mniejszej niż dwie, mecz bez rozegranego wyniku, dwie prognozy jednego meczu, prognoza spoza granic przedziałów albo NaN.
+  - `MonteCarloNoise` — z dokładnej macierzy każdej prognozy losuje N wyników (jedno `Random` z podanym ziarnem, modele w porządku nazw, mecze po Id) i liczy RPS z częstości 1/X/2. Po R powtórzeniach podaje przesunięcie i odchylenie średniego RPS oraz odsetek powtórzeń z odwróconą kolejnością pary modeli. Mierzy, co wniosłaby do badania symulacja Monte Carlo z pracy inżynierskiej (N = 1000 na mecz).
+    - Prognoza bez macierzy albo z macierzą o zerowej sumie kończy się `ArgumentException`.
+    - Odsetek odwróceń dla pary o równych średnich dokładnych też kończy się `ArgumentException`, bo bez kolejności nie ma czego odwracać.
+  - `VersusBaseline` odrzuca pustą linię bazową, a `PoissonModel.FormComponents` drużynę, która nie gra w meczu po wskazanej stronie (`ArgumentException`).
 - **`StabilityAnalysis`** — pytanie nr 2. Dla każdego modelu liczy średnią kroczącą metryki i dryfu parametrów (okno `StabilityWindow`, domyślnie 3) oraz:
   - **poziom dryfu L** (`DriftLevel`) — średni surowy dryf z ostatnich k kolejek, k = min(n, max(okno, ⌈n/3⌉)); dla 16 kolejek wiosny k = 6, dla 31 kolejek (odcięcie po 3.) k = 11,
   - **średni dryf** (`MeanDrift`) ze wszystkich kolejek,
@@ -481,6 +598,31 @@ Test Wilcoxona (RPS), p / p po Holmie: 2024/25 — DC–Elo 0,7870 / 0,7870, DC�
 - **Pytanie nr 1.** Poisson (port z pracy inżynierskiej) jest najsłabszy w obu sezonach; w 2025/26 obie pary z nim są istotne, w 2024/25 tylko DC–Poisson i na granicy. Dixon-Coles i Elo są nierozróżnialni: kolejność odwraca się między sezonami, a para nie jest istotna. Odporność tych wniosków na pozostałe parametry: [Decyzja: wersja 6](#decyzja-wersja-6).
 - **Pytanie nr 4.** Trafność dokładnego wyniku top-1 (8–16%, czyli 12–23 mecze) jest za mała, żeby porządkować modele — kolejność top-1 zmieniała się w historii runów przez różnice 1–3 trafień (naprawa optymalizatora, filtr daty). Top-3 oddziela Poissona (20,8% i 27,8%) od pozostałych, ale Dixon-Coles i Elo różnią się o 2 mecze w każdym sezonie, w przeciwne strony (Elo 46 vs 44, DC 51 vs 49).
 - **Wersja 5 (runy 9–10, ξ 0,0065 na dzień)** różniła się tylko Dixonem-Colesem (RPS 0,2287 / 0,2324, top-3 26,4% / 31,9%): ranking E < D < P w obu sezonach i w 2025/26 wszystkie trzy pary istotne (DC–Elo 0,0035). Zmiana ξ przestawiła więc wniosek o Dixonie-Colesie i Elo, a wniosek o Poissonie się utrzymał.
+
+**Modele a stała predykcja.** Test Wilcoxona każdego modelu wobec stałej predykcji (`VersusBaseline`, rodzina Holma trzech modeli w sezonie). RPS modelu vs stałej, p / p po Holmie:
+
+| Sezon | Dixon-Coles | Elo | Poisson |
+| --- | --- | --- | --- |
+| 2024/25 (stała 0,2281) | 0,2186; 0,1818 / 0,4574 | 0,2189; 0,1525 / 0,4574 | 0,2518; 0,2303 / 0,4574 |
+| 2025/26 (stała 0,2270) | 0,2207; 0,2008 / 0,2008 | 0,2169; 0,0280 / 0,0841 | 0,2604; 0,0588 / 0,1176 |
+
+- **Wynik:** żaden model nie różni się od stałej predykcji istotnie po Holmie, w żadnym sezonie. Dixon-Coles i Elo są od niej lepsi tylko opisowo, a Poisson tylko opisowo gorszy.
+- **Brier i log-loss** dają ten sam obraz. W 2025/26 surowe p Elo wynosi 0,0334 (Brier) i 0,0501 (log-loss), a Poissona 0,0382 i 0,0615; po Holmie najniższe jest 0,1003. W 2024/25 wszystkie p po Holmie są ≥ 0,4489.
+- **Rodzina testów** na sezon to trzy modele, osobno od rodziny trzech par modeli. Test samego Poissona bez rodziny daje p 0,2303 / 0,0588. Wniosek się nie zmienia.
+
+**Reguły odniesienia trafności** (te same 144 mecze):
+- **„Zawsze wygrywa gospodarz”** (trafność 1X2 stałej predykcji) trafia rezultat 67 / 61 razy. Modele trafiają: Elo 65 / 65, Dixon-Coles 64 / 64, Poisson 56 / 58.
+- **„Zawsze 1:1”** (1:1 to najczęstszy wynik historii treningowej w obu sezonach) trafia dokładny wynik 20 / 20 razy. Top-1 modeli: Elo 23 / 18, Dixon-Coles 16 / 16, Poisson 12 / 17.
+- **Wniosek:** liczba trafień nie odróżnia modeli od reguł, które nic nie wiedzą o drużynach. RPS pokazuje różnicę, której trafność nie widzi, bo nie uwzględnia pewności prognozy. To argument za RPS jako miarą główną.
+- **Poisson bez form** trafia 62 / 63 rezultaty, 19 / 18 wyników top-1 i 41 / 43 wyniki top-3.
+
+**Szum symulacji Monte Carlo** (`MonteCarloNoise`, N = 1000 wyników na mecz jak w pracy inżynierskiej, 200 powtórzeń, ziarno 20261014):
+- **Rozrzut średniego RPS sezonu:** odchylenie standardowe 0,00088–0,00098 dla każdego modelu.
+- **Przesunięcie średnio:** +0,00012…+0,00025, bo częstości z próby są gorszą prognozą niż dokładne prawdopodobieństwa.
+- **Kolejność Dixon-Coles / Elo** (różnica 0,0003 w 2024/25) odwraca się w 42% powtórzeń w 2024/25 i w 0,5% w 2025/26.
+- **Kolejność z Poissonem** nie odwraca się nigdy.
+
+Badanie oparte na symulacji nie rozstrzygnęłoby więc kolejności Dixona-Colesa i Elo w 2024/25. Liczby przypina `BaselineAndCalibrationRealDataTests`.
 
 ## Metryka dryfu parametrów
 
@@ -754,7 +896,7 @@ Przy ξ z literatury Dixon-Coles wyprzedza Elo w 2024/25 (0,2186 vs 0,2189), a w
 - **Niezależny punkt odniesienia.** Pitcan (2026, arXiv:2608.11505) dobrał ξ siatką na sezonach walidacyjnych Serie A i dostał 0,002 na dzień (półokres 347 dni), czyli prawie tyle, co 0,00186.
 - **Sformułowanie w pracy.** Do czasu sprawdzenia oryginału pisać o „wartości z literatury podawanej na pół tygodnia, stosowanej w kodzie do wersji 5 na dzień", a nie o błędzie. Niezależnie od źródła dane z walidacji same wskazują wolniejsze wygaszanie.
 
-**Formy pogarszają Poissona w każdym sezonie.** Wyłączenie mnożników formy obniża RPS Poissona o 0,0098 / 0,0042 / 0,0283 / 0,0266 / 0,0252 (od 2021/22 do 2025/26). Ranking z Poissonem bez form to E < P < D w 2021/22, 2023/24 i 2024/25 oraz E < D < P w 2022/23 i 2025/26. W 2024/25 żadna para nie jest wtedy istotna (DC–E 0,1213, DC–P 0,6529, E–P 0,6442). W 2025/26 istotne zostają Elo–Poisson (0,0096) i DC–Elo (0,0053), a DC–Poisson przestaje być istotne (0,0129 → 0,5597). Poisson z formami jest na meczach bez beniaminka gorszy od stałej predykcji: 0,2469 vs 0,2231 (2024/25) i 0,2602 vs 0,2247 (2025/26). Dwa mnożniki formy po ±20% i H2H ±5% (sekcja Poissona) wnoszą więc szum, nie sygnał.
+**Formy pogarszają Poissona w każdym sezonie.** Wyłączenie mnożników formy obniża RPS Poissona o 0,0098 / 0,0042 / 0,0283 / 0,0266 / 0,0252 (od 2021/22 do 2025/26). Ranking z Poissonem bez form to E < P < D w 2021/22, 2023/24 i 2024/25 oraz E < D < P w 2022/23 i 2025/26. W 2024/25 żadna para nie jest wtedy istotna (DC–E 0,1213, DC–P 0,6529, E–P 0,6442). W 2025/26 istotne zostają Elo–Poisson (0,0096) i DC–Elo (0,0053), a DC–Poisson przestaje być istotne (0,0129 → 0,5597). Poisson z formami jest na meczach bez beniaminka gorszy od stałej predykcji: 0,2469 vs 0,2231 (2024/25) i 0,2602 vs 0,2247 (2025/26). Mnożniki formy nie tylko dodają szum, lecz szkodzą systematycznie: składnik dom/wyjazd drugi raz dolicza przewagę własnego boiska. Mechanizm opisuje sekcja Poissona, „Kalibracja — prognozy zbyt pewne”.
 
 **K i przewaga Elo.** RPS Elo:
 
@@ -783,7 +925,7 @@ K = 5 jest lepsze od domyślnego w czterech sezonach (o 0,0012–0,0019), a w 20
 - Wniosek „Elo najlepszy" trzyma się w 2025/26 w każdym scenariuszu (w siatce wyjątkiem jest ξ = 0), ale w 2024/25 zależy od ξ i form.
 - Wniosek „w 2025/26 istotne są wszystkie trzy różnice" wymaga form włączonych i ξ między 0,003 a 0,0065 (przy 0,01 przestaje być istotna para DC–Poisson). Przy ξ z literatury albo bez form jedna para przestaje być istotna.
 
-**Stała linia bazowa a modele.** RPS stałej predykcji: 0,2315 / 0,2219 / 0,2217 / 0,2281 / 0,2270 (od 2021/22 do 2025/26). Porównania ze stałą są opisowe, bez testów.
+**Stała linia bazowa a modele.** RPS stałej predykcji: 0,2315 / 0,2219 / 0,2217 / 0,2281 / 0,2270 (od 2021/22 do 2025/26). W siatce porównania ze stałą są opisowe, bez testów. Test Wilcoxona model − stała przy wartościach wersji 6 opisuje sekcja „Wyniki pytań nr 1 i 4” (po Holmie nic istotnego).
 
 - Dixon-Coles na wartościach wersji 5 jest od niej gorszy w trzech sezonach, w tym w obu ewaluacyjnych (0,2287 vs 0,2281 i 0,2324 vs 0,2270). Z ξ z literatury (wersja 6) jest gorszy tylko w 2023/24, a w sezonach ewaluacyjnych lepszy (0,2186 vs 0,2281 i 0,2207 vs 0,2270).
 - Poisson domyślny jest gorszy w 2023/24, 2024/25 i 2025/26 (o 0,024–0,039), Elo tylko w 2023/24.
