@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EkstraSim.Prediction", "Eks
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EkstraSim.Tests", "EkstraSim.Tests\EkstraSim.Tests.csproj", "{930038C6-34FA-4D33-B8E4-9DC77CD96110}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EkstraSim.Backend.Tests", "EkstraSim.Backend.Tests\EkstraSim.Backend.Tests.csproj", "{2036A6D5-45D0-4168-B19C-BF960AB4BC17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{930038C6-34FA-4D33-B8E4-9DC77CD96110}.Release|x64.Build.0 = Release|Any CPU
 		{930038C6-34FA-4D33-B8E4-9DC77CD96110}.Release|x86.ActiveCfg = Release|Any CPU
 		{930038C6-34FA-4D33-B8E4-9DC77CD96110}.Release|x86.Build.0 = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|x64.Build.0 = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Debug|x86.Build.0 = Debug|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|x64.ActiveCfg = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|x64.Build.0 = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|x86.ActiveCfg = Release|Any CPU
+		{2036A6D5-45D0-4168-B19C-BF960AB4BC17}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
