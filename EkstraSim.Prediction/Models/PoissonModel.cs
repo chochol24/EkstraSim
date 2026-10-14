@@ -63,8 +63,8 @@ public sealed class PoissonModel : IPredictionModel
 
         if (_options.UseFormFactors)
         {
-            lambdaHome *= FormMultiplier(match, match.HomeTeamId, isHome: true);
-            lambdaAway *= FormMultiplier(match, match.AwayTeamId, isHome: false);
+            lambdaHome *= FormComponents(match, match.HomeTeamId, isHome: true).Product;
+            lambdaAway *= FormComponents(match, match.AwayTeamId, isHome: false).Product;
         }
 
         return MatchPrediction.FromLambdas(match, Name, lambdaHome, lambdaAway, _options.MaxGoals);
@@ -94,6 +94,41 @@ public sealed class PoissonModel : IPredictionModel
             AfterRound = _lastRound,
             Parameters = parameters
         };
+    }
+
+    public FormFactors FormComponents(MatchData match, int teamId, bool isHome)
+    {
+        if (teamId != (isHome ? match.HomeTeamId : match.AwayTeamId))
+        {
+            throw new ArgumentException($"Drużyna {teamId} nie jest {(isHome ? "gospodarzem" : "gościem")} meczu {match.Id}.", nameof(teamId));
+        }
+
+        var priorMatches = _played
+            .Where(m => m.SeasonId.HasValue && m.Date < match.Date)
+            .ToList();
+
+        var recent = priorMatches
+            .Where(m => m.Involves(teamId))
+            .OrderByDescending(m => m.Date)
+            .Take(FormMatchCount)
+            .ToList();
+
+        var venue = priorMatches
+            .Where(m => isHome ? m.HomeTeamId == teamId : m.AwayTeamId == teamId)
+            .OrderByDescending(m => m.Date)
+            .Take(HomeAwayFormMatchCount)
+            .ToList();
+
+        var headToHead = priorMatches
+            .Where(m => m.Involves(match.HomeTeamId) && m.Involves(match.AwayTeamId))
+            .OrderByDescending(m => m.Date)
+            .Take(HeadToHeadMatchCount)
+            .ToList();
+
+        return new FormFactors(
+            BalanceFactor(recent, teamId, 0.8, 1.2),
+            BalanceFactor(venue, teamId, 0.8, 1.2),
+            BalanceFactor(headToHead, teamId, 0.95, 1.05));
     }
 
     private void Absorb(IReadOnlyList<MatchData> matches)
@@ -173,35 +208,6 @@ public sealed class PoissonModel : IPredictionModel
         var defenceStrength = defenceAverage / leagueDefence;
 
         return attackStrength * defenceStrength * leagueAttack;
-    }
-
-    private double FormMultiplier(MatchData match, int teamId, bool isHome)
-    {
-        var priorMatches = _played
-            .Where(m => m.SeasonId.HasValue && m.Date < match.Date)
-            .ToList();
-
-        var recent = priorMatches
-            .Where(m => m.Involves(teamId))
-            .OrderByDescending(m => m.Date)
-            .Take(FormMatchCount)
-            .ToList();
-
-        var venue = priorMatches
-            .Where(m => isHome ? m.HomeTeamId == teamId : m.AwayTeamId == teamId)
-            .OrderByDescending(m => m.Date)
-            .Take(HomeAwayFormMatchCount)
-            .ToList();
-
-        var headToHead = priorMatches
-            .Where(m => m.Involves(match.HomeTeamId) && m.Involves(match.AwayTeamId))
-            .OrderByDescending(m => m.Date)
-            .Take(HeadToHeadMatchCount)
-            .ToList();
-
-        return BalanceFactor(recent, teamId, 0.8, 1.2)
-            * BalanceFactor(venue, teamId, 0.8, 1.2)
-            * BalanceFactor(headToHead, teamId, 0.95, 1.05);
     }
 
     private static double BalanceFactor(List<MatchData> matches, int teamId, double lower, double upper)

@@ -410,6 +410,92 @@ public class StatisticsTests
     }
 
     [Fact]
+    public void BaselineComparisonTestsEachModelAgainstTheBaselineInOneHolmFamily()
+    {
+        double[] good = [0.10, 0.12, 0.11, 0.13, 0.09, 0.14, 0.10, 0.12];
+        double[] average = [0.20, 0.22, 0.21, 0.23, 0.19, 0.24, 0.20, 0.22];
+        double[] poor = [0.30, 0.32, 0.31, 0.33, 0.29, 0.34, 0.30, 0.32];
+        double[] baseline = [0.21, 0.20, 0.23, 0.22, 0.20, 0.23, 0.21, 0.21];
+
+        var byModel = new Dictionary<string, IReadOnlyList<MatchEvaluation>>
+        {
+            ["Poor"] = BuildEvaluations("Poor", poor),
+            ["Good"] = BuildEvaluations("Good", good),
+            ["Average"] = BuildEvaluations("Average", average)
+        };
+
+        var comparisons = ModelComparison.VersusBaseline(byModel, BuildEvaluations("Stała", baseline), MetricKind.Brier);
+
+        Assert.Equal(["Average", "Good", "Poor"], comparisons.Select(c => c.FirstModel));
+        Assert.All(comparisons, c => Assert.Equal("Stała", c.SecondModel));
+        Assert.All(comparisons, c => Assert.Equal(8, c.PairedMatchCount));
+
+        double[][] values = [average, good, poor];
+        var raw = values.Select(v => WilcoxonSignedRankTest.Paired(v, baseline).PValue).ToList();
+        var adjusted = HolmCorrection.Adjust(raw);
+
+        Assert.Equal(raw, comparisons.Select(c => c.Test.PValue));
+        Assert.Equal(adjusted, comparisons.Select(c => c.AdjustedPValue));
+        Assert.Equal(baseline.Average(), comparisons[0].SecondMean, 12);
+        Assert.Equal("Good", comparisons[1].BetterModel);
+        Assert.Equal("Stała", comparisons[2].BetterModel);
+    }
+
+    [Fact]
+    public void BaselineComparisonOnlyUsesSharedMatches()
+    {
+        var byModel = new Dictionary<string, IReadOnlyList<MatchEvaluation>>
+        {
+            ["A"] = BuildEvaluations("A", [0.1, 0.2, 0.3], startId: 1)
+        };
+
+        var comparison = ModelComparison.VersusBaseline(byModel, BuildEvaluations("Stała", [0.4, 0.5], startId: 2), MetricKind.Brier).Single();
+
+        Assert.Equal(2, comparison.PairedMatchCount);
+        Assert.Equal(0.25, comparison.FirstMean, 12);
+    }
+
+    [Fact]
+    public void BaselineComparisonRejectsTheScoreProbabilityMetric()
+    {
+        var byModel = new Dictionary<string, IReadOnlyList<MatchEvaluation>>
+        {
+            ["A"] = BuildEvaluations("A", [0.1, 0.2, 0.3], asScoreProbability: true)
+        };
+
+        Assert.Throws<ArgumentException>(() => ModelComparison.VersusBaseline(byModel, BuildEvaluations("Stała", [0.1, 0.2, 0.3]), MetricKind.ProbabilityOfActualScore));
+    }
+
+    [Fact]
+    public void BaselineComparisonRejectsAnEmptyBaseline()
+    {
+        var byModel = new Dictionary<string, IReadOnlyList<MatchEvaluation>>
+        {
+            ["A"] = BuildEvaluations("A", [0.1, 0.2, 0.3])
+        };
+
+        Assert.Throws<ArgumentException>(() => ModelComparison.VersusBaseline(byModel, [], MetricKind.Brier));
+    }
+
+    [Fact]
+    public void RoundWindowsCutTheRoundListIntoConsecutiveChunks()
+    {
+        Assert.Equal(
+            [(19, 23), (24, 28), (29, 33), (34, 34)],
+            ModelComparison.RoundWindows(Enumerable.Range(19, 16).ToList()));
+
+        Assert.Equal(
+            [(4, 8), (9, 13), (14, 18), (19, 23), (24, 28), (29, 33), (34, 34)],
+            ModelComparison.RoundWindows(Enumerable.Range(4, 31).ToList()));
+
+        Assert.Empty(ModelComparison.RoundWindows([19, 20, 21]));
+        Assert.Equal([(19, 22)], ModelComparison.RoundWindows([19, 20, 21, 22]));
+        Assert.Equal([(19, 25), (26, 26)], ModelComparison.RoundWindows([19, 20, 22, 23, 25, 26]));
+        Assert.Equal([(19, 20), (21, 22)], ModelComparison.RoundWindows([19, 20, 21, 22], windowSize: 2));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ModelComparison.RoundWindows([19, 20, 21, 22], windowSize: 0));
+    }
+
+    [Fact]
     public void PromotedComparisonSplitsByFlagAndWindow()
     {
         var evaluations = new List<MatchEvaluation>();

@@ -171,6 +171,69 @@ public class PoissonModelTests
     }
 
     [Fact]
+    public void FormComponentsAreBalanceFactorsOfEarlierMatchesOnly()
+    {
+        var model = new PoissonModel();
+        model.Train(FormHistory(), TestLeague.Options(useFormFactors: true));
+
+        var target = TestLeague.Fixture(10, round: 5, homeTeamId: 100, awayTeamId: 200);
+
+        Assert.Equal(new FormFactors(1.125, 1.2, 1.05), model.FormComponents(target, 100, isHome: true));
+        Assert.Equal(new FormFactors(0.8, 0.8, 0.95), model.FormComponents(target, 200, isHome: false));
+        Assert.Equal(new FormFactors(1.0, 1.0, 1.0), model.FormComponents(TestLeague.Fixture(11, round: 5, homeTeamId: 900, awayTeamId: 901), 900, isHome: true));
+    }
+
+    [Fact]
+    public void FormComponentsMultiplyToTheFormFactorOfThePrediction()
+    {
+        var withForm = new PoissonModel();
+        withForm.Train(FormHistory(), TestLeague.Options(useFormFactors: true));
+
+        var withoutForm = new PoissonModel();
+        withoutForm.Train(FormHistory(), TestLeague.Options());
+
+        var target = TestLeague.Fixture(10, round: 5, homeTeamId: 100, awayTeamId: 200);
+        var formed = withForm.Predict(target);
+        var plain = withoutForm.Predict(target);
+
+        Assert.Equal(plain.ExpectedHomeGoals * withForm.FormComponents(target, 100, isHome: true).Product, formed.ExpectedHomeGoals);
+        Assert.Equal(plain.ExpectedAwayGoals * withForm.FormComponents(target, 200, isHome: false).Product, formed.ExpectedAwayGoals);
+        Assert.Equal(1.125 * 1.2 * 1.05, withForm.FormComponents(target, 100, isHome: true).Product);
+    }
+
+    [Fact]
+    public void FormComponentsRejectATeamFromTheWrongSide()
+    {
+        var model = new PoissonModel();
+        model.Train(FormHistory(), TestLeague.Options(useFormFactors: true));
+
+        var target = TestLeague.Fixture(10, round: 5, homeTeamId: 100, awayTeamId: 200);
+
+        Assert.Throws<ArgumentException>(() => model.FormComponents(target, 200, isHome: true));
+        Assert.Throws<ArgumentException>(() => model.FormComponents(target, 100, isHome: false));
+        Assert.Throws<ArgumentException>(() => model.FormComponents(target, 300, isHome: true));
+    }
+
+    [Fact]
+    public void FormProductMultipliesFromLeftToRight()
+    {
+        Assert.Equal(0.8 * 0.8 * 0.97, new FormFactors(0.8, 0.8, 0.97).Product);
+        Assert.NotEqual(0.8 * (0.8 * 0.97), new FormFactors(0.8, 0.8, 0.97).Product);
+    }
+
+    private static List<MatchData> FormHistory()
+    {
+        return
+        [
+            TestLeague.Played(1, round: 1, homeTeamId: 100, awayTeamId: 200, homeScore: 2, awayScore: 1),
+            TestLeague.Played(2, round: 2, homeTeamId: 300, awayTeamId: 100, homeScore: 1, awayScore: 1),
+            TestLeague.Played(3, round: 3, homeTeamId: 100, awayTeamId: 300, homeScore: 1, awayScore: 1),
+            TestLeague.Played(4, round: 4, homeTeamId: 200, awayTeamId: 100, homeScore: 1, awayScore: 1),
+            TestLeague.Played(5, round: 6, homeTeamId: 100, awayTeamId: 200, homeScore: 5, awayScore: 0)
+        ];
+    }
+
+    [Fact]
     public void PreviousSeasonHorizonUsesChronology()
     {
         var previous = TestLeague.RoundRobin([100, 200], TestLeague.PreviousSeasonId, firstMatchId: 100, goalsHome: 4, goalsAway: 0);

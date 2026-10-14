@@ -403,7 +403,7 @@ public class ResearchRunService
         List<ModelRoundMetric> roundMetrics)
     {
         var rounds = roundMetrics.Select(m => m.Round).Distinct().OrderBy(r => r).ToList();
-        var windows = BuildRoundWindows(rounds);
+        var windows = ModelComparison.RoundWindows(rounds);
 
         var overall = ModelComparison.PromotedVersusRest(evaluationsByModel, metric);
         var windowed = windows.Count > 0
@@ -411,28 +411,6 @@ public class ResearchRunService
             : [];
 
         return overall.Concat(windowed).Select(ToPromotedDto).ToList();
-    }
-
-    private static List<(int From, int To)> BuildRoundWindows(List<int> rounds)
-    {
-        if (rounds.Count < 4)
-        {
-            return [];
-        }
-
-        var windows = new List<(int From, int To)>();
-        const int windowSize = 5;
-
-        for (var start = 0; start < rounds.Count; start += windowSize)
-        {
-            var slice = rounds.Skip(start).Take(windowSize).ToList();
-            if (slice.Count > 0)
-            {
-                windows.Add((slice.First(), slice.Last()));
-            }
-        }
-
-        return windows;
     }
 
     private static List<StabilityDTO> BuildStability(

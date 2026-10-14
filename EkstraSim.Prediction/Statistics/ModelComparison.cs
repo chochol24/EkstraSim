@@ -91,6 +91,51 @@ public static class ModelComparison
         return ApplyHolm(comparisons);
     }
 
+    public static IReadOnlyList<PairwiseComparison> VersusBaseline(
+        IReadOnlyDictionary<string, IReadOnlyList<MatchEvaluation>> evaluationsByModel,
+        IReadOnlyList<MatchEvaluation> baseline,
+        MetricKind metric)
+    {
+        if (metric == MetricKind.ProbabilityOfActualScore)
+        {
+            throw new ArgumentException("Linia bazowa nie ma rozkładu dokładnego wyniku, więc nie porównuje się jej tą miarą.", nameof(metric));
+        }
+
+        if (baseline.Count == 0)
+        {
+            throw new ArgumentException("Linia bazowa nie ma ocen meczów.", nameof(baseline));
+        }
+
+        var baselineName = baseline[0].ModelName;
+
+        var comparisons = evaluationsByModel
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => BuildPair(pair.Key, baselineName, pair.Value, baseline, metric))
+            .ToList();
+
+        return ApplyHolm(comparisons);
+    }
+
+    public static IReadOnlyList<(int From, int To)> RoundWindows(IReadOnlyList<int> rounds, int windowSize = 5)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(windowSize, 1);
+
+        if (rounds.Count < 4)
+        {
+            return [];
+        }
+
+        var windows = new List<(int From, int To)>();
+
+        for (var start = 0; start < rounds.Count; start += windowSize)
+        {
+            var slice = rounds.Skip(start).Take(windowSize).ToList();
+            windows.Add((slice.First(), slice.Last()));
+        }
+
+        return windows;
+    }
+
     public static IReadOnlyList<PromotedTeamComparison> PromotedVersusRest(
         IReadOnlyDictionary<string, IReadOnlyList<MatchEvaluation>> evaluationsByModel,
         MetricKind metric,
