@@ -321,7 +321,7 @@ Pomiar na fixture z prawdziwymi danymi i w runach 9–10 oraz 13–14 (odcięcie
 
 Mecze z treningu dotykają 63 predykcji, mecze z pętli 45; zbiory się pokrywają, razem 72.
 
-W runach diagnostycznych z odcięciem po kolejce 3 (runy 11–12 i 15–16, tylko do pytania nr 2) zawężonych jest 135 (2024/25) i 205 (2025/26) z 279 predykcji na model, bo do zbioru ewaluacyjnego wchodzą wtedy także jesienne mecze przełożone. Test `Version6RealDataTests.DateFilterNarrowingsDoNotDependOnTheTimeDecay` przypina 0 / 72 / 135 / 205 i równość zbiorów zawężonych meczów w wersji 5 i 6.
+W runach diagnostycznych z odcięciem po kolejce 3 (runy 11–12 i 15–16, do pytania nr 2 i do okien kolejek pytania nr 3) zawężonych jest 135 (2024/25) i 205 (2025/26) z 279 predykcji na model, bo do zbioru ewaluacyjnego wchodzą wtedy także jesienne mecze przełożone. Test `Version6RealDataTests.DateFilterNarrowingsDoNotDependOnTheTimeDecay` przypina 0 / 72 / 135 / 205 i równość zbiorów zawężonych meczów w wersji 5 i 6.
 
 **Skutek dla wyników (2025/26, run 8 → run 10).** Filtr minimalnie poprawił metryki probabilistyczne wszystkich modeli:
 
@@ -395,7 +395,7 @@ Wersja 5 (runy 9–10) różniła się tylko Dixonem-Colesem: zimny start +0,022
 
 Żadna różnica nie jest istotna. Kierunek jest odwrotny niż intuicja „brak danych = gorsza predykcja": najgorzej wypadają drużyny z najdłuższą historią (Lechia i Wisła Płock, po 135 meczów), a zimny start jest prawie na poziomie meczów bez beniaminka (surowe p 0,30–0,85). Tak samo krótka historia po dłuższej przerwie (Arka, Termalica) nie przeszkadza. Przy 16 meczach na drużynę to poziom szumu, więc wniosek dla pracy brzmi: dane nie pokazują, żeby modele radziły sobie wiosną gorzej z drużynami bez historii, a binarną różnicę z 2024/25 w dużej mierze niesie powracająca Lechia. Wolniejsze wygaszanie (wersja 6) obniżyło RPS Dixona-Colesa we wszystkich grupach, a kary Lechii i Wisły Płock nie usunęło — zgodnie z analizą wrażliwości („Pytanie nr 3: kara powracających to cecha meczów").
 
-W runach diagnostycznych 15–16 (kolejki 4–34; służą pytaniu nr 2, bo trening na trzech kolejkach to inny problem predykcyjny) zimny start odstaje mocniej (run 15: +0,038 / +0,026 / +0,045 dla Dixona-Colesa / Elo / Poissona, surowe p 0,040–0,096, po Holmie 0,24–0,38; wersja 5, run 11: +0,039 / +0,026 / +0,045, po Holmie 0,45), co zgadza się z oczekiwaniem, że brak historii szkodzi najbardziej na początku sezonu. Liczności: run 15 — 60 / 31 / 191, run 16 — 87 / 192.
+W runach diagnostycznych 15–16 (kolejki 4–34; służą pytaniu nr 2 i oknom kolejek pytania nr 3, a porównanie na całym zakresie jest tu tylko uzupełnieniem, bo trening na trzech kolejkach to inny problem predykcyjny) zimny start odstaje mocniej (run 15: +0,038 / +0,026 / +0,045 dla Dixona-Colesa / Elo / Poissona, surowe p 0,040–0,096, po Holmie 0,24–0,38; wersja 5, run 11: +0,039 / +0,026 / +0,045, po Holmie 0,45), co zgadza się z oczekiwaniem, że brak historii szkodzi najbardziej na początku sezonu. Liczności: run 15 — 60 / 31 / 191, run 16 — 87 / 192.
 
 **Okna kolejek** (`PromotedVersusRest` z `RoundWindows`, binarnie, RPS; wszyscy beniaminki razem). Różnica beniaminki − reszta w oknach 19–23 / 24–28 / 29–33 / 34, runy 13–14:
 
@@ -607,7 +607,7 @@ Test Wilcoxona (RPS), p / p po Holmie: 2024/25 — DC–Elo 0,7870 / 0,7870, DC�
 | 2025/26 (stała 0,2270) | 0,2207; 0,2008 / 0,2008 | 0,2169; 0,0280 / 0,0841 | 0,2604; 0,0588 / 0,1176 |
 
 - **Wynik:** żaden model nie różni się od stałej predykcji istotnie po Holmie, w żadnym sezonie. Dixon-Coles i Elo są od niej lepsi tylko opisowo, a Poisson tylko opisowo gorszy.
-- **Brier i log-loss** dają ten sam obraz. W 2025/26 surowe p Elo wynosi 0,0334 (Brier) i 0,0501 (log-loss), a Poissona 0,0382 i 0,0615; po Holmie najniższe jest 0,1003. W 2024/25 wszystkie p po Holmie są ≥ 0,4489.
+- **Brier i log-loss** dają ten sam obraz. Stała predykcja ma Brier 0,6408 / 0,6548 i log-loss 1,0613 / 1,0813. W 2025/26 surowe p Elo wynosi 0,0334 (Brier) i 0,0501 (log-loss), a Poissona 0,0382 i 0,0615; po Holmie najniższe jest 0,1003. W 2024/25 wszystkie p po Holmie są ≥ 0,4489.
 - **Rodzina testów** na sezon to trzy modele, osobno od rodziny trzech par modeli. Test samego Poissona bez rodziny daje p 0,2303 / 0,0588. Wniosek się nie zmienia.
 
 **Reguły odniesienia trafności** (te same 144 mecze):
@@ -732,7 +732,7 @@ Próg względny usuwa zlepienie poziomu z momentem wygaszenia: każdy model jest
 
 **Osiadanie wymaga trendu.** Kryterium względne zawsze coś zwróci: płaski ciąg „osiada" od pierwszej kolejki, a ciąg łagodnie rosnący zwykle też, bo L jest wtedy wysokie. Liczba z osiadania znaczy „stabilizację" dopiero przy ujemnym (albo nieistotnym) trendzie. Przy istotnym trendzie dodatnim dryf rośnie i osiadanie nie oznacza stabilności. Dlatego tabela „Stabilność" pokazuje obie wielkości obok siebie.
 
-**Runy diagnostyczne z wczesnym odcięciem.** Na samej rundzie wiosennej (kolejki 19–34) dryf wszystkich modeli jest już w okolicy poziomu końcowego, więc osiadanie daje 19–20 dla każdego modelu i nic nie rozróżnia. Wygaszanie widać dopiero, gdy ewaluacja zaczyna się wcześnie: runy z ręcznym odcięciem po kolejce 3 obejmują kolejki 4–34, a parametry `?fromRound=` i `?toRound=` endpointu porównania pozwalają policzyć trend osobno dla jesieni (4–18) i wiosny (19–34). Takie runy służą **wyłącznie pytaniu nr 2**. Do porównania trafności modeli (pytanie nr 1) obowiązują runy z odcięciem na przerwie zimowej, bo trening na trzech kolejkach to inny problem predykcyjny.
+**Runy diagnostyczne z wczesnym odcięciem.** Na samej rundzie wiosennej (kolejki 19–34) dryf wszystkich modeli jest już w okolicy poziomu końcowego, więc osiadanie daje 19–20 dla każdego modelu i nic nie rozróżnia. Wygaszanie widać dopiero, gdy ewaluacja zaczyna się wcześnie: runy z ręcznym odcięciem po kolejce 3 obejmują kolejki 4–34, a parametry `?fromRound=` i `?toRound=` endpointu porównania pozwalają policzyć trend osobno dla jesieni (4–18) i wiosny (19–34). Takie runy służą pytaniu nr 2 i oknom kolejek pytania nr 3 (sekcja „Stopniowanie beniaminków”, akapit o oknach kolejek). Do porównania trafności modeli (pytanie nr 1) obowiązują runy z odcięciem na przerwie zimowej, bo trening na trzech kolejkach to inny problem predykcyjny.
 
 #### Wyniki (wersja 6)
 
